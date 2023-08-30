@@ -1,0 +1,131 @@
+---
+run:
+  deadline: 2m
+  allow-parallel-runners: true
+severity:
+  default-severity: critical  # info, minor, major, critical, blocker
+linters-settings:
+  tagalign:
+    order:
+      - json
+      - yaml
+      - yml
+      - toml
+      - mapstructure
+      - binding
+      - validate
+  depguard:
+    rules:
+      main:
+        deny:
+          - pkg: github.com/jfcg/sorty$
+          - pkg: io/ioutil
+          - pkg: github.com/aws/aws-sdk-go/*
+          - pkg: github.com/satori/go.uuid
+          - pkg: github.com/satori/uuid
+  gocyclo:
+    min-complexity: 10
+  grouper:
+    const-require-single-const: true
+    import-require-single-import: true
+  lll:
+    line-length: 80
+    tab-width: 4
+  revive:
+    enable-all-rules: true
+    severity: error
+    rules:
+      # settings
+      - name: exported
+        arguments:
+          - checkPrivateReceivers
+          - disableStutteringCheck
+      - name: comment-spacings
+        arguments:
+          - nolint
+          - in
+          - readonly
+          - swagger
+          - required
+          - enum
+      # disabled
+      - name: argument-limit
+        disabled: true
+      - name: cognitive-complexity
+        disabled: true
+      - name: function-result-limit
+        disabled: true
+      - name: function-length
+        disabled: true
+      - name: cyclomatic
+        disabled: true
+      - name: max-public-structs
+        disabled: true
+      - name: file-header
+        disabled: true
+      - name: banned-characters
+        disabled: true
+      - name: line-length-limit
+        disabled: true
+      - name: unhandled-error
+        disabled: true
+      - name: add-constant
+        disabled: true
+      - name: confusing-naming
+        disabled: true
+      - name: confusing-results
+        disabled: true
+      - name: nested-structs
+        disabled: true
+      - name: flag-parameter
+        disabled: true
+      - name: import-shadowing
+        disabled: true
+  tagliatelle:
+    case:
+      rules:
+        json: snake
+linters:
+  enable-all: true
+  disable:
+    - tagalign
+    - gomnd
+    - gomoddirectives
+    - dupl
+    - exhaustive
+    - exhaustruct
+    - exhaustivestruct
+    - funlen
+    - gci
+    - gofumpt
+    - gochecknoglobals
+    - gochecknoinits
+    - godox
+    - ifshort
+    - ireturn
+    - varnamelen
+    - deadcode
+    - golint
+    - interfacer
+    - maligned
+    - nosnakecase
+    - scopelint
+    - structcheck
+    - varcheck
+  fast: false
+issues:
+  include:
+    - EXC0012
+    - EXC0014
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - containedctx
+        - cyclop
+        - errcheck
+        - forcetypeassert
+        - gocognit
+        - gocyclo
+        - gosec
+        - maintidx
+        - testpackage

@@ -1,0 +1,6 @@
+Changes for 7.0.0alpha5
+
+New features:
+[ZBXNEXT-6235] initial implementation for MSSQL loadable Zabbix agent 2 plugin (rzvejs)
+
+--------------------------------------------------------------------------------
