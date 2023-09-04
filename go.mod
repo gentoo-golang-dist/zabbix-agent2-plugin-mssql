@@ -3,7 +3,7 @@ module git.zabbix.com/ap/mssql
 go 1.19
 
 require (
-	git.zabbix.com/ap/plugin-support v1.2.2-0.20230817092105-257746a62ac2
+	git.zabbix.com/ap/plugin-support v1.2.2-0.20230817092105-257746a62ac2 //TODO: Fix Version.
 	github.com/microsoft/go-mssqldb v1.5.0
 )
 
@@ -17,5 +17,3 @@ require (
 	golang.org/x/tools v0.11.0 // indirect
 )
 
-
-replace git.zabbix.com/ap/plugin-support => ../plugin-support

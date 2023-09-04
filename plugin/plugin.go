@@ -1,3 +1,20 @@
+/*
+** Zabbix
+** Copyright 2001-2023 Zabbix SIA
+**
+** Licensed under the Apache License, Version 2.0 (the "License");
+** you may not use this file except in compliance with the License.
+** You may obtain a copy of the License at
+**
+**     http://www.apache.org/licenses/LICENSE-2.0
+**
+** Unless required by applicable law or agreed to in writing, software
+** distributed under the License is distributed on an "AS IS" BASIS,
+** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+** See the License for the specific language governing permissions and
+** limitations under the License.
+**/
+
 package plugin
 
 import (
@@ -12,6 +29,9 @@ import (
 )
 
 const (
+	// Name of the plugin.
+	Name = "MSSQL"
+
 	keyJobStatus mssqlMetricKey = "mssql.get_job_status"
 )
 
@@ -40,7 +60,6 @@ type mssqlMetric struct {
 
 type mssqlPlugin struct {
 	plugin.Base
-	name    string
 	conns   *dbconn.ConnCollection
 	config  *pluginConfig
 	metrics map[mssqlMetricKey]*mssqlMetric
@@ -50,7 +69,6 @@ type mssqlPlugin struct {
 // finished.
 func Launch() error {
 	p := &mssqlPlugin{
-		name:  "MSSQL",
 		conns: dbconn.NewConnCollection(),
 		metrics: map[mssqlMetricKey]*mssqlMetric{
 			keyJobStatus: {
@@ -66,7 +84,7 @@ func Launch() error {
 
 	p.registerMetrics()
 
-	h, err := container.NewHandler(p.name)
+	h, err := container.NewHandler(Name)
 	if err != nil {
 		return zbxerr.Wrap(err, "failed to create new handler")
 	}
@@ -133,5 +151,5 @@ func (p *mssqlPlugin) registerMetrics() {
 		metricSet[string(k)] = m.metric
 	}
 
-	plugin.RegisterMetrics(p, p.name, metricSet.List()...)
+	plugin.RegisterMetrics(p, Name, metricSet.List()...)
 }
