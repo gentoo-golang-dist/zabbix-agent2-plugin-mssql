@@ -17,3 +17,4 @@ require (
 	golang.org/x/tools v0.11.0 // indirect
 )
 
+// replace git.zabbix.com/ap/plugin-support => ../plugin-support

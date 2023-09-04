@@ -36,6 +36,12 @@ const (
 )
 
 var (
+	_ plugin.Configurator = (*mssqlPlugin)(nil)
+	_ plugin.Exporter     = (*mssqlPlugin)(nil)
+	_ plugin.Runner       = (*mssqlPlugin)(nil)
+)
+
+var (
 	paramURI = metric.NewConnParam(
 		"URI", "URL connection string to connect to the database.",
 	).
@@ -97,6 +103,12 @@ func Launch() error {
 	}
 
 	return nil
+}
+
+func (p *mssqlPlugin) Start() {}
+
+func (p *mssqlPlugin) Stop() {
+	p.conns.Close()
 }
 
 // Export collects all the metrics.

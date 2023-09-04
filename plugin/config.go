@@ -23,8 +23,6 @@ import (
 	"git.zabbix.com/ap/plugin-support/zbxerr"
 )
 
-var _ plugin.Configurator = (*mssqlPlugin)(nil)
-
 type session struct {
 	URI      string `conf:"name=Uri,optional"`
 	Password string `conf:"optional"`
