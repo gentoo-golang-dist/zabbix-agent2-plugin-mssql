@@ -18,13 +18,15 @@
 package plugin
 
 import (
+	_ "embed"
 	"encoding/json"
 
 	"git.zabbix.com/ap/mssql/plugin/dbconn"
+	"git.zabbix.com/ap/mssql/plugin/handlers"
+	"git.zabbix.com/ap/mssql/plugin/params"
 	"git.zabbix.com/ap/plugin-support/metric"
 	"git.zabbix.com/ap/plugin-support/plugin"
 	"git.zabbix.com/ap/plugin-support/plugin/container"
-	"git.zabbix.com/ap/plugin-support/uri"
 	"git.zabbix.com/ap/plugin-support/zbxerr"
 )
 
@@ -32,7 +34,45 @@ const (
 	// Name of the plugin.
 	Name = "MSSQL"
 
-	keyJobStatus mssqlMetricKey = "mssql.get_job_status"
+	availabilityGroupGet = mssqlMetricKey("mssql.availability.group.get")
+	customQuery          = mssqlMetricKey("mssql.custom.query")
+	dbGet                = mssqlMetricKey("mssql.db.get")
+	jobStatusGet         = mssqlMetricKey("mssql.job.status.get")
+	lastBackupGet        = mssqlMetricKey("mssql.last.backup.get")
+	localDBGet           = mssqlMetricKey("mssql.local.db.get")
+	mirroringGet         = mssqlMetricKey("mssql.mirroring.get")
+	nonLocalDBGet        = mssqlMetricKey("mssql.nonlocal.db.get")
+	perfCounterGet       = mssqlMetricKey("mssql.perfcounter.get")
+	ping                 = mssqlMetricKey("mssql.ping")
+	quorumGet            = mssqlMetricKey("mssql.quorum.get")
+	quorumMemberGet      = mssqlMetricKey("mssql.quorum.member.get")
+	replicaGet           = mssqlMetricKey("mssql.replica.get")
+	version              = mssqlMetricKey("mssql.version")
+)
+
+var (
+	//go:embed queries/availability.group.get.sql
+	availabilityGroupGetQuery string
+	//go:embed queries/db.get.sql
+	dbGetQuery string
+	//go:embed queries/job.status.get.sql
+	jobStatusGetQuery string
+	//go:embed queries/last.backup.get.sql
+	lastBackupGetQuery string
+	//go:embed queries/local.db.get.sql
+	localDBGetQuery string
+	//go:embed queries/mirroring.get.sql
+	mirroringGetQuery string
+	//go:embed queries/nonlocal.db.get.sql
+	nonLocalDBGetQuery string
+	//go:embed queries/perfcounter.get.sql
+	perfCounterGetQuery string
+	//go:embed queries/quorum.get.sql
+	quorumGetQuery string
+	//go:embed queries/quorum.member.get.sql
+	quorumMemberGetQuery string
+	//go:embed queries/replica.get.sql
+	replicaGetQuery string
 )
 
 var (
@@ -41,54 +81,183 @@ var (
 	_ plugin.Runner       = (*mssqlPlugin)(nil)
 )
 
-var (
-	paramURI = metric.NewConnParam(
-		"URI", "URL connection string to connect to the database.",
-	).
-		WithDefault("sqlserver://localhost:1433").
-		WithSession().
-		WithValidator(uri.URIValidator{
-			Defaults:       &uri.Defaults{Scheme: "sqlserver", Port: "1433"},
-			AllowedSchemes: []string{"sqlserver"},
-		})
-	paramUser     = metric.NewConnParam("User", "MSSQL database user.")
-	paramPassword = metric.NewConnParam(
-		"Password", "MSSQL database users password.",
-	)
-)
-
 type mssqlMetricKey string
 
 type mssqlMetric struct {
 	metric  *metric.Metric
-	handler func(conn dbconn.Queryer) (any, error)
+	handler handlers.HandlerFunc
 }
 
 type mssqlPlugin struct {
 	plugin.Base
-	conns   *dbconn.ConnCollection
-	config  *pluginConfig
-	metrics map[mssqlMetricKey]*mssqlMetric
+	conns         *dbconn.ConnCollection
+	config        *pluginConfig
+	metrics       map[mssqlMetricKey]*mssqlMetric
+	customQueries handlers.CustomQueries
 }
 
 // Launch launches the MSSQL plugin. Blocks until plugin execution has
 // finished.
 func Launch() error {
+	// because of suboptimal setup flow that plugin-support lib
+	// we are forced to allocate custom queries and conns first
+	// (without initialising them) to allow registering metrics before receiving
+	// config or starting plugin. only then in mssqlPlugin.Start these fields
+	// can be properly initialised. may bby joda be with u when trying to
+	// folllow this after a month.
 	p := &mssqlPlugin{
-		conns: dbconn.NewConnCollection(),
-		metrics: map[mssqlMetricKey]*mssqlMetric{
-			keyJobStatus: {
-				metric: metric.New(
-					"Return the status of jobs.",
-					[]*metric.Param{paramURI, paramUser, paramPassword},
-					false,
-				),
-				handler: jobStatusHandler,
-			},
+		customQueries: make(handlers.CustomQueries),
+		conns:         &dbconn.ConnCollection{},
+	}
+
+	p.metrics = map[mssqlMetricKey]*mssqlMetric{
+		availabilityGroupGet: {
+			metric: metric.New(
+				"Returns the availability groups.",
+				[]*metric.Param{params.URI, params.User, params.Password},
+				false,
+			),
+			handler: p.conns.WithConnHandlerFunc(
+				handlers.QueryHandlerFunc(availabilityGroupGetQuery),
+			),
+		},
+		customQuery: {
+			metric: metric.New(
+				"Returns the result rows of a custom query.",
+				[]*metric.Param{
+					params.URI,
+					params.User,
+					params.Password,
+					params.QueryName,
+				},
+				true,
+			),
+			handler: p.conns.WithConnHandlerFunc(
+				p.customQueries.HandlerFunc,
+			),
+		},
+		dbGet: {
+			metric: metric.New(
+				"Returns the availabile databases.",
+				[]*metric.Param{params.URI, params.User, params.Password},
+				false,
+			),
+			handler: p.conns.WithConnHandlerFunc(
+				handlers.QueryHandlerFunc(dbGetQuery),
+			),
+		},
+		jobStatusGet: {
+			metric: metric.New(
+				"Return the status of jobs.",
+				[]*metric.Param{params.URI, params.User, params.Password},
+				false,
+			),
+			handler: p.conns.WithConnHandlerFunc(
+				handlers.QueryHandlerFunc(jobStatusGetQuery),
+			),
+		},
+		lastBackupGet: {
+			metric: metric.New(
+				"Return the last backup time.",
+				[]*metric.Param{params.URI, params.User, params.Password},
+				false,
+			),
+			handler: p.conns.WithConnHandlerFunc(
+				handlers.QueryHandlerFunc(lastBackupGetQuery),
+			),
+		},
+		localDBGet: {
+			metric: metric.New(
+				"Return local DB info.",
+				[]*metric.Param{params.URI, params.User, params.Password},
+				false,
+			),
+			handler: p.conns.WithConnHandlerFunc(
+				handlers.QueryHandlerFunc(localDBGetQuery),
+			),
+		},
+		mirroringGet: {
+			metric: metric.New(
+				"Return mirroring info.",
+				[]*metric.Param{params.URI, params.User, params.Password},
+				false,
+			),
+			handler: p.conns.WithConnHandlerFunc(
+				handlers.QueryHandlerFunc(mirroringGetQuery),
+			),
+		},
+		nonLocalDBGet: {
+			metric: metric.New(
+				"Return non-local DB info.",
+				[]*metric.Param{params.URI, params.User, params.Password},
+				false,
+			),
+			handler: p.conns.WithConnHandlerFunc(
+				handlers.QueryHandlerFunc(nonLocalDBGetQuery),
+			),
+		},
+		perfCounterGet: {
+			metric: metric.New(
+				"Return the performance counters.",
+				[]*metric.Param{params.URI, params.User, params.Password},
+				false,
+			),
+			handler: p.conns.WithConnHandlerFunc(
+				handlers.QueryHandlerFunc(perfCounterGetQuery),
+			),
+		},
+		ping: {
+			metric: metric.New(
+				"Ping the database.",
+				[]*metric.Param{params.URI, params.User, params.Password},
+				false,
+			),
+			handler: p.conns.PingHandler,
+		},
+		quorumGet: {
+			metric: metric.New(
+				"Return the quorum info.",
+				[]*metric.Param{params.URI, params.User, params.Password},
+				false,
+			),
+			handler: p.conns.WithConnHandlerFunc(
+				handlers.QueryHandlerFunc(quorumGetQuery),
+			),
+		},
+		quorumMemberGet: {
+			metric: metric.New(
+				"Return the quorum members.",
+				[]*metric.Param{params.URI, params.User, params.Password},
+				false,
+			),
+			handler: p.conns.WithConnHandlerFunc(
+				handlers.QueryHandlerFunc(quorumMemberGetQuery),
+			),
+		},
+		replicaGet: {
+			metric: metric.New(
+				"Return the replicas.",
+				[]*metric.Param{params.URI, params.User, params.Password},
+				false,
+			),
+			handler: p.conns.WithConnHandlerFunc(
+				handlers.QueryHandlerFunc(replicaGetQuery),
+			),
+		},
+		version: {
+			metric: metric.New(
+				"Return the version.",
+				[]*metric.Param{params.URI, params.User, params.Password},
+				false,
+			),
+			handler: p.conns.WithConnHandlerFunc(handlers.VersionHandler),
 		},
 	}
 
-	p.registerMetrics()
+	err := p.registerMetrics()
+	if err != nil {
+		return err
+	}
 
 	h, err := container.NewHandler(Name)
 	if err != nil {
@@ -105,7 +274,18 @@ func Launch() error {
 	return nil
 }
 
-func (p *mssqlPlugin) Start() {}
+// Start starts the mssql plugin, setting up the internal connection management.
+// Initialised in Start, to ensure that config has been loaded before.
+// (Start is called after Configure).
+func (p *mssqlPlugin) Start() {
+	p.conns.Init(p.config.KeepAlive, p)
+
+	err := p.customQueries.Load(p.config.CustomQueriesDir, p)
+	if err != nil {
+		// continue without custom queries.
+		p.Critf("failed to load custom queries: %s", err.Error())
+	}
+}
 
 func (p *mssqlPlugin) Stop() {
 	p.conns.Close()
@@ -117,33 +297,24 @@ func (p *mssqlPlugin) Export(
 ) (any, error) {
 	m, ok := p.metrics[mssqlMetricKey(key)]
 	if !ok {
-		return nil, zbxerr.ErrorUnsupportedMetric
+		return nil, zbxerr.Wrapf(
+			zbxerr.ErrorUnsupportedMetric, "unknown metric %q", key,
+		)
 	}
 
-	params, _, hardcodedParams, err := m.metric.EvalParams(
+	metricParams, extraParams, hardcodedParams, err := m.metric.EvalParams(
 		rawParams, p.config.Sessions,
 	)
 	if err != nil {
 		return nil, zbxerr.Wrap(err, "failed to evaluate metric parameters")
 	}
 
-	err = metric.SetDefaults(params, hardcodedParams, p.config.Default)
+	err = metric.SetDefaults(metricParams, hardcodedParams, p.config.Default)
 	if err != nil {
 		return nil, zbxerr.Wrap(err, "failed to set default params")
 	}
 
-	c, err := p.conns.Get(
-		dbconn.ConnConfig{
-			URI:      params[paramURI.Name()],
-			User:     params[paramUser.Name()],
-			Password: params[paramPassword.Name()],
-		},
-	)
-	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to get conn")
-	}
-
-	res, err := m.handler(c)
+	res, err := m.handler(metricParams, extraParams...)
 	if err != nil {
 		return nil, zbxerr.Wrap(err, "failed to execute handler")
 	}
@@ -156,12 +327,17 @@ func (p *mssqlPlugin) Export(
 	return string(jsonRes), nil
 }
 
-func (p *mssqlPlugin) registerMetrics() {
+func (p *mssqlPlugin) registerMetrics() error {
 	metricSet := metric.MetricSet{}
 
 	for k, m := range p.metrics {
 		metricSet[string(k)] = m.metric
 	}
 
-	plugin.RegisterMetrics(p, Name, metricSet.List()...)
+	err := plugin.RegisterMetrics(p, Name, metricSet.List()...)
+	if err != nil {
+		return zbxerr.Wrap(err, "failed to register metrics")
+	}
+
+	return nil
 }

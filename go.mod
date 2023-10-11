@@ -3,17 +3,18 @@ module git.zabbix.com/ap/mssql
 go 1.19
 
 require (
-	git.zabbix.com/ap/plugin-support v1.2.2-0.20230817092105-257746a62ac2 //TODO: Fix Version.
-	github.com/microsoft/go-mssqldb v1.5.0
+	git.zabbix.com/ap/plugin-support v1.2.2-0.20231003114245-48752d6b8231
+	github.com/microsoft/go-mssqldb v1.6.0
 )
 
 require (
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
-	golang.org/x/crypto v0.9.0 // indirect
+	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/sys v0.10.0 // indirect
+	golang.org/x/sys v0.11.0 // indirect
+	golang.org/x/text v0.12.0 // indirect
 	golang.org/x/tools v0.11.0 // indirect
 )
 
