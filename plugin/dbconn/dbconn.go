@@ -46,7 +46,7 @@ type ConnCollection struct {
 	logr      log.Logger
 }
 
-// init initializes a pre-allocated connection collection.
+// Init initializes a pre-allocated connection collection.
 func (c *ConnCollection) Init(keepAlive int, logr log.Logger) {
 	c.conns = make(map[ConnConfig]*sql.DB)
 	c.keepAlive = keepAlive
@@ -70,11 +70,6 @@ func (c *ConnCollection) WithConnHandlerFunc(
 			return nil, zbxerr.Wrap(err, "failed to get conn")
 		}
 
-		err = conn.Ping()
-		if err != nil {
-			return nil, zbxerr.Wrap(err, "failed to ping conn")
-		}
-
 		return handler(conn, metricParams, extraParams...)
 	}
 }
@@ -83,13 +78,20 @@ func (c *ConnCollection) WithConnHandlerFunc(
 func (c *ConnCollection) PingHandler(
 	metricParams map[string]string, _ ...string,
 ) (any, error) {
-	_, err := c.get(
+	conn, err := c.get(
 		ConnConfig{
 			URI:      metricParams[params.URI.Name()],
 			User:     metricParams[params.User.Name()],
 			Password: metricParams[params.Password.Name()],
 		},
 	)
+	if err != nil {
+		c.logr.Infof("Failed go get connection for ping: %s", err.Error())
+
+		return 0, nil
+	}
+
+	err = conn.Ping()
 	if err != nil {
 		c.logr.Infof("Failed to ping: %s", err.Error())
 

@@ -99,17 +99,91 @@ type mssqlPlugin struct {
 // Launch launches the MSSQL plugin. Blocks until plugin execution has
 // finished.
 func Launch() error {
-	// because of suboptimal setup flow that plugin-support lib
+	// because of suboptimal setup flow in plugin-support lib
 	// we are forced to allocate custom queries and conns first
-	// (without initialising them) to allow registering metrics before receiving
+	// (without initializing them) to allow registering metrics before receiving
 	// config or starting plugin. only then in mssqlPlugin.Start these fields
-	// can be properly initialised. may bby joda be with u when trying to
+	// can be properly initialised. may baby Yoda be with u when trying to
 	// folllow this after a month.
 	p := &mssqlPlugin{
 		customQueries: make(handlers.CustomQueries),
 		conns:         &dbconn.ConnCollection{},
 	}
 
+	err := p.registerMetrics()
+	if err != nil {
+		return err
+	}
+
+	h, err := container.NewHandler(Name)
+	if err != nil {
+		return zbxerr.Wrap(err, "failed to create new handler")
+	}
+
+	p.Logger = h
+
+	err = h.Execute()
+	if err != nil {
+		return zbxerr.Wrap(err, "failed to execute plugin handler")
+	}
+
+	return nil
+}
+
+// Start starts the mssql plugin, setting up the internal connection management.
+// Initialised in Start, to ensure that config has been loaded before.
+// (Start is called after Configure).
+func (p *mssqlPlugin) Start() {
+	p.conns.Init(p.config.KeepAlive, p)
+
+	err := p.customQueries.Load(p.config.CustomQueriesDir, p)
+	if err != nil {
+		// continue without custom queries.
+		p.Critf("failed to load custom queries: %s", err.Error())
+	}
+}
+
+func (p *mssqlPlugin) Stop() {
+	p.conns.Close()
+}
+
+// Export collects all the metrics.
+func (p *mssqlPlugin) Export(
+	key string, rawParams []string, _ plugin.ContextProvider,
+) (any, error) {
+	m, ok := p.metrics[mssqlMetricKey(key)]
+	if !ok {
+		return nil, zbxerr.Wrapf(
+			zbxerr.ErrorUnsupportedMetric, "unknown metric %q", key,
+		)
+	}
+
+	metricParams, extraParams, hardcodedParams, err := m.metric.EvalParams(
+		rawParams, p.config.Sessions,
+	)
+	if err != nil {
+		return nil, zbxerr.Wrap(err, "failed to evaluate metric parameters")
+	}
+
+	err = metric.SetDefaults(metricParams, hardcodedParams, p.config.Default)
+	if err != nil {
+		return nil, zbxerr.Wrap(err, "failed to set default params")
+	}
+
+	res, err := m.handler(metricParams, extraParams...)
+	if err != nil {
+		return nil, zbxerr.Wrap(err, "failed to execute handler")
+	}
+
+	jsonRes, err := json.Marshal(res)
+	if err != nil {
+		return nil, zbxerr.Wrap(err, "failed to marshal result to JSON")
+	}
+
+	return string(jsonRes), nil
+}
+
+func (p *mssqlPlugin) registerMetrics() error {
 	p.metrics = map[mssqlMetricKey]*mssqlMetric{
 		availabilityGroupGet: {
 			metric: metric.New(
@@ -254,80 +328,6 @@ func Launch() error {
 		},
 	}
 
-	err := p.registerMetrics()
-	if err != nil {
-		return err
-	}
-
-	h, err := container.NewHandler(Name)
-	if err != nil {
-		return zbxerr.Wrap(err, "failed to create new handler")
-	}
-
-	p.Logger = h
-
-	err = h.Execute()
-	if err != nil {
-		return zbxerr.Wrap(err, "failed to execute plugin handler")
-	}
-
-	return nil
-}
-
-// Start starts the mssql plugin, setting up the internal connection management.
-// Initialised in Start, to ensure that config has been loaded before.
-// (Start is called after Configure).
-func (p *mssqlPlugin) Start() {
-	p.conns.Init(p.config.KeepAlive, p)
-
-	err := p.customQueries.Load(p.config.CustomQueriesDir, p)
-	if err != nil {
-		// continue without custom queries.
-		p.Critf("failed to load custom queries: %s", err.Error())
-	}
-}
-
-func (p *mssqlPlugin) Stop() {
-	p.conns.Close()
-}
-
-// Export collects all the metrics.
-func (p *mssqlPlugin) Export(
-	key string, rawParams []string, _ plugin.ContextProvider,
-) (any, error) {
-	m, ok := p.metrics[mssqlMetricKey(key)]
-	if !ok {
-		return nil, zbxerr.Wrapf(
-			zbxerr.ErrorUnsupportedMetric, "unknown metric %q", key,
-		)
-	}
-
-	metricParams, extraParams, hardcodedParams, err := m.metric.EvalParams(
-		rawParams, p.config.Sessions,
-	)
-	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to evaluate metric parameters")
-	}
-
-	err = metric.SetDefaults(metricParams, hardcodedParams, p.config.Default)
-	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to set default params")
-	}
-
-	res, err := m.handler(metricParams, extraParams...)
-	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to execute handler")
-	}
-
-	jsonRes, err := json.Marshal(res)
-	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to marshal result to JSON")
-	}
-
-	return string(jsonRes), nil
-}
-
-func (p *mssqlPlugin) registerMetrics() error {
 	metricSet := metric.MetricSet{}
 
 	for k, m := range p.metrics {
