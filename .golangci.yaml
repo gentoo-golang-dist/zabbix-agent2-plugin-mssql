@@ -209,6 +209,13 @@ linters:
 issues:
   max-issues-per-linter: 0
   max-same-issues: 0
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+        - goerr113
+        - wrapcheck
+        - gocritic
 
 severity:
   default-severity: error

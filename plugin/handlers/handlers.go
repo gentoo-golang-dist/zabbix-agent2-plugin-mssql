@@ -21,7 +21,6 @@ import (
 	"database/sql"
 	"io"
 	"io/fs"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -43,10 +42,8 @@ type ConnHandlerFunc func(
 type CustomQueries map[string]string
 
 // Loads user defined custom queries form a config specified directory.
-func (cq CustomQueries) Load(customQueriesDir string, logr log.Logger) error {
-	cqFS := os.DirFS(customQueriesDir)
-
-	queryFilePaths, err := fs.Glob(cqFS, "*.sql")
+func (cq CustomQueries) Load(customQueriesDirFS fs.FS, logr log.Logger) error {
+	queryFilePaths, err := fs.Glob(customQueriesDirFS, "*.sql")
 	if err != nil {
 		return zbxerr.Wrap(err, "failed to match glob pattern")
 	}
@@ -54,10 +51,12 @@ func (cq CustomQueries) Load(customQueriesDir string, logr log.Logger) error {
 	queries := make(map[string]string)
 
 	for _, qfp := range queryFilePaths {
-		f, err := cqFS.Open(qfp)
+		f, err := customQueriesDirFS.Open(qfp)
 		if err != nil {
 			return zbxerr.Wrap(err, "failed to open custom query file")
 		}
+
+		defer f.Close() //nolint:gocritic,revive // closure over scoped var.
 
 		data, err := io.ReadAll(f)
 		if err != nil {

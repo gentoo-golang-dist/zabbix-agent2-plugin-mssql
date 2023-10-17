@@ -20,6 +20,7 @@ package plugin
 import (
 	_ "embed"
 	"encoding/json"
+	"os"
 
 	"git.zabbix.com/ap/mssql/plugin/dbconn"
 	"git.zabbix.com/ap/mssql/plugin/handlers"
@@ -103,8 +104,8 @@ func Launch() error {
 	// we are forced to allocate custom queries and conns first
 	// (without initializing them) to allow registering metrics before receiving
 	// config or starting plugin. only then in mssqlPlugin.Start these fields
-	// can be properly initialised. may baby Yoda be with u when trying to
-	// folllow this after a month.
+	// can be properly initialized. may baby Yoda be with u when trying to
+	// follow this after a month.
 	p := &mssqlPlugin{
 		customQueries: make(handlers.CustomQueries),
 		conns:         &dbconn.ConnCollection{},
@@ -131,12 +132,12 @@ func Launch() error {
 }
 
 // Start starts the mssql plugin, setting up the internal connection management.
-// Initialised in Start, to ensure that config has been loaded before.
+// initialized in Start, to ensure that config has been loaded before.
 // (Start is called after Configure).
 func (p *mssqlPlugin) Start() {
 	p.conns.Init(p.config.KeepAlive, p)
 
-	err := p.customQueries.Load(p.config.CustomQueriesDir, p)
+	err := p.customQueries.Load(os.DirFS(p.config.CustomQueriesDir), p)
 	if err != nil {
 		// continue without custom queries.
 		p.Critf("failed to load custom queries: %s", err.Error())

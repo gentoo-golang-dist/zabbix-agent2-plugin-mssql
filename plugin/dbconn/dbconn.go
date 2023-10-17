@@ -149,9 +149,7 @@ func (c *ConnCollection) newConn(conf *ConnConfig) (*sql.DB, error) {
 
 	u.RawQuery = queryParams.Encode()
 
-	dsn := u.String()
-
-	db, err := sql.Open("sqlserver", dsn)
+	db, err := sql.Open("sqlserver", u.String())
 	if err != nil {
 		return nil, zbxerr.Wrap(err, "failed to open DB connection")
 	}
