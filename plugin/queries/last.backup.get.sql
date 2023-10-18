@@ -1,6 +1,6 @@
 SELECT bs.database_name as dbname,
   [type],
-  DATEDIFF(SECOND, bs.backup_finish_date, getdate()) as timesincelastbackup,
+  DATEDIFF(SECOND, bs.backup_finish_date, getdate()) as time_since_last_backup,
   (DATEDIFF(SECOND, bs.backup_start_date, bs.backup_finish_date)) as duration,
   db.recovery_model as db_recovery_model
 FROM msdb.dbo.backupset as bs
