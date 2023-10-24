@@ -459,6 +459,10 @@ func TestConnCollection_Close(t *testing.T) {
 				logr:  log.New("test"),
 			}
 			c.Close()
+
+			if err := m.ExpectationsWereMet(); err != nil {
+				t.Fatalf("ConnCollection.Close() = %s", err.Error())
+			}
 		})
 	}
 }
