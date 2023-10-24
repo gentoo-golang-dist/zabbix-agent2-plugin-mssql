@@ -22,32 +22,13 @@ import (
 	"net/url"
 	"strconv"
 	"sync"
+	"time"
 
+	"git.zabbix.com/ap/mssql/plugin/handlers"
+	"git.zabbix.com/ap/mssql/plugin/params"
+	"git.zabbix.com/ap/plugin-support/log"
 	"git.zabbix.com/ap/plugin-support/zbxerr"
 )
-
-var (
-	_ Queryer = (*Conn)(nil)
-	_ Rows    = (*sql.Rows)(nil)
-)
-
-// Queryer describes the interface for querying the database.
-type Queryer interface {
-	Query(query string, args ...any) (Rows, error)
-}
-
-// Rows describes the interface for rows returned by a query.
-type Rows interface {
-	Columns() ([]string, error)
-	Close() error
-	Next() bool
-	Scan(dest ...any) error
-}
-
-// Conn is a wrapper for sql.DB. Implements Queryer.
-type Conn struct {
-	db *sql.DB
-}
 
 // ConnConfig is a configuration for a connection to the database.
 type ConnConfig struct {
@@ -60,49 +41,82 @@ type ConnConfig struct {
 // Allows managing multiple connections.
 type ConnCollection struct {
 	mu        sync.Mutex
-	conns     map[ConnConfig]*Conn
+	conns     map[ConnConfig]*sql.DB
 	keepAlive int
+	logr      log.Logger
 }
 
-// NewConnCollection creates a new ConnCollection.
-func NewConnCollection(keepAlive int) *ConnCollection {
-	return &ConnCollection{
-		conns:     make(map[ConnConfig]*Conn),
-		keepAlive: keepAlive,
-	}
+// Init initializes a pre-allocated connection collection.
+func (c *ConnCollection) Init(keepAlive int, logr log.Logger) {
+	c.conns = make(map[ConnConfig]*sql.DB)
+	c.keepAlive = keepAlive
+	c.logr = logr
 }
 
-// Get returns a connection from the collection. If the connection with the
-// provided configuration does not exist a new connection is going to be
-// created and stored for subsequent call to Get.
-func (c *ConnCollection) Get(conf ConnConfig) (*Conn, error) {
-	conn, err := c.get(conf)
-	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to get conn")
-	}
-
-	err = conn.db.Ping()
-	if err != nil {
-		// ping failing can mean that cached connections keepAlive has runout
-		// if thats the case remove the cached conn and retry.
-		conn.db.Close() //nolint:errcheck
-		delete(c.conns, conf)
-
-		conn, err = c.newConn(&conf)
-		if err != nil {
-			return nil, zbxerr.Wrap(err, "failed to create conn")
-		}
-
-		err = conn.db.Ping()
+func (c *ConnCollection) WithConnHandlerFunc(
+	handler handlers.ConnHandlerFunc,
+) handlers.HandlerFunc {
+	return func(
+		metricParams map[string]string, extraParams ...string,
+	) (any, error) {
+		conn, err := c.get(
+			ConnConfig{
+				URI:      metricParams[params.URI.Name()],
+				User:     metricParams[params.User.Name()],
+				Password: metricParams[params.Password.Name()],
+			},
+		)
 		if err != nil {
 			return nil, zbxerr.Wrap(err, "failed to get conn")
 		}
-	}
 
-	return conn, nil
+		return handler(conn, metricParams, extraParams...)
+	}
 }
 
-func (c *ConnCollection) get(conf ConnConfig) (*Conn, error) {
+// PingHandler tries to ping the database, returning 1 on success 0 on failure.
+func (c *ConnCollection) PingHandler(
+	metricParams map[string]string, _ ...string,
+) (any, error) {
+	conn, err := c.get(
+		ConnConfig{
+			URI:      metricParams[params.URI.Name()],
+			User:     metricParams[params.User.Name()],
+			Password: metricParams[params.Password.Name()],
+		},
+	)
+	if err != nil {
+		c.logr.Infof("Failed go get connection for ping: %s", err.Error())
+
+		return 0, nil
+	}
+
+	err = conn.Ping()
+	if err != nil {
+		c.logr.Infof("Failed to ping: %s", err.Error())
+
+		return 0, nil
+	}
+
+	return 1, nil
+}
+
+// Close closes all connections in the collection.
+func (c *ConnCollection) Close() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	for conf, conn := range c.conns {
+		err := conn.Close()
+		if err != nil {
+			c.logr.Errf("Failed to close connection: %s", err.Error())
+		}
+
+		delete(c.conns, conf)
+	}
+}
+
+func (c *ConnCollection) get(conf ConnConfig) (*sql.DB, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -121,18 +135,7 @@ func (c *ConnCollection) get(conf ConnConfig) (*Conn, error) {
 	return conn, nil
 }
 
-// Close closes all connections in the collection.
-func (c *ConnCollection) Close() {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
-	for conf, conn := range c.conns {
-		conn.db.Close() //nolint:errcheck
-		delete(c.conns, conf)
-	}
-}
-
-func (c *ConnCollection) newConn(conf *ConnConfig) (*Conn, error) {
+func (c *ConnCollection) newConn(conf *ConnConfig) (*sql.DB, error) {
 	u, err := url.Parse(conf.URI)
 	if err != nil {
 		return nil, zbxerr.Wrap(err, "failed to parse URI")
@@ -146,22 +149,17 @@ func (c *ConnCollection) newConn(conf *ConnConfig) (*Conn, error) {
 
 	u.RawQuery = queryParams.Encode()
 
-	dsn := u.String()
-
-	dbConn, err := sql.Open("sqlserver", dsn)
+	db, err := sql.Open("sqlserver", u.String())
 	if err != nil {
 		return nil, zbxerr.Wrap(err, "failed to open DB connection")
 	}
 
-	return &Conn{db: dbConn}, nil
-}
+	db.SetConnMaxIdleTime(time.Duration(c.keepAlive) * time.Second)
 
-// Query wrapper for go-mssqldb Query.
-func (c *Conn) Query(query string, args ...any) (Rows, error) {
-	rows, err := c.db.Query(query, args...) //nolint:rowserrcheck
+	err = db.Ping()
 	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to query MSSQL DB")
+		return nil, zbxerr.Wrap(err, "failed to ping")
 	}
 
-	return rows, nil
+	return db, nil
 }

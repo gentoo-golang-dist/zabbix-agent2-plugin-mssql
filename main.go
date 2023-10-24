@@ -24,16 +24,8 @@ import (
 
 	"git.zabbix.com/ap/mssql/plugin"
 	"git.zabbix.com/ap/plugin-support/plugin/comms"
+	"git.zabbix.com/ap/plugin-support/zbxerr"
 	_ "github.com/microsoft/go-mssqldb"
-)
-
-// These variables are set during build time.
-var (
-	VersionRC    = ""
-	VersionMajor = 0
-	VersionMinor = 0
-	VersionPatch = 1
-	LicenseYear  = 2023
 )
 
 const copyrightMessage = //
@@ -50,6 +42,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.`
 
+// These variables are set during build time.
+//
+//nolint:gochecknoglobals // global version info.
+var (
+	VersionRC    = ""
+	VersionMajor = 0
+	VersionMinor = 0
+	VersionPatch = 1
+	LicenseYear  = 2023
+)
+
 func main() {
 	err := comms.HandleFlags(
 		plugin.Name,
@@ -61,7 +64,7 @@ func main() {
 		VersionPatch,
 	)
 	if err != nil {
-		if errors.Is(err, comms.ErrOSExitZero) {
+		if errors.Is(err, zbxerr.ErrorOSExitZero) {
 			return
 		}
 

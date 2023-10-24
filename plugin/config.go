@@ -35,12 +35,15 @@ type pluginConfig struct {
 	// first connecting and on follow up operations in the session.
 	Timeout int `conf:"optional,range=1:30"`
 	// KeepAlive is a time to wait before unused connections will be closed.
-	KeepAlive int `conf:"optional,range=60:900,default=60"`
+	KeepAlive int `conf:"optional,range=0:900,default=60"`
 	// Sessions stores pre-defined named sets of connections settings.
 	Sessions map[string]session `conf:"optional"`
 	// Default stores default connection parameter values from configuration
 	// file.
 	Default session `conf:"optional"`
+	// CustomQueriesDir is absolute path directory containing user defined
+	// *.sql files with custom queries the plugin can execute.
+	CustomQueriesDir string `conf:"optional"`
 }
 
 // Configure implements the Configurator interface.
