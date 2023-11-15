@@ -20,6 +20,7 @@ package dbconn
 import (
 	"database/sql"
 	"net/url"
+	"path/filepath"
 	"strconv"
 	"sync"
 	"time"
@@ -32,9 +33,14 @@ import (
 
 // ConnConfig is a configuration for a connection to the database.
 type ConnConfig struct {
-	User     string
-	Password string
-	URI      string
+	User                   string
+	Password               string
+	URI                    string
+	CACertPath             string
+	TrustServerCertificate string
+	HostNameInCertificate  string
+	Encrypt                string
+	TLSMinVersion          string
 }
 
 // ConnCollection is a collection of connections to the database.
@@ -61,9 +67,14 @@ func (c *ConnCollection) WithConnHandlerFunc(
 	) (any, error) {
 		conn, err := c.get(
 			ConnConfig{
-				URI:      metricParams[params.URI.Name()],
-				User:     metricParams[params.User.Name()],
-				Password: metricParams[params.Password.Name()],
+				URI:                    metricParams[params.URI.Name()],
+				User:                   metricParams[params.User.Name()],
+				Password:               metricParams[params.Password.Name()],
+				CACertPath:             metricParams[params.CACertPath.Name()],
+				TrustServerCertificate: metricParams[params.TrustServerCertificate.Name()], //nolint:lll // no wrap.
+				HostNameInCertificate:  metricParams[params.HostNameInCertificate.Name()],  //nolint:lll // no wrap.
+				Encrypt:                metricParams[params.Encrypt.Name()],
+				TLSMinVersion:          metricParams[params.TLSMinVersion.Name()], //nolint:lll // no wrap.
 			},
 		)
 		if err != nil {
@@ -116,6 +127,7 @@ func (c *ConnCollection) Close() {
 	}
 }
 
+//nolint:gocritic // need conf by value.
 func (c *ConnCollection) get(conf ConnConfig) (*sql.DB, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -136,6 +148,19 @@ func (c *ConnCollection) get(conf ConnConfig) (*sql.DB, error) {
 }
 
 func (c *ConnCollection) newConn(conf *ConnConfig) (*sql.DB, error) {
+	c.logr.Infof(
+		"Creating new connection to %q, with user %q, CA certificate %q,"+
+			"trust server certificate %q, host name in certificate %q"+
+			"encrypt %q, TLS min version %q",
+		conf.URI,
+		conf.User,
+		conf.CACertPath,
+		conf.TrustServerCertificate,
+		conf.HostNameInCertificate,
+		conf.Encrypt,
+		conf.TLSMinVersion,
+	)
+
 	u, err := url.Parse(conf.URI)
 	if err != nil {
 		return nil, zbxerr.Wrap(err, "failed to parse URI")
@@ -146,6 +171,26 @@ func (c *ConnCollection) newConn(conf *ConnConfig) (*sql.DB, error) {
 	queryParams := u.Query()
 	queryParams.Add("app name", "Zabbix agent 2 MSSQL plugin")
 	queryParams.Add("keepAlive", strconv.Itoa(c.keepAlive))
+
+	if conf.CACertPath != "" {
+		queryParams.Add("certificate", filepath.Clean(conf.CACertPath))
+	}
+
+	if conf.TrustServerCertificate != "" {
+		queryParams.Add("TrustServerCertificate", conf.TrustServerCertificate)
+	}
+
+	if conf.HostNameInCertificate != "" {
+		queryParams.Add("hostNameInCertificate", conf.HostNameInCertificate)
+	}
+
+	if conf.Encrypt != "" {
+		queryParams.Add("encrypt", conf.Encrypt)
+	}
+
+	if conf.TLSMinVersion != "" {
+		queryParams.Add("tlsMinVersion", conf.TLSMinVersion)
+	}
 
 	u.RawQuery = queryParams.Encode()
 
