@@ -40,10 +40,11 @@ type ConnConfig struct {
 // ConnCollection is a collection of connections to the database.
 // Allows managing multiple connections.
 type ConnCollection struct {
-	mu        sync.Mutex
-	conns     map[ConnConfig]*sql.DB
-	keepAlive int
-	logr      log.Logger
+	mu         sync.Mutex
+	conns      map[ConnConfig]*sql.DB
+	keepAlive  int
+	logr       log.Logger
+	driverName string // always sqlserver, allow to change for unit tests.
 }
 
 // Init initializes a pre-allocated connection collection.
@@ -51,6 +52,7 @@ func (c *ConnCollection) Init(keepAlive int, logr log.Logger) {
 	c.conns = make(map[ConnConfig]*sql.DB)
 	c.keepAlive = keepAlive
 	c.logr = logr
+	c.driverName = "sqlserver"
 }
 
 func (c *ConnCollection) WithConnHandlerFunc(
@@ -149,7 +151,7 @@ func (c *ConnCollection) newConn(conf *ConnConfig) (*sql.DB, error) {
 
 	u.RawQuery = queryParams.Encode()
 
-	db, err := sql.Open("sqlserver", u.String())
+	db, err := sql.Open(c.driverName, u.String())
 	if err != nil {
 		return nil, zbxerr.Wrap(err, "failed to open DB connection")
 	}

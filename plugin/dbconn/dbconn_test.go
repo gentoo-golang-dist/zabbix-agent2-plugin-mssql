@@ -55,7 +55,7 @@ type driverMock struct {
 
 //nolint:gochecknoinits
 func init() {
-	sql.Register("sqlserver", mockDriver)
+	sql.Register("testdriver", mockDriver)
 }
 
 func (d *driverMock) Open(name string) (driver.Conn, error) {
@@ -93,9 +93,10 @@ func TestConnCollection_Init(t *testing.T) {
 	sampleLogr := &struct{ log.Logger }{}
 
 	type fields struct {
-		conns     map[ConnConfig]*sql.DB
-		keepAlive int
-		logr      log.Logger
+		conns      map[ConnConfig]*sql.DB
+		keepAlive  int
+		logr       log.Logger
+		driverName string
 	}
 
 	type args struct {
@@ -114,23 +115,26 @@ func TestConnCollection_Init(t *testing.T) {
 			fields{},
 			args{10, sampleLogr},
 			&ConnCollection{
-				conns:     make(map[ConnConfig]*sql.DB),
-				keepAlive: 10,
-				logr:      sampleLogr,
+				conns:      make(map[ConnConfig]*sql.DB),
+				keepAlive:  10,
+				logr:       sampleLogr,
+				driverName: "sqlserver",
 			},
 		},
 		{
 			"-overwrite",
 			fields{
-				conns:     map[ConnConfig]*sql.DB{{}: nil},
-				keepAlive: 3,
-				logr:      log.New("aaa"),
+				conns:      map[ConnConfig]*sql.DB{{}: nil},
+				keepAlive:  3,
+				logr:       log.New("aaa"),
+				driverName: "lol",
 			},
 			args{10, sampleLogr},
 			&ConnCollection{
-				conns:     make(map[ConnConfig]*sql.DB),
-				keepAlive: 10,
-				logr:      sampleLogr,
+				conns:      make(map[ConnConfig]*sql.DB),
+				keepAlive:  10,
+				logr:       sampleLogr,
+				driverName: "sqlserver",
 			},
 		},
 	}
@@ -140,9 +144,10 @@ func TestConnCollection_Init(t *testing.T) {
 			t.Parallel()
 
 			c := &ConnCollection{
-				conns:     tt.fields.conns,
-				keepAlive: tt.fields.keepAlive,
-				logr:      tt.fields.logr,
+				conns:      tt.fields.conns,
+				keepAlive:  tt.fields.keepAlive,
+				logr:       tt.fields.logr,
+				driverName: tt.fields.driverName,
 			}
 			c.Init(tt.args.keepAlive, tt.args.logr)
 
@@ -243,7 +248,8 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) { //nolint:paralleltest
 			c := &ConnCollection{
-				conns: map[ConnConfig]*sql.DB{},
+				conns:      map[ConnConfig]*sql.DB{},
+				driverName: "testdriver",
 			}
 
 			db, m, err := sqlmock.NewWithDSN(
@@ -386,8 +392,9 @@ func TestConnCollection_PingHandler(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) { //nolint:paralleltest
 			c := &ConnCollection{
-				conns: map[ConnConfig]*sql.DB{},
-				logr:  log.New("test"),
+				conns:      map[ConnConfig]*sql.DB{},
+				logr:       log.New("test"),
+				driverName: "testdriver",
 			}
 
 			db, m, err := sqlmock.NewWithDSN(
@@ -477,6 +484,7 @@ func TestConnCollection_get(t *testing.T) {
 		conns      map[ConnConfig]*sql.DB
 		dsn        string
 		newConnErr error
+		driverName string
 	}
 
 	type args struct {
@@ -499,6 +507,7 @@ func TestConnCollection_get(t *testing.T) {
 				conns: map[ConnConfig]*sql.DB{
 					{URI: "pigeon://uri", User: "aaaa", Password: "bbbb"}: {},
 				},
+				driverName: "testdriver",
 			},
 			args{
 				conf: ConnConfig{
@@ -511,6 +520,7 @@ func TestConnCollection_get(t *testing.T) {
 				conns: map[ConnConfig]*sql.DB{
 					{URI: "pigeon://uri", User: "aaaa", Password: "bbbb"}: {},
 				},
+				driverName: "testdriver",
 			},
 			false,
 			false,
@@ -519,8 +529,9 @@ func TestConnCollection_get(t *testing.T) {
 			"+validNew",
 			expect{true},
 			fields{
-				conns: map[ConnConfig]*sql.DB{},
-				dsn:   "pigeon://rrrr:tttt@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				conns:      map[ConnConfig]*sql.DB{},
+				dsn:        "pigeon://rrrr:tttt@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				driverName: "testdriver",
 			},
 			args{
 				conf: ConnConfig{
@@ -533,6 +544,7 @@ func TestConnCollection_get(t *testing.T) {
 				conns: map[ConnConfig]*sql.DB{
 					{User: "rrrr", Password: "tttt", URI: "pigeon://uri"}: {},
 				},
+				driverName: "testdriver",
 			},
 			false,
 			false,
@@ -544,7 +556,8 @@ func TestConnCollection_get(t *testing.T) {
 				conns: map[ConnConfig]*sql.DB{
 					{"a", "a", "a"}: {},
 				},
-				dsn: "pigeon://jjjj:tttt@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn:        "pigeon://jjjj:tttt@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				driverName: "testdriver",
 			},
 			args{
 				conf: ConnConfig{
@@ -558,6 +571,7 @@ func TestConnCollection_get(t *testing.T) {
 					{"a", "a", "a"}: {},
 					{User: "jjjj", Password: "tttt", URI: "pigeon://uri"}: {},
 				},
+				driverName: "testdriver",
 			},
 			false,
 			false,
@@ -570,6 +584,7 @@ func TestConnCollection_get(t *testing.T) {
 				conns:      map[ConnConfig]*sql.DB{},
 				dsn:        "pigeon://kkkk:tttt@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
 				newConnErr: errors.New("fail"),
+				driverName: "testdriver",
 			},
 			args{
 				conf: ConnConfig{
@@ -579,7 +594,8 @@ func TestConnCollection_get(t *testing.T) {
 				},
 			},
 			&ConnCollection{
-				conns: map[ConnConfig]*sql.DB{},
+				conns:      map[ConnConfig]*sql.DB{},
+				driverName: "testdriver",
 			},
 			true,
 			true,
@@ -604,7 +620,8 @@ func TestConnCollection_get(t *testing.T) {
 			}
 
 			c := &ConnCollection{
-				conns: tt.fields.conns,
+				conns:      tt.fields.conns,
+				driverName: tt.fields.driverName,
 			}
 
 			got, err := c.get(tt.args.conf)
@@ -651,10 +668,11 @@ func TestConnCollection_newConn(t *testing.T) {
 	}
 
 	type fields struct {
-		keepAlive int
-		openErr   error
-		pingErr   error
-		dsn       string
+		keepAlive  int
+		openErr    error
+		pingErr    error
+		dsn        string
+		driverName string
 	}
 
 	type args struct {
@@ -673,8 +691,9 @@ func TestConnCollection_newConn(t *testing.T) {
 			"+valid",
 			expect{true, true},
 			fields{
-				keepAlive: 4,
-				dsn:       "pigeon://aaaa:bbbb@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4", //nolint:lll
+				keepAlive:  4,
+				dsn:        "pigeon://aaaa:bbbb@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4", //nolint:lll
+				driverName: "testdriver",
 			},
 			args{&ConnConfig{
 				User:     "aaaa",
@@ -688,8 +707,9 @@ func TestConnCollection_newConn(t *testing.T) {
 			"-uriParseErr",
 			expect{false, false},
 			fields{
-				keepAlive: 4,
-				openErr:   nil,
+				keepAlive:  4,
+				openErr:    nil,
+				driverName: "testdriver",
 			},
 			args{&ConnConfig{
 				User:     "aaaa",
@@ -703,9 +723,10 @@ func TestConnCollection_newConn(t *testing.T) {
 			"-openErr",
 			expect{true, false},
 			fields{
-				keepAlive: 4,
-				openErr:   errors.New("fail"),
-				dsn:       "pigeon://cccc:bbbb@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4", //nolint:lll
+				keepAlive:  4,
+				openErr:    errors.New("fail"),
+				dsn:        "pigeon://cccc:bbbb@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4", //nolint:lll
+				driverName: "testdriver",
 			},
 			args{&ConnConfig{
 				User:     "cccc",
@@ -740,7 +761,8 @@ func TestConnCollection_newConn(t *testing.T) {
 				}
 
 				c := &ConnCollection{
-					keepAlive: tt.fields.keepAlive,
+					keepAlive:  tt.fields.keepAlive,
+					driverName: tt.fields.driverName,
 				}
 
 				got, err := c.newConn(tt.args.conf)
