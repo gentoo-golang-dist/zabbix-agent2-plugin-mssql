@@ -189,7 +189,7 @@ func (p *mssqlPlugin) registerMetrics() error {
 		availabilityGroupGet: {
 			metric: metric.New(
 				"Returns the availability groups.",
-				[]*metric.Param{params.URI, params.User, params.Password},
+				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
 			handler: p.conns.WithConnHandlerFunc(
@@ -199,12 +199,11 @@ func (p *mssqlPlugin) registerMetrics() error {
 		customQuery: {
 			metric: metric.New(
 				"Returns the result rows of a custom query.",
-				[]*metric.Param{
-					params.URI,
-					params.User,
-					params.Password,
-					params.QueryName,
-				},
+				params.Join(
+					params.BaseParams,
+					params.CustomQueryParams,
+					params.TLSParams,
+				),
 				true,
 			),
 			handler: p.conns.WithConnHandlerFunc(
@@ -214,7 +213,7 @@ func (p *mssqlPlugin) registerMetrics() error {
 		dbGet: {
 			metric: metric.New(
 				"Returns the availabile databases.",
-				[]*metric.Param{params.URI, params.User, params.Password},
+				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
 			handler: p.conns.WithConnHandlerFunc(
@@ -224,7 +223,7 @@ func (p *mssqlPlugin) registerMetrics() error {
 		jobStatusGet: {
 			metric: metric.New(
 				"Return the status of jobs.",
-				[]*metric.Param{params.URI, params.User, params.Password},
+				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
 			handler: p.conns.WithConnHandlerFunc(
@@ -234,7 +233,7 @@ func (p *mssqlPlugin) registerMetrics() error {
 		lastBackupGet: {
 			metric: metric.New(
 				"Return the last backup time.",
-				[]*metric.Param{params.URI, params.User, params.Password},
+				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
 			handler: p.conns.WithConnHandlerFunc(
@@ -244,7 +243,7 @@ func (p *mssqlPlugin) registerMetrics() error {
 		localDBGet: {
 			metric: metric.New(
 				"Return local DB info.",
-				[]*metric.Param{params.URI, params.User, params.Password},
+				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
 			handler: p.conns.WithConnHandlerFunc(
@@ -254,7 +253,7 @@ func (p *mssqlPlugin) registerMetrics() error {
 		mirroringGet: {
 			metric: metric.New(
 				"Return mirroring info.",
-				[]*metric.Param{params.URI, params.User, params.Password},
+				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
 			handler: p.conns.WithConnHandlerFunc(
@@ -264,7 +263,7 @@ func (p *mssqlPlugin) registerMetrics() error {
 		nonLocalDBGet: {
 			metric: metric.New(
 				"Return non-local DB info.",
-				[]*metric.Param{params.URI, params.User, params.Password},
+				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
 			handler: p.conns.WithConnHandlerFunc(
@@ -274,7 +273,7 @@ func (p *mssqlPlugin) registerMetrics() error {
 		perfCounterGet: {
 			metric: metric.New(
 				"Return the performance counters.",
-				[]*metric.Param{params.URI, params.User, params.Password},
+				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
 			handler: p.conns.WithConnHandlerFunc(
@@ -284,7 +283,7 @@ func (p *mssqlPlugin) registerMetrics() error {
 		ping: {
 			metric: metric.New(
 				"Ping the database.",
-				[]*metric.Param{params.URI, params.User, params.Password},
+				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
 			handler: p.conns.PingHandler,
@@ -292,7 +291,7 @@ func (p *mssqlPlugin) registerMetrics() error {
 		quorumGet: {
 			metric: metric.New(
 				"Return the quorum info.",
-				[]*metric.Param{params.URI, params.User, params.Password},
+				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
 			handler: p.conns.WithConnHandlerFunc(
@@ -302,7 +301,7 @@ func (p *mssqlPlugin) registerMetrics() error {
 		quorumMemberGet: {
 			metric: metric.New(
 				"Return the quorum members.",
-				[]*metric.Param{params.URI, params.User, params.Password},
+				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
 			handler: p.conns.WithConnHandlerFunc(
@@ -312,7 +311,7 @@ func (p *mssqlPlugin) registerMetrics() error {
 		replicaGet: {
 			metric: metric.New(
 				"Return the replicas.",
-				[]*metric.Param{params.URI, params.User, params.Password},
+				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
 			handler: p.conns.WithConnHandlerFunc(
@@ -322,7 +321,7 @@ func (p *mssqlPlugin) registerMetrics() error {
 		version: {
 			metric: metric.New(
 				"Return the version.",
-				[]*metric.Param{params.URI, params.User, params.Password},
+				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
 			handler: p.conns.WithConnHandlerFunc(handlers.VersionHandler),

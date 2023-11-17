@@ -24,6 +24,25 @@ import (
 
 //nolint:gochecknoglobals // global constants.
 var (
+	// BaseParams groups all base parameters common for all connections.
+	BaseParams = []*metric.Param{
+		URI,
+		User,
+		Password,
+	}
+	// CustomQueryParams groups all parameters unique for a custom query metric.
+	CustomQueryParams = []*metric.Param{
+		QueryName,
+	}
+	// TLSParams groups all TLS configuration parameters for a connection.
+	TLSParams = []*metric.Param{
+		CACertPath,
+		TrustServerCertificate,
+		HostNameInCertificate,
+		Encrypt,
+		TLSMinVersion,
+	}
+
 	URI = metric.NewConnParam(
 		"URI", "URL connection string to connect to the database.",
 	).
@@ -44,9 +63,49 @@ var (
 	Password = metric.NewConnParam(
 		"Password", "MSSQL database users password.",
 	)
+
 	QueryName = metric.NewParam(
 		"QueryName",
 		"Name of a custom query "+
 			"(must be equal to a name of an SQL file without an extension).",
 	).SetRequired()
+
+	CACertPath = metric.NewSessionOnlyParam(
+		"CACertPath",
+		"File path of the public key certificate of the CA "+
+			"that signed the SQL server certificate.",
+	)
+	TrustServerCertificate = metric.NewSessionOnlyParam(
+		"TrustServerCertificate",
+		"Trust the server certificate without verification.",
+	)
+	HostNameInCertificate = metric.NewSessionOnlyParam(
+		"HostNameInCertificate",
+		"Common name (CN) in the server certificate.",
+	)
+	Encrypt = metric.NewSessionOnlyParam(
+		"Encrypt",
+		"Whether to encrypt connection to the server.",
+	).WithValidator(
+		metric.SetValidator{
+			Set: []string{"", "strict", "disable", "true", "false"},
+		},
+	)
+	TLSMinVersion = metric.NewSessionOnlyParam(
+		"TLSMinVersion",
+		"Minimum TLS version to use.",
+	).WithValidator(
+		metric.SetValidator{Set: []string{"", "1.0", "1.1", "1.2", "1.3"}},
+	)
 )
+
+// Join combines multiple parameter groups into one.
+func Join(params ...[]*metric.Param) []*metric.Param {
+	var res []*metric.Param
+
+	for _, p := range params {
+		res = append(res, p...)
+	}
+
+	return res
+}

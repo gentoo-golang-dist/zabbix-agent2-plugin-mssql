@@ -24,9 +24,14 @@ import (
 )
 
 type session struct {
-	URI      string `conf:"name=Uri,optional"`
-	Password string `conf:"optional"`
-	User     string `conf:"optional"`
+	URI                    string `conf:"name=Uri,optional"`
+	Password               string `conf:"optional"`
+	User                   string `conf:"optional"`
+	CACertPath             string `conf:"optional"`
+	TrustServerCertificate string `conf:"optional"`
+	HostNameInCertificate  string `conf:"optional"`
+	Encrypt                string `conf:"optional"`
+	TLSMinVersion          string `conf:"optional"`
 }
 
 type pluginConfig struct {
