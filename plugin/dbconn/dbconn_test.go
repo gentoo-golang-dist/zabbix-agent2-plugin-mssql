@@ -162,6 +162,8 @@ func TestConnCollection_Init(t *testing.T) {
 
 //nolint:paralleltest
 func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
+	log.DefaultLogger = stdlog.New(os.Stdout, "", stdlog.LstdFlags)
+
 	type fields struct {
 		getErr error
 		dsn    string
@@ -250,6 +252,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 			c := &ConnCollection{
 				conns:      map[ConnConfig]*sql.DB{},
 				driverName: "testdriver",
+				logr:       log.New("aaa"),
 			}
 
 			db, m, err := sqlmock.NewWithDSN(
@@ -476,6 +479,8 @@ func TestConnCollection_Close(t *testing.T) {
 
 //nolint:paralleltest
 func TestConnCollection_get(t *testing.T) {
+	log.DefaultLogger = stdlog.New(os.Stdout, "", stdlog.LstdFlags)
+
 	type expect struct {
 		newConn bool
 	}
@@ -554,7 +559,7 @@ func TestConnCollection_get(t *testing.T) {
 			expect{true},
 			fields{
 				conns: map[ConnConfig]*sql.DB{
-					{"a", "a", "a"}: {},
+					{}: {},
 				},
 				dsn:        "pigeon://jjjj:tttt@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
 				driverName: "testdriver",
@@ -568,7 +573,7 @@ func TestConnCollection_get(t *testing.T) {
 			},
 			&ConnCollection{
 				conns: map[ConnConfig]*sql.DB{
-					{"a", "a", "a"}: {},
+					{}: {},
 					{User: "jjjj", Password: "tttt", URI: "pigeon://uri"}: {},
 				},
 				driverName: "testdriver",
@@ -576,7 +581,6 @@ func TestConnCollection_get(t *testing.T) {
 			false,
 			false,
 		},
-
 		{
 			"-newConnErr",
 			expect{true},
@@ -622,6 +626,7 @@ func TestConnCollection_get(t *testing.T) {
 			c := &ConnCollection{
 				conns:      tt.fields.conns,
 				driverName: tt.fields.driverName,
+				logr:       log.New("test"),
 			}
 
 			got, err := c.get(tt.args.conf)
@@ -652,6 +657,7 @@ func TestConnCollection_get(t *testing.T) {
 						return x.User < y.User
 					},
 				),
+				cmpopts.IgnoreFields(ConnCollection{}, "logr"),
 			); diff != "" {
 				t.Fatalf("ConnCollection.get() = %s", diff)
 			}
@@ -662,6 +668,8 @@ func TestConnCollection_get(t *testing.T) {
 
 //nolint:paralleltest
 func TestConnCollection_newConn(t *testing.T) {
+	log.DefaultLogger = stdlog.New(os.Stdout, "", stdlog.LstdFlags)
+
 	type expect struct {
 		open bool
 		ping bool
@@ -699,6 +707,33 @@ func TestConnCollection_newConn(t *testing.T) {
 				User:     "aaaa",
 				Password: "bbbb",
 				URI:      "pigeon://uri",
+			}},
+			false,
+			false,
+		},
+		{
+			"+validWithTLS",
+			expect{true, true},
+			fields{
+				keepAlive: 4,
+				dsn: "pigeon://aaaa:bbbb@uri?" +
+					"TrustServerCertificate=false&" +
+					"app+name=Zabbix+agent+2+MSSQL+plugin&" +
+					"certificate=%2Fa%2Fb%2Fc&" +
+					"encrypt=true&" +
+					"hostNameInCertificate=server&" +
+					"keepAlive=4&" +
+					"tlsMinVersion=1.3",
+			},
+			args{&ConnConfig{
+				User:                   "aaaa",
+				Password:               "bbbb",
+				URI:                    "pigeon://uri",
+				CACertPath:             "/a/b/c",
+				TrustServerCertificate: "false",
+				HostNameInCertificate:  "server",
+				Encrypt:                "true",
+				TLSMinVersion:          "1.3",
 			}},
 			false,
 			false,
@@ -763,6 +798,7 @@ func TestConnCollection_newConn(t *testing.T) {
 				c := &ConnCollection{
 					keepAlive:  tt.fields.keepAlive,
 					driverName: tt.fields.driverName,
+					logr:       log.New("test"),
 				}
 
 				got, err := c.newConn(tt.args.conf)
