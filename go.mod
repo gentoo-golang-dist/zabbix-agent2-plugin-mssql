@@ -3,7 +3,7 @@ module git.zabbix.com/ap/mssql
 go 1.19
 
 require (
-	git.zabbix.com/ap/plugin-support v1.2.2-0.20231003114245-48752d6b8231
+	git.zabbix.com/ap/plugin-support v1.2.2-0.20231121074929-622dbf294bda
 	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/google/go-cmp v0.5.9
 	github.com/microsoft/go-mssqldb v1.6.0
