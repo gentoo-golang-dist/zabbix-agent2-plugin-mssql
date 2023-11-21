@@ -19,6 +19,8 @@ package handlers
 
 import (
 	"database/sql"
+	"database/sql/driver"
+	"encoding/json"
 	"io"
 	"io/fs"
 	"path/filepath"
@@ -27,6 +29,13 @@ import (
 	"git.zabbix.com/ap/mssql/plugin/params"
 	"git.zabbix.com/ap/plugin-support/log"
 	"git.zabbix.com/ap/plugin-support/zbxerr"
+	mssql "github.com/microsoft/go-mssqldb"
+)
+
+var (
+	_ sql.Scanner    = (*nullUniqueIdentifier)(nil)
+	_ driver.Valuer  = (*nullUniqueIdentifier)(nil)
+	_ json.Marshaler = (*nullUniqueIdentifier)(nil)
 )
 
 // HandlerFunc describes the signature all metric handler functions must have.
@@ -40,6 +49,63 @@ type ConnHandlerFunc func(
 
 // CustomQueries stores user defined custom queries.
 type CustomQueries map[string]string
+
+type nullUniqueIdentifier struct {
+	UUID  *mssql.UniqueIdentifier
+	Valid bool
+}
+
+// Scan implements the Scanner interface.
+func (nuid *nullUniqueIdentifier) Scan(value any) error {
+	if value == nil {
+		nuid.UUID = nil
+		nuid.Valid = false
+
+		return nil
+	}
+
+	nuid.UUID = &mssql.UniqueIdentifier{}
+
+	err := nuid.UUID.Scan(value)
+	if err != nil {
+		return zbxerr.Wrap(err, "failed to scan UniqueIdentifier")
+	}
+
+	nuid.Valid = true
+
+	return nil
+}
+
+// Value implements the driver Valuer interface.
+func (nuid nullUniqueIdentifier) Value() (driver.Value, error) {
+	if !nuid.Valid {
+		return nil, nil
+	}
+
+	v, err := nuid.UUID.Value()
+	if err != nil {
+		return nil, zbxerr.Wrap(err, "failed to get value of UniqueIdentifier")
+	}
+
+	return v, nil
+}
+
+// MarshalJSON implements the json.Marshaler interface for nullable
+// UniqueIdentifier.
+func (nuid nullUniqueIdentifier) MarshalJSON() ([]byte, error) {
+	var val any
+
+	if nuid.Valid {
+		val = nuid.UUID.String()
+	}
+
+	b, err := json.Marshal(val)
+	if err != nil {
+		return nil, zbxerr.Wrap(err, "failed to marshal UniqueIdentifier")
+	}
+
+	return b, nil
+}
 
 // Loads user defined custom queries form a config specified directory.
 func (cq CustomQueries) Load(customQueriesDirFS fs.FS, logr log.Logger) error {
@@ -146,24 +212,32 @@ func VersionHandler(
 }
 
 func rowsToJSON(rows *sql.Rows) ([]map[string]any, error) {
-	cols, err := rows.Columns()
+	cols, err := rows.ColumnTypes()
 	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to get columns")
-	}
-
-	var (
-		values = make([]sql.RawBytes, len(cols))
-		dest   = make([]any, len(cols))
-	)
-
-	for idx := range dest {
-		dest[idx] = &values[idx]
+		return nil, zbxerr.Wrap(err, "failed to get column types")
 	}
 
 	results := []map[string]any{}
 
 	for rows.Next() {
-		err := rows.Scan(dest...)
+		// make new dest for each row, cause it's all pointer.
+		dest := make([]any, 0, len(cols))
+
+		for _, col := range cols {
+			var val any
+
+			switch col.DatabaseTypeName() {
+			case "UNIQUEIDENTIFIER":
+				val = &nullUniqueIdentifier{}
+			default:
+				var v any
+				val = &v
+			}
+
+			dest = append(dest, val)
+		}
+
+		err = rows.Scan(dest...)
 		if err != nil {
 			return nil, zbxerr.Wrap(err, "failed to scan row")
 		}
@@ -171,13 +245,7 @@ func rowsToJSON(rows *sql.Rows) ([]map[string]any, error) {
 		res := make(map[string]any)
 
 		for idx := range cols {
-			var val any
-
-			if values[idx] != nil {
-				val = string(values[idx])
-			}
-
-			res[cols[idx]] = val
+			res[cols[idx].Name()] = dest[idx]
 		}
 
 		results = append(results, res)

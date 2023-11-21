@@ -19,6 +19,7 @@ package handlers
 
 import (
 	"database/sql/driver"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -31,6 +32,7 @@ import (
 	"git.zabbix.com/ap/plugin-support/log"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/go-cmp/cmp"
+	mssql "github.com/microsoft/go-mssqldb"
 )
 
 var (
@@ -81,6 +83,220 @@ func (m *mockFS) Glob(pattern string) ([]string, error) {
 	}
 
 	return m.fileMaps.Glob(pattern)
+}
+
+func Test_nullUniqueIdentifier_Scan(t *testing.T) {
+	t.Parallel()
+
+	type fields struct {
+		UUID  *mssql.UniqueIdentifier
+		Valid bool
+	}
+
+	type args struct {
+		value any
+	}
+
+	tests := []struct {
+		name     string
+		fields   fields
+		args     args
+		wantNUID *nullUniqueIdentifier
+		wantErr  bool
+	}{
+		{
+			"+valid",
+			fields{},
+			args{make([]byte, 16)},
+			&nullUniqueIdentifier{
+				UUID:  &mssql.UniqueIdentifier{},
+				Valid: true,
+			},
+			false,
+		},
+		{
+			"-prevValues",
+			fields{
+				UUID: &mssql.UniqueIdentifier{
+					1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+				},
+			},
+			args{make([]byte, 16)},
+			&nullUniqueIdentifier{
+				UUID:  &mssql.UniqueIdentifier{},
+				Valid: true,
+			},
+			false,
+		},
+		{
+			"-nilValue",
+			fields{},
+			args{},
+			&nullUniqueIdentifier{},
+			false,
+		},
+		{
+			"-scanErr",
+			fields{},
+			args{make([]byte, 1)},
+			&nullUniqueIdentifier{
+				UUID: &mssql.UniqueIdentifier{},
+			},
+			true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			nuid := &nullUniqueIdentifier{
+				UUID:  tt.fields.UUID,
+				Valid: tt.fields.Valid,
+			}
+
+			if err := nuid.Scan(tt.args.value); (err != nil) != tt.wantErr {
+				t.Fatalf(
+					"nullUniqueIdentifier.Scan() error = %v, wantErr %v",
+					err, tt.wantErr,
+				)
+			}
+			if diff := cmp.Diff(tt.wantNUID, nuid); diff != "" {
+				t.Fatalf(
+					"nullUniqueIdentifier.Scan() mismatch (+want -got):\n%s",
+					diff,
+				)
+			}
+		})
+	}
+}
+
+func Test_nullUniqueIdentifier_Value(t *testing.T) {
+	t.Parallel()
+
+	type fields struct {
+		UUID  *mssql.UniqueIdentifier
+		Valid bool
+	}
+
+	tests := []struct {
+		name    string
+		fields  fields
+		want    driver.Value
+		wantErr bool
+	}{
+		{
+			"+valid",
+			fields{
+				UUID: &mssql.UniqueIdentifier{
+					1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16,
+				},
+				Valid: true,
+			},
+			[]byte{
+				0x04, 0x03, 0x02, 0x01, 0x06, 0x05, 0x08, 0x07, 0x09, 0x0a,
+				0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x00,
+			},
+			false,
+		},
+		{
+			"-invalid",
+			fields{
+				UUID: &mssql.UniqueIdentifier{
+					1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16,
+				},
+				Valid: false,
+			},
+			nil,
+			false,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			nuid := nullUniqueIdentifier{
+				UUID:  tt.fields.UUID,
+				Valid: tt.fields.Valid,
+			}
+
+			got, err := nuid.Value()
+			if (err != nil) != tt.wantErr {
+				t.Fatalf(
+					"nullUniqueIdentifier.Value() error = %v, wantErr %v",
+					err,
+					tt.wantErr,
+				)
+			}
+
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Fatalf("nullUniqueIdentifier.Value() = %s", diff)
+			}
+		})
+	}
+}
+
+func Test_nullUniqueIdentifier_MarshalJSON(t *testing.T) {
+	t.Parallel()
+
+	type fields struct {
+		UUID  *mssql.UniqueIdentifier
+		Valid bool
+	}
+
+	tests := []struct {
+		name    string
+		fields  fields
+		want    []byte
+		wantErr bool
+	}{
+		{
+			"+valid",
+			fields{
+				UUID: &mssql.UniqueIdentifier{
+					1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+				},
+				Valid: true,
+			},
+			[]byte(`"01020304-0506-0708-090A-0B0C0D0E0F10"`),
+			false,
+		},
+		{
+			"-invalid",
+			fields{
+				UUID: &mssql.UniqueIdentifier{
+					1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+				},
+				Valid: false,
+			},
+			[]byte(`null`),
+			false,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			nuid := nullUniqueIdentifier{
+				UUID:  tt.fields.UUID,
+				Valid: tt.fields.Valid,
+			}
+			got, err := nuid.MarshalJSON()
+			if (err != nil) != tt.wantErr {
+				t.Fatalf(
+					"nullUniqueIdentifier.MarshalJSON() error = %v, wantErr %v",
+					err,
+					tt.wantErr,
+				)
+			}
+
+			if diff := cmp.Diff(string(tt.want), string(got)); diff != "" {
+				t.Fatalf("nullUniqueIdentifier.MarshalJSON() = %s", diff)
+			}
+		})
+	}
 }
 
 //nolint:paralleltest,tparallel
@@ -268,7 +484,7 @@ func TestCustomQueries_HandlerFunc(t *testing.T) {
 		args    args
 		fields  fields
 		cq      CustomQueries
-		want    any
+		want    string
 		wantErr bool
 	}{
 		{
@@ -277,10 +493,7 @@ func TestCustomQueries_HandlerFunc(t *testing.T) {
 			args{metricParams: map[string]string{"QueryName": "test"}},
 			fields{query: "SELECT A, B FROM C"},
 			map[string]string{"test": "SELECT A, B FROM C"},
-			[]map[string]any{
-				{"a": "1", "b": "2"},
-				{"a": "3", "b": "4"},
-			},
+			`[{"a":1,"b":2},{"a":3,"b":4}]`,
 			false,
 		},
 		{
@@ -295,10 +508,7 @@ func TestCustomQueries_HandlerFunc(t *testing.T) {
 				args:  []driver.Value{"10"},
 			},
 			map[string]string{"test": "SELECT A, B FROM C WHERE A = @p1"},
-			[]map[string]any{
-				{"a": "1", "b": "2"},
-				{"a": "3", "b": "4"},
-			},
+			`[{"a":1,"b":2},{"a":3,"b":4}]`,
 			false,
 		},
 		{
@@ -307,7 +517,7 @@ func TestCustomQueries_HandlerFunc(t *testing.T) {
 			args{metricParams: map[string]string{"QueryName": "test"}},
 			fields{query: "SELECT A, B FROM C"},
 			map[string]string{},
-			nil,
+			"",
 			true,
 		},
 		{
@@ -316,7 +526,7 @@ func TestCustomQueries_HandlerFunc(t *testing.T) {
 			args{metricParams: map[string]string{"QueryName": "test"}},
 			fields{query: "SELECT A, B FROM C", queryErr: errors.New("fail")},
 			map[string]string{"test": "SELECT A, B FROM C"},
-			nil,
+			"",
 			true,
 		},
 	}
@@ -352,8 +562,19 @@ func TestCustomQueries_HandlerFunc(t *testing.T) {
 				)
 			}
 
-			if diff := cmp.Diff(tt.want, got); diff != "" {
-				t.Fatalf("CustomQueries.HandlerFunc() = %s", diff)
+			if err == nil {
+				b, err := json.Marshal(got)
+				if err != nil {
+					t.Fatalf(
+						"CustomQueries.HandlerFunc() "+
+							"failed to marshal handler result: %v",
+						err,
+					)
+				}
+
+				if diff := cmp.Diff(tt.want, string(b)); diff != "" {
+					t.Fatalf("CustomQueries.HandlerFunc() = %s", diff)
+				}
 			}
 
 			if err := m.ExpectationsWereMet(); err != nil {
@@ -381,41 +602,35 @@ func TestQueryHandlerFunc(t *testing.T) {
 		name    string
 		args    args
 		fields  fields
-		want    any
+		want    string
 		wantErr bool
 	}{
 		{
 			"+valid",
 			args{"SELECT A, B FROM C", []string{}},
 			fields{},
-			[]map[string]any{
-				{"a": "1", "b": "2"},
-				{"a": "3", "b": "4"},
-			},
+			`[{"a":1,"b":2},{"a":3,"b":4}]`,
 			false,
 		},
 		{
 			"+validWithArgs",
 			args{"SELECT A, B FROM C WHERE A = @p1", []string{"10"}},
 			fields{args: []driver.Value{"10"}},
-			[]map[string]any{
-				{"a": "1", "b": "2"},
-				{"a": "3", "b": "4"},
-			},
+			`[{"a":1,"b":2},{"a":3,"b":4}]`,
 			false,
 		},
 		{
 			"-queryErr",
 			args{"SELECT A, B FROM C", []string{}},
 			fields{queryErr: errors.New("fail")},
-			nil,
+			"",
 			true,
 		},
 		{
 			"-rowsToJSONErr",
 			args{"SELECT A, B FROM C", []string{}},
 			fields{rowsErr: errors.New("fail")},
-			nil,
+			"",
 			true,
 		},
 	}
@@ -452,8 +667,19 @@ func TestQueryHandlerFunc(t *testing.T) {
 				)
 			}
 
-			if diff := cmp.Diff(tt.want, resp); diff != "" {
-				t.Fatalf("QueryHandlerFunc() = %s", diff)
+			if err == nil {
+				b, err := json.Marshal(resp)
+				if err != nil {
+					t.Fatalf(
+						"QueryHandlerFunc() "+
+							"failed to marshal handler result: %v",
+						err,
+					)
+				}
+
+				if diff := cmp.Diff(tt.want, string(b)); diff != "" {
+					t.Fatalf("QueryHandlerFunc() = %s", diff)
+				}
 			}
 
 			if err := m.ExpectationsWereMet(); err != nil {
@@ -539,6 +765,10 @@ func Test_rowsToJSON(t *testing.T) {
 
 	now := time.Now()
 
+	wrapAny := func(v any) any {
+		return &v
+	}
+
 	type args struct {
 		rows *sqlmock.Rows
 	}
@@ -553,8 +783,8 @@ func Test_rowsToJSON(t *testing.T) {
 			"+valid",
 			args{sqlmock.NewRows([]string{"a", "b"}).AddRow(1, 2).AddRow(3, 4)},
 			[]map[string]any{
-				{"a": "1", "b": "2"},
-				{"a": "3", "b": "4"},
+				{"a": wrapAny(int64(1)), "b": wrapAny(int64(2))},
+				{"a": wrapAny(int64(3)), "b": wrapAny(int64(4))},
 			},
 			false,
 		},
@@ -571,13 +801,13 @@ func Test_rowsToJSON(t *testing.T) {
 					AddRow("time", now),
 			},
 			[]map[string]any{
-				{"type": "int", "val": "1"},
-				{"type": "float", "val": "1.1"},
-				{"type": "string", "val": "abc"},
-				{"type": "bool", "val": "true"},
-				{"type": "nil", "val": nil},
-				{"type": "bytes", "val": "abc"},
-				{"type": "time", "val": now.Format(time.RFC3339Nano)},
+				{"type": wrapAny("int"), "val": wrapAny(int64(1))},
+				{"type": wrapAny("float"), "val": wrapAny(1.1)},
+				{"type": wrapAny("string"), "val": wrapAny(string("abc"))},
+				{"type": wrapAny("bool"), "val": wrapAny(true)},
+				{"type": wrapAny("nil"), "val": wrapAny(nil)},
+				{"type": wrapAny("bytes"), "val": wrapAny([]byte("abc"))},
+				{"type": wrapAny("time"), "val": wrapAny(now)},
 			},
 			false,
 		},
