@@ -18,6 +18,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
@@ -109,8 +110,8 @@ func Test_nullUniqueIdentifier_Scan(t *testing.T) {
 			fields{},
 			args{make([]byte, 16)},
 			&nullUniqueIdentifier{
-				UUID:  &mssql.UniqueIdentifier{},
-				Valid: true,
+				uuid:  &mssql.UniqueIdentifier{},
+				valid: true,
 			},
 			false,
 		},
@@ -123,8 +124,8 @@ func Test_nullUniqueIdentifier_Scan(t *testing.T) {
 			},
 			args{make([]byte, 16)},
 			&nullUniqueIdentifier{
-				UUID:  &mssql.UniqueIdentifier{},
-				Valid: true,
+				uuid:  &mssql.UniqueIdentifier{},
+				valid: true,
 			},
 			false,
 		},
@@ -140,7 +141,7 @@ func Test_nullUniqueIdentifier_Scan(t *testing.T) {
 			fields{},
 			args{make([]byte, 1)},
 			&nullUniqueIdentifier{
-				UUID: &mssql.UniqueIdentifier{},
+				uuid: &mssql.UniqueIdentifier{},
 			},
 			true,
 		},
@@ -151,8 +152,8 @@ func Test_nullUniqueIdentifier_Scan(t *testing.T) {
 			t.Parallel()
 
 			nuid := &nullUniqueIdentifier{
-				UUID:  tt.fields.UUID,
-				Valid: tt.fields.Valid,
+				uuid:  tt.fields.UUID,
+				valid: tt.fields.Valid,
 			}
 
 			if err := nuid.Scan(tt.args.value); (err != nil) != tt.wantErr {
@@ -161,7 +162,10 @@ func Test_nullUniqueIdentifier_Scan(t *testing.T) {
 					err, tt.wantErr,
 				)
 			}
-			if diff := cmp.Diff(tt.wantNUID, nuid); diff != "" {
+			if diff := cmp.Diff(
+				tt.wantNUID, nuid,
+				cmp.AllowUnexported(nullUniqueIdentifier{}),
+			); diff != "" {
 				t.Fatalf(
 					"nullUniqueIdentifier.Scan() mismatch (+want -got):\n%s",
 					diff,
@@ -193,10 +197,7 @@ func Test_nullUniqueIdentifier_Value(t *testing.T) {
 				},
 				Valid: true,
 			},
-			[]byte{
-				0x04, 0x03, 0x02, 0x01, 0x06, 0x05, 0x08, 0x07, 0x09, 0x0a,
-				0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x00,
-			},
+			"01020304-0506-0708-090A-0C0D0E0F1000",
 			false,
 		},
 		{
@@ -217,8 +218,8 @@ func Test_nullUniqueIdentifier_Value(t *testing.T) {
 			t.Parallel()
 
 			nuid := nullUniqueIdentifier{
-				UUID:  tt.fields.UUID,
-				Valid: tt.fields.Valid,
+				uuid:  tt.fields.UUID,
+				valid: tt.fields.Valid,
 			}
 
 			got, err := nuid.Value()
@@ -237,40 +238,35 @@ func Test_nullUniqueIdentifier_Value(t *testing.T) {
 	}
 }
 
-func Test_nullUniqueIdentifier_MarshalJSON(t *testing.T) {
+func Test_nullBool_Value(t *testing.T) {
 	t.Parallel()
 
 	type fields struct {
-		UUID  *mssql.UniqueIdentifier
-		Valid bool
+		NullBool sql.NullBool
 	}
 
 	tests := []struct {
 		name    string
 		fields  fields
-		want    []byte
+		want    driver.Value
 		wantErr bool
 	}{
 		{
-			"+valid",
-			fields{
-				UUID: &mssql.UniqueIdentifier{
-					1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-				},
-				Valid: true,
-			},
-			[]byte(`"01020304-0506-0708-090A-0B0C0D0E0F10"`),
+			"+validTrue",
+			fields{NullBool: sql.NullBool{Bool: true, Valid: true}},
+			1,
+			false,
+		},
+		{
+			"+validFalse",
+			fields{NullBool: sql.NullBool{Bool: false, Valid: true}},
+			0,
 			false,
 		},
 		{
 			"-invalid",
-			fields{
-				UUID: &mssql.UniqueIdentifier{
-					1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-				},
-				Valid: false,
-			},
-			[]byte(`null`),
+			fields{NullBool: sql.NullBool{}},
+			nil,
 			false,
 		},
 	}
@@ -279,21 +275,134 @@ func Test_nullUniqueIdentifier_MarshalJSON(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			nuid := nullUniqueIdentifier{
-				UUID:  tt.fields.UUID,
-				Valid: tt.fields.Valid,
+			b := nullBool{
+				NullBool: tt.fields.NullBool,
 			}
-			got, err := nuid.MarshalJSON()
+
+			got, err := b.Value()
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
-					"nullUniqueIdentifier.MarshalJSON() error = %v, wantErr %v",
+					"nullBool.Value() error = %v, wantErr %v",
 					err,
 					tt.wantErr,
 				)
 			}
 
-			if diff := cmp.Diff(string(tt.want), string(got)); diff != "" {
-				t.Fatalf("nullUniqueIdentifier.MarshalJSON() = %s", diff)
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Fatalf("nullBool.Value() = %s", diff)
+			}
+		})
+	}
+}
+
+func TestWithJSONResponse(t *testing.T) {
+	newHandlerFunc := func(handlerErr error, invalidJSON bool) HandlerFunc {
+		return func(
+			metricParams map[string]string, extraParams ...string,
+		) (any, error) {
+			if handlerErr != nil {
+				return nil, handlerErr
+			}
+
+			if diff := cmp.Diff(
+				map[string]string{
+					"param1": "value1",
+					"param2": "value2",
+				},
+				metricParams,
+			); diff != "" {
+				t.Fatalf("metricParams mismatch (+want -got):\n%s", diff)
+			}
+
+			if diff := cmp.Diff(
+				[]string{"extra1", "extra2", "extra3"},
+				extraParams,
+			); diff != "" {
+				t.Fatalf("extraParams mismatch (+want -got):\n%s", diff)
+			}
+
+			if invalidJSON {
+				return time.Unix(100000000000000000, 0), nil
+			}
+
+			return map[string]any{"a": 1, "b": 2, "c": "3"}, nil
+		}
+	}
+
+	t.Parallel()
+
+	type args struct {
+		handler     HandlerFunc
+		params      map[string]string
+		extraParams []string
+	}
+
+	tests := []struct {
+		name    string
+		args    args
+		want    any
+		wantErr bool
+	}{
+		{
+			"+valid",
+			args{
+				handler: newHandlerFunc(nil, false),
+				params: map[string]string{
+					"param1": "value1",
+					"param2": "value2",
+				},
+				extraParams: []string{"extra1", "extra2", "extra3"},
+			},
+			`{"a":1,"b":2,"c":"3"}`,
+			false,
+		},
+		{
+			"-handlerErr",
+			args{
+				handler: newHandlerFunc(errors.New("fail"), false),
+				params: map[string]string{
+					"param1": "value1",
+					"param2": "value2",
+				},
+				extraParams: []string{"extra1", "extra2", "extra3"},
+			},
+			nil,
+			true,
+		},
+		{
+			"-marshalErr",
+			args{
+				handler: newHandlerFunc(nil, true),
+				params: map[string]string{
+					"param1": "value1",
+					"param2": "value2",
+				},
+				extraParams: []string{"extra1", "extra2", "extra3"},
+			},
+			nil,
+			true,
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := WithJSONResponse(
+				tt.args.handler,
+			)(
+				tt.args.params,
+				tt.args.extraParams...,
+			)
+			if (err != nil) != tt.wantErr {
+				t.Fatalf(
+					"WithJSONResponse() error = %v, wantErr %v",
+					err, tt.wantErr,
+				)
+			}
+
+			if diff := cmp.Diff(tt.want, got); diff != "" {
+				t.Fatalf("WithJSONResponse() mismatch (-want +got):\n%s", diff)
 			}
 		})
 	}

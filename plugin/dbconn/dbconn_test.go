@@ -724,6 +724,7 @@ func TestConnCollection_newConn(t *testing.T) {
 					"hostNameInCertificate=server&" +
 					"keepAlive=4&" +
 					"tlsMinVersion=1.3",
+				driverName: "testdriver",
 			},
 			args{&ConnConfig{
 				User:                   "aaaa",

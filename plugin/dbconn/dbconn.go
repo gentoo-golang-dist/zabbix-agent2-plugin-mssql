@@ -31,6 +31,11 @@ import (
 	"git.zabbix.com/ap/plugin-support/zbxerr"
 )
 
+var (
+	_ handlers.HandlerFunc = (*ConnCollection)(nil).WithConnHandlerFunc(nil)
+	_ handlers.HandlerFunc = (*ConnCollection)(nil).PingHandler
+)
+
 // ConnConfig is a configuration for a connection to the database.
 type ConnConfig struct {
 	User                   string
