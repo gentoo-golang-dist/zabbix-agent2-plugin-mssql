@@ -234,7 +234,7 @@ func (p *mssqlPlugin) registerMetrics() error {
 		},
 		lastBackupGet: {
 			metric: metric.New(
-				"Return the last backup time.",
+				"Return the last backup time for all databases.",
 				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
@@ -338,7 +338,7 @@ func (p *mssqlPlugin) registerMetrics() error {
 		},
 		version: {
 			metric: metric.New(
-				"Return the version.",
+				"Returns the MSSQL server version.",
 				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
