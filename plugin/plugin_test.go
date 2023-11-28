@@ -211,7 +211,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 					"sqlserver://uri", "dddd", "8888", "extra", "param",
 				},
 			},
-			`"handler called"`,
+			"handler called",
 			false,
 		},
 		{
@@ -281,33 +281,6 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 							true,
 						),
 						handler: newHandler(errors.New("fail"), false),
-					},
-				},
-				conns:  &dbconn.ConnCollection{},
-				config: &pluginConfig{},
-			},
-			args{
-				key: string(dbGet),
-				rawParams: []string{
-					"sqlserver://uri", "dddd", "8888", "extra", "param",
-				},
-			},
-			nil,
-			true,
-		},
-		{
-			"-marshalErr",
-			fields{
-				metrics: map[mssqlMetricKey]*mssqlMetric{
-					dbGet: {
-						metric: metric.New(
-							"Returns the availabile databases.",
-							[]*metric.Param{
-								params.URI, params.User, params.Password,
-							},
-							true,
-						),
-						handler: newHandler(nil, true),
 					},
 				},
 				conns:  &dbconn.ConnCollection{},

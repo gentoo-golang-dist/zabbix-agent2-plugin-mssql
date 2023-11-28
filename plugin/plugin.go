@@ -19,7 +19,6 @@ package plugin
 
 import (
 	_ "embed"
-	"encoding/json"
 	"os"
 
 	"git.zabbix.com/ap/mssql/plugin/dbconn"
@@ -176,12 +175,7 @@ func (p *mssqlPlugin) Export(
 		return nil, zbxerr.Wrap(err, "failed to execute handler")
 	}
 
-	jsonRes, err := json.Marshal(res)
-	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to marshal result to JSON")
-	}
-
-	return string(jsonRes), nil
+	return res, nil
 }
 
 func (p *mssqlPlugin) registerMetrics() error {
@@ -192,8 +186,10 @@ func (p *mssqlPlugin) registerMetrics() error {
 				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
-			handler: p.conns.WithConnHandlerFunc(
-				handlers.QueryHandlerFunc(availabilityGroupGetQuery),
+			handler: handlers.WithJSONResponse(
+				p.conns.WithConnHandlerFunc(
+					handlers.QueryHandlerFunc(availabilityGroupGetQuery),
+				),
 			),
 		},
 		customQuery: {
@@ -206,8 +202,10 @@ func (p *mssqlPlugin) registerMetrics() error {
 				),
 				true,
 			),
-			handler: p.conns.WithConnHandlerFunc(
-				p.customQueries.HandlerFunc,
+			handler: handlers.WithJSONResponse(
+				p.conns.WithConnHandlerFunc(
+					p.customQueries.HandlerFunc,
+				),
 			),
 		},
 		dbGet: {
@@ -216,8 +214,10 @@ func (p *mssqlPlugin) registerMetrics() error {
 				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
-			handler: p.conns.WithConnHandlerFunc(
-				handlers.QueryHandlerFunc(dbGetQuery),
+			handler: handlers.WithJSONResponse(
+				p.conns.WithConnHandlerFunc(
+					handlers.QueryHandlerFunc(dbGetQuery),
+				),
 			),
 		},
 		jobStatusGet: {
@@ -226,18 +226,22 @@ func (p *mssqlPlugin) registerMetrics() error {
 				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
-			handler: p.conns.WithConnHandlerFunc(
-				handlers.QueryHandlerFunc(jobStatusGetQuery),
+			handler: handlers.WithJSONResponse(
+				p.conns.WithConnHandlerFunc(
+					handlers.QueryHandlerFunc(jobStatusGetQuery),
+				),
 			),
 		},
 		lastBackupGet: {
 			metric: metric.New(
-				"Return the last backup time.",
+				"Return the last backup time for all databases.",
 				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
-			handler: p.conns.WithConnHandlerFunc(
-				handlers.QueryHandlerFunc(lastBackupGetQuery),
+			handler: handlers.WithJSONResponse(
+				p.conns.WithConnHandlerFunc(
+					handlers.QueryHandlerFunc(lastBackupGetQuery),
+				),
 			),
 		},
 		localDBGet: {
@@ -246,8 +250,10 @@ func (p *mssqlPlugin) registerMetrics() error {
 				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
-			handler: p.conns.WithConnHandlerFunc(
-				handlers.QueryHandlerFunc(localDBGetQuery),
+			handler: handlers.WithJSONResponse(
+				p.conns.WithConnHandlerFunc(
+					handlers.QueryHandlerFunc(localDBGetQuery),
+				),
 			),
 		},
 		mirroringGet: {
@@ -256,8 +262,10 @@ func (p *mssqlPlugin) registerMetrics() error {
 				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
-			handler: p.conns.WithConnHandlerFunc(
-				handlers.QueryHandlerFunc(mirroringGetQuery),
+			handler: handlers.WithJSONResponse(
+				p.conns.WithConnHandlerFunc(
+					handlers.QueryHandlerFunc(mirroringGetQuery),
+				),
 			),
 		},
 		nonLocalDBGet: {
@@ -266,8 +274,10 @@ func (p *mssqlPlugin) registerMetrics() error {
 				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
-			handler: p.conns.WithConnHandlerFunc(
-				handlers.QueryHandlerFunc(nonLocalDBGetQuery),
+			handler: handlers.WithJSONResponse(
+				p.conns.WithConnHandlerFunc(
+					handlers.QueryHandlerFunc(nonLocalDBGetQuery),
+				),
 			),
 		},
 		perfCounterGet: {
@@ -276,8 +286,10 @@ func (p *mssqlPlugin) registerMetrics() error {
 				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
-			handler: p.conns.WithConnHandlerFunc(
-				handlers.QueryHandlerFunc(perfCounterGetQuery),
+			handler: handlers.WithJSONResponse(
+				p.conns.WithConnHandlerFunc(
+					handlers.QueryHandlerFunc(perfCounterGetQuery),
+				),
 			),
 		},
 		ping: {
@@ -294,8 +306,10 @@ func (p *mssqlPlugin) registerMetrics() error {
 				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
-			handler: p.conns.WithConnHandlerFunc(
-				handlers.QueryHandlerFunc(quorumGetQuery),
+			handler: handlers.WithJSONResponse(
+				p.conns.WithConnHandlerFunc(
+					handlers.QueryHandlerFunc(quorumGetQuery),
+				),
 			),
 		},
 		quorumMemberGet: {
@@ -304,8 +318,10 @@ func (p *mssqlPlugin) registerMetrics() error {
 				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
-			handler: p.conns.WithConnHandlerFunc(
-				handlers.QueryHandlerFunc(quorumMemberGetQuery),
+			handler: handlers.WithJSONResponse(
+				p.conns.WithConnHandlerFunc(
+					handlers.QueryHandlerFunc(quorumMemberGetQuery),
+				),
 			),
 		},
 		replicaGet: {
@@ -314,13 +330,15 @@ func (p *mssqlPlugin) registerMetrics() error {
 				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),
-			handler: p.conns.WithConnHandlerFunc(
-				handlers.QueryHandlerFunc(replicaGetQuery),
+			handler: handlers.WithJSONResponse(
+				p.conns.WithConnHandlerFunc(
+					handlers.QueryHandlerFunc(replicaGetQuery),
+				),
 			),
 		},
 		version: {
 			metric: metric.New(
-				"Return the version.",
+				"Returns the MSSQL server version.",
 				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),

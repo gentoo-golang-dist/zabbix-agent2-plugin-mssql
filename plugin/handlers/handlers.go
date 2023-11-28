@@ -33,9 +33,16 @@ import (
 )
 
 var (
-	_ sql.Scanner    = (*nullUniqueIdentifier)(nil)
-	_ driver.Valuer  = (*nullUniqueIdentifier)(nil)
-	_ json.Marshaler = (*nullUniqueIdentifier)(nil)
+	_ sql.Scanner   = (*nullUniqueIdentifier)(nil)
+	_ driver.Valuer = (*nullUniqueIdentifier)(nil)
+
+	_ sql.Scanner   = (*nullBool)(nil)
+	_ driver.Valuer = (*nullBool)(nil)
+
+	_ HandlerFunc     = WithJSONResponse(nil)
+	_ ConnHandlerFunc = QueryHandlerFunc("")
+	_ ConnHandlerFunc = VersionHandler
+	_ ConnHandlerFunc = CustomQueries(nil).HandlerFunc
 )
 
 // HandlerFunc describes the signature all metric handler functions must have.
@@ -50,61 +57,96 @@ type ConnHandlerFunc func(
 // CustomQueries stores user defined custom queries.
 type CustomQueries map[string]string
 
+// nullUniqueIdentifier is a wrapper for mssql.UniqueIdentifier that allows for
+// NULL values and parses valid values as string representations of the UUID.
 type nullUniqueIdentifier struct {
-	UUID  *mssql.UniqueIdentifier
-	Valid bool
+	uuid  *mssql.UniqueIdentifier
+	valid bool
+}
+
+// nullBool is a wrapper for sql.NullBool that parses to 0 or 1 instead of
+// false or true.
+type nullBool struct {
+	sql.NullBool
 }
 
 // Scan implements the Scanner interface.
 func (nuid *nullUniqueIdentifier) Scan(value any) error {
 	if value == nil {
-		nuid.UUID = nil
-		nuid.Valid = false
+		nuid.uuid = nil
+		nuid.valid = false
 
 		return nil
 	}
 
-	nuid.UUID = &mssql.UniqueIdentifier{}
+	nuid.uuid = &mssql.UniqueIdentifier{}
 
-	err := nuid.UUID.Scan(value)
+	err := nuid.uuid.Scan(value)
 	if err != nil {
 		return zbxerr.Wrap(err, "failed to scan UniqueIdentifier")
 	}
 
-	nuid.Valid = true
+	nuid.valid = true
 
 	return nil
 }
 
 // Value implements the driver Valuer interface.
 func (nuid nullUniqueIdentifier) Value() (driver.Value, error) {
-	if !nuid.Valid {
+	if !nuid.valid {
 		return nil, nil
 	}
 
-	v, err := nuid.UUID.Value()
+	// check that the underlying UUID is valid.
+	_, err := nuid.uuid.Value()
 	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to get value of UniqueIdentifier")
+		return nil, zbxerr.Wrap(err, "failed to get UniqueIdentifier value")
 	}
 
-	return v, nil
+	return nuid.uuid.String(), nil
 }
 
-// MarshalJSON implements the json.Marshaler interface for nullable
-// UniqueIdentifier.
-func (nuid nullUniqueIdentifier) MarshalJSON() ([]byte, error) {
-	var val any
-
-	if nuid.Valid {
-		val = nuid.UUID.String()
-	}
-
-	b, err := json.Marshal(val)
+// Value implements the driver Valuer interface.
+func (b nullBool) Value() (driver.Value, error) {
+	valuer, err := b.NullBool.Value()
 	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to marshal UniqueIdentifier")
+		return nil, zbxerr.Wrap(err, "failed to get bool value")
 	}
 
-	return b, nil
+	if valuer == nil {
+		return nil, nil
+	}
+
+	v, ok := valuer.(bool)
+	if !ok {
+		return nil, zbxerr.Errorf("failed cast NullBool.Value() as bool")
+	}
+
+	if v {
+		return 1, nil
+	}
+
+	return 0, nil
+}
+
+// WithJSONResponse wraps a handler function, marshaling its response
+// to a JSON object and returning it as string.
+func WithJSONResponse(handler HandlerFunc) HandlerFunc {
+	return func(
+		metricParams map[string]string, extraParams ...string,
+	) (any, error) {
+		res, err := handler(metricParams, extraParams...)
+		if err != nil {
+			return nil, zbxerr.Wrap(err, "failed to execute handler")
+		}
+
+		jsonRes, err := json.Marshal(res)
+		if err != nil {
+			return nil, zbxerr.Wrap(err, "failed to marshal result to JSON")
+		}
+
+		return string(jsonRes), nil
+	}
 }
 
 // Loads user defined custom queries form a config specified directory.
@@ -211,6 +253,7 @@ func VersionHandler(
 	return version, nil
 }
 
+//nolint:gocyclo,cyclop // it's not that big (thats what she said).
 func rowsToJSON(rows *sql.Rows) ([]map[string]any, error) {
 	cols, err := rows.ColumnTypes()
 	if err != nil {
@@ -229,6 +272,10 @@ func rowsToJSON(rows *sql.Rows) ([]map[string]any, error) {
 			switch col.DatabaseTypeName() {
 			case "UNIQUEIDENTIFIER":
 				val = &nullUniqueIdentifier{}
+			case "DECIMAL":
+				val = &sql.NullFloat64{}
+			case "BIT":
+				val = &nullBool{}
 			default:
 				var v any
 				val = &v
@@ -245,7 +292,17 @@ func rowsToJSON(rows *sql.Rows) ([]map[string]any, error) {
 		res := make(map[string]any)
 
 		for idx := range cols {
-			res[cols[idx].Name()] = dest[idx]
+			val := dest[idx]
+
+			valuer, ok := dest[idx].(driver.Valuer)
+			if ok {
+				val, err = valuer.Value()
+				if err != nil {
+					return nil, zbxerr.Wrap(err, "failed to get value")
+				}
+			}
+
+			res[cols[idx].Name()] = val
 		}
 
 		results = append(results, res)
