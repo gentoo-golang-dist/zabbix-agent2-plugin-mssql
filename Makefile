@@ -1,6 +1,6 @@
 .ONESHELL:
 
-PACKAGE=zabbix-agent2-plugin-mongodb
+PACKAGE=zabbix-agent2-plugin-mssql
 TOPDIR := $(CURDIR)
 
 ifeq ($(OS),Windows_NT)
@@ -43,7 +43,7 @@ DISTFILES = \
 	LICENSE \
 	main.go \
 	Makefile \
-	mongodb.conf \
+	mssql.conf \
 	README.md
 
 DIST_SUBDIRS = \
