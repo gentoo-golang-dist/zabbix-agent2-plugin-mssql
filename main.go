@@ -46,22 +46,22 @@ limitations under the License.`
 //
 //nolint:gochecknoglobals // global version info.
 var (
-	VersionRC    = ""
-	VersionMajor = 0
-	VersionMinor = 0
-	VersionPatch = 1
-	LicenseYear  = 2023
+	PLUGIN_VERSION_RC    = "alpha8"
+	PLUGIN_VERSION_MAJOR = 7
+	PLUGIN_VERSION_MINOR = 0
+	PLUGIN_VERSION_PATCH = 0
+	PLUGIN_LICENSE_YEAR  = 2023
 )
 
 func main() {
 	err := comms.HandleFlags(
 		plugin.Name,
 		os.Args[0],
-		fmt.Sprintf(copyrightMessage, LicenseYear),
-		VersionRC,
-		VersionMajor,
-		VersionMinor,
-		VersionPatch,
+		fmt.Sprintf(copyrightMessage, PLUGIN_LICENSE_YEAR),
+		PLUGIN_VERSION_RC,
+		PLUGIN_VERSION_MAJOR,
+		PLUGIN_VERSION_MINOR,
+		PLUGIN_VERSION_PATCH,
 	)
 	if err != nil {
 		if errors.Is(err, zbxerr.ErrorOSExitZero) {
