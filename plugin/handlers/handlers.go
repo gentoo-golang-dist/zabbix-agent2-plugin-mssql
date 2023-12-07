@@ -50,6 +50,8 @@ type HandlerFunc func(
 	metricParams map[string]string, extraParams ...string,
 ) (any, error)
 
+// ConnHandlerFunc describes the signature all connection handler functions
+// must have.
 type ConnHandlerFunc func(
 	conn *sql.DB, metricParams map[string]string, extraParams ...string,
 ) (any, error)
@@ -149,7 +151,7 @@ func WithJSONResponse(handler HandlerFunc) HandlerFunc {
 	}
 }
 
-// Loads user defined custom queries form a config specified directory.
+// Load loads user defined custom queries form a config specified directory.
 func (cq CustomQueries) Load(customQueriesDirFS fs.FS, logr log.Logger) error {
 	queryFilePaths, err := fs.Glob(customQueriesDirFS, "*.sql")
 	if err != nil {
@@ -159,26 +161,38 @@ func (cq CustomQueries) Load(customQueriesDirFS fs.FS, logr log.Logger) error {
 	queries := make(map[string]string)
 
 	for _, qfp := range queryFilePaths {
-		f, err := customQueriesDirFS.Open(qfp)
-		if err != nil {
-			return zbxerr.Wrap(err, "failed to open custom query file")
-		}
+		// nameless clojure to trigger defers on end of each iteration.
+		err := func() error {
+			f, err := customQueriesDirFS.Open(qfp)
+			if err != nil {
+				return zbxerr.Wrap(err, "failed to open custom query file")
+			}
 
-		defer f.Close() //nolint:gocritic,revive // closure over scoped var.
+			defer f.Close() //nolint:errcheck // not checking err.
 
-		data, err := io.ReadAll(f)
-		if err != nil {
-			return zbxerr.Wrapf(
-				err,
-				"failed to read contents of custom query file %s",
+			data, err := io.ReadAll(f)
+			if err != nil {
+				return zbxerr.Wrapf(
+					err,
+					"failed to read contents of custom query file %s",
+					qfp,
+				)
+			}
+
+			qName := strings.TrimSuffix(filepath.Base(qfp), filepath.Ext(qfp))
+			queries[qName] = string(data)
+
+			logr.Infof(
+				"Loaded custom query from file %q with name %q",
 				qfp,
+				qName,
 			)
+
+			return nil
+		}()
+		if err != nil {
+			return err
 		}
-
-		qName := strings.TrimSuffix(filepath.Base(qfp), filepath.Ext(qfp))
-		queries[qName] = string(data)
-
-		logr.Infof("Loaded custom query from file %q with name %q", qfp, qName)
 	}
 
 	for k, v := range queries {
@@ -219,7 +233,7 @@ func QueryHandlerFunc(query string) ConnHandlerFunc {
 			return nil, zbxerr.Wrap(err, "failed to query")
 		}
 
-		defer func() { rows.Close() }()
+		defer rows.Close() //nolint:errcheck // not checking err.
 
 		res, err := rowsToJSON(rows)
 		if err != nil {

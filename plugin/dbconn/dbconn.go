@@ -66,6 +66,9 @@ func (c *ConnCollection) Init(keepAlive int, logr log.Logger) {
 	c.driverName = "sqlserver"
 }
 
+// WithConnHandlerFunc creates a new function that creates or gets cached DB
+// connection for the given metric parameters and calls the given handler
+// function with the connection.
 func (c *ConnCollection) WithConnHandlerFunc(
 	handler handlers.ConnHandlerFunc,
 ) handlers.HandlerFunc {

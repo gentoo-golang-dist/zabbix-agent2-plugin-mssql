@@ -42,9 +42,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.`
 
-// These variables are set during build time.
-//
-//nolint:gochecknoglobals // global version info.
+//nolint:gochecknoglobals,revive // required ALL_CAPS by build scripts
 var (
 	PLUGIN_VERSION_RC    = "alpha8"
 	PLUGIN_VERSION_MAJOR = 7

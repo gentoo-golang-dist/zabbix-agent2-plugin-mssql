@@ -127,6 +127,13 @@ linters-settings:
         disabled: true
       - name: unhandled-error
         disabled: true
+      - name: package-comments
+        disabled: true
+
+  stylecheck:
+    checks: ["all", "-ST1000", "-ST1003"]
+    dot-import-whitelist: []
+    http-status-code-whitelist: []
 
   tagalign:
     align: false # could be true if https://github.com/momaek/formattag is used.
@@ -207,6 +214,7 @@ linters:
     - varcheck
 
 issues:
+  exclude-use-default: false
   max-issues-per-linter: 0
   max-same-issues: 0
   exclude-rules:

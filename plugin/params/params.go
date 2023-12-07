@@ -30,10 +30,12 @@ var (
 		User,
 		Password,
 	}
+
 	// CustomQueryParams groups all parameters unique for a custom query metric.
 	CustomQueryParams = []*metric.Param{
 		QueryName,
 	}
+
 	// TLSParams groups all TLS configuration parameters for a connection.
 	TLSParams = []*metric.Param{
 		CACertPath,
@@ -43,6 +45,7 @@ var (
 		TLSMinVersion,
 	}
 
+	// URI is a metric param tha specifies database connection URI.
 	URI = metric.NewConnParam(
 		"URI", "URL connection string to connect to the database.",
 	).
@@ -57,32 +60,47 @@ var (
 				AllowedSchemes: []string{"sqlserver"},
 			},
 		)
+
+		// User is a metric param that specifies database user.
 	User = metric.NewConnParam(
 		"User", "MSSQL database user.",
 	)
+
+	// Password is a metric param that specifies database user password.
 	Password = metric.NewConnParam(
 		"Password", "MSSQL database users password.",
 	)
 
+	// QueryName is a metric param that specifies name of a custom query.
 	QueryName = metric.NewParam(
 		"QueryName",
 		"Name of a custom query "+
 			"(must be equal to a name of an SQL file without an extension).",
 	).SetRequired()
 
+	// CACertPath is a metric param that specifies path to a CA certificate.
 	CACertPath = metric.NewSessionOnlyParam(
 		"CACertPath",
 		"File path of the public key certificate of the CA "+
 			"that signed the SQL server certificate.",
 	)
+
+	// TrustServerCertificate is a metric param that specifies whether to trust
+	// the server certificate without verification.
 	TrustServerCertificate = metric.NewSessionOnlyParam(
 		"TrustServerCertificate",
 		"Trust the server certificate without verification.",
 	)
+
+	// HostNameInCertificate is a metric param that specifies common name (CN)
+	// in the server certificate.
 	HostNameInCertificate = metric.NewSessionOnlyParam(
 		"HostNameInCertificate",
 		"Common name (CN) in the server certificate.",
 	)
+
+	// Encrypt is a metric param that specifies whether to encrypt connection
+	// to the server.
 	Encrypt = metric.NewSessionOnlyParam(
 		"Encrypt",
 		"Whether to encrypt connection to the server.",
@@ -91,6 +109,9 @@ var (
 			Set: []string{"", "strict", "disable", "true", "false"},
 		},
 	)
+
+	// TLSMinVersion is a metric param that specifies minimum TLS version to
+	// use.
 	TLSMinVersion = metric.NewSessionOnlyParam(
 		"TLSMinVersion",
 		"Minimum TLS version to use.",

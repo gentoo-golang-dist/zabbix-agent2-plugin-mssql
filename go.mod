@@ -1,6 +1,6 @@
 module git.zabbix.com/ap/mssql
 
-go 1.19
+go 1.20
 
 require (
 	git.zabbix.com/ap/plugin-support v1.2.2-0.20231121074929-622dbf294bda
@@ -19,5 +19,3 @@ require (
 	golang.org/x/text v0.12.0 // indirect
 	golang.org/x/tools v0.11.0 // indirect
 )
-
-// replace git.zabbix.com/ap/plugin-support => ../plugin-support

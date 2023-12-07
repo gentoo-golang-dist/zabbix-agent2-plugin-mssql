@@ -143,6 +143,7 @@ func (p *mssqlPlugin) Start() {
 	}
 }
 
+// Stop stops the mssql plugin, closing all the connections.
 func (p *mssqlPlugin) Stop() {
 	p.conns.Close()
 }
