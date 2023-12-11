@@ -28,6 +28,7 @@ import (
 	"git.zabbix.com/ap/mssql/plugin/handlers"
 	"git.zabbix.com/ap/mssql/plugin/params"
 	"git.zabbix.com/ap/plugin-support/log"
+	"git.zabbix.com/ap/plugin-support/uri"
 	"git.zabbix.com/ap/plugin-support/zbxerr"
 )
 
@@ -171,12 +172,17 @@ func (c *ConnCollection) newConn(conf *ConnConfig) (*sql.DB, error) {
 		conf.TLSMinVersion,
 	)
 
-	u, err := url.Parse(conf.URI)
+	connURI, err := uri.NewWithCreds(
+		conf.URI, conf.User, conf.Password, params.URIDefaults,
+	)
+	if err != nil {
+		return nil, zbxerr.Wrap(err, "failed to set URI defaults")
+	}
+
+	u, err := url.Parse(connURI.String())
 	if err != nil {
 		return nil, zbxerr.Wrap(err, "failed to parse URI")
 	}
-
-	u.User = url.UserPassword(conf.User, conf.Password)
 
 	queryParams := u.Query()
 	queryParams.Add("app name", "Zabbix agent 2 MSSQL plugin")
@@ -203,6 +209,8 @@ func (c *ConnCollection) newConn(conf *ConnConfig) (*sql.DB, error) {
 	}
 
 	u.RawQuery = queryParams.Encode()
+
+	c.logr.Infof("opening connection to %q", u.String())
 
 	db, err := sql.Open(c.driverName, u.String())
 	if err != nil {

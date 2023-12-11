@@ -53,15 +53,18 @@ var (
 		WithSession().
 		WithValidator(
 			uri.URIValidator{
-				Defaults: &uri.Defaults{
-					Scheme: "sqlserver",
-					Port:   "1433",
-				},
+				Defaults:       URIDefaults,
 				AllowedSchemes: []string{"sqlserver"},
 			},
 		)
 
-		// User is a metric param that specifies database user.
+		// URIDefaults defines the default values for a DB connection URI.
+	URIDefaults = &uri.Defaults{
+		Scheme: "sqlserver",
+		Port:   "1433",
+	}
+
+	// User is a metric param that specifies database user.
 	User = metric.NewConnParam(
 		"User", "MSSQL database user.",
 	)

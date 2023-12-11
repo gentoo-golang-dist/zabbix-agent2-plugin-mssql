@@ -186,7 +186,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 		{
 			"+valid",
 			fields{
-				dsn: "pigeon://8888:dddd@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn: "pigeon://8888:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
 			},
 			args{
 				metricParams: map[string]string{
@@ -207,7 +207,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 		{
 			"+extraParams",
 			fields{
-				dsn: "pigeon://7777:dddd@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn: "pigeon://7777:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
 			},
 			args{
 				metricParams: map[string]string{
@@ -231,7 +231,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 		{
 			"-getErr",
 			fields{
-				dsn:    "pigeon://6666:dddd@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn:    "pigeon://6666:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
 				getErr: errors.New("fail"),
 			},
 			args{
@@ -345,7 +345,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 			"+valid",
 			expect{true},
 			fields{
-				dsn: "pigeon://aaaa:dddd@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn: "pigeon://aaaa:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
 			},
 			args{
 				metricParams: map[string]string{
@@ -362,7 +362,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 			expect{false},
 			fields{
 				getErr: errors.New("fail"),
-				dsn:    "pigeon://aaaa:bbbb@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn:    "pigeon://aaaa:bbbb@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
 			},
 			args{
 				metricParams: map[string]string{
@@ -379,7 +379,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 			expect{true},
 			fields{
 				pingErr: errors.New("fail"),
-				dsn:     "pigeon://aaaa:cccc@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn:     "pigeon://aaaa:cccc@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
 			},
 			args{
 				metricParams: map[string]string{
@@ -431,7 +431,11 @@ func TestConnCollection_PingHandler(t *testing.T) {
 			}
 
 			if err := m.ExpectationsWereMet(); err != nil {
-				t.Fatalf("ConnCollection.PingHandler() = %s", err.Error())
+				t.Fatalf(
+					"ConnCollection.PingHandler() "+
+						"expectations where not met: %s",
+					err.Error(),
+				)
 			}
 		})
 	}
@@ -535,7 +539,7 @@ func TestConnCollection_get(t *testing.T) {
 			expect{true},
 			fields{
 				conns:      map[ConnConfig]*sql.DB{},
-				dsn:        "pigeon://rrrr:tttt@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn:        "pigeon://rrrr:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
 				driverName: "testdriver",
 			},
 			args{
@@ -561,7 +565,7 @@ func TestConnCollection_get(t *testing.T) {
 				conns: map[ConnConfig]*sql.DB{
 					{}: {},
 				},
-				dsn:        "pigeon://jjjj:tttt@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn:        "pigeon://jjjj:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
 				driverName: "testdriver",
 			},
 			args{
@@ -586,7 +590,7 @@ func TestConnCollection_get(t *testing.T) {
 			expect{true},
 			fields{
 				conns:      map[ConnConfig]*sql.DB{},
-				dsn:        "pigeon://kkkk:tttt@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn:        "pigeon://kkkk:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
 				newConnErr: errors.New("fail"),
 				driverName: "testdriver",
 			},
@@ -607,8 +611,14 @@ func TestConnCollection_get(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) { //nolint:paralleltest
+			var (
+				db  *sql.DB
+				m   sqlmock.Sqlmock
+				err error
+			)
+
 			if tt.expect.newConn {
-				db, m, err := sqlmock.NewWithDSN(
+				db, m, err = sqlmock.NewWithDSN(
 					tt.fields.dsn,
 					sqlmock.MonitorPingsOption(true),
 				)
@@ -661,6 +671,11 @@ func TestConnCollection_get(t *testing.T) {
 			); diff != "" {
 				t.Fatalf("ConnCollection.get() = %s", diff)
 			}
+			if m != nil {
+				if err := m.ExpectationsWereMet(); err != nil {
+					t.Fatalf("ConnCollection.get() = %s", err.Error())
+				}
+			}
 		},
 		)
 	}
@@ -676,11 +691,12 @@ func TestConnCollection_newConn(t *testing.T) {
 	}
 
 	type fields struct {
-		keepAlive  int
-		openErr    error
-		pingErr    error
-		dsn        string
-		driverName string
+		keepAlive     int
+		openErr       error
+		pingErr       error
+		dsn           string
+		driverName    string
+		defaultScheme string
 	}
 
 	type args struct {
@@ -700,7 +716,7 @@ func TestConnCollection_newConn(t *testing.T) {
 			expect{true, true},
 			fields{
 				keepAlive:  4,
-				dsn:        "pigeon://aaaa:bbbb@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4", //nolint:lll
+				dsn:        "pigeon://aaaa:bbbb@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4", //nolint:lll
 				driverName: "testdriver",
 			},
 			args{&ConnConfig{
@@ -716,7 +732,7 @@ func TestConnCollection_newConn(t *testing.T) {
 			expect{true, true},
 			fields{
 				keepAlive: 4,
-				dsn: "pigeon://aaaa:bbbb@uri?" +
+				dsn: "pigeon://aaaa:bbbb@uri:1433?" +
 					"TrustServerCertificate=false&" +
 					"app+name=Zabbix+agent+2+MSSQL+plugin&" +
 					"certificate=%2Fa%2Fb%2Fc&" +
@@ -740,7 +756,7 @@ func TestConnCollection_newConn(t *testing.T) {
 			false,
 		},
 		{
-			"-uriParseErr",
+			"-newConnURIErr",
 			expect{false, false},
 			fields{
 				keepAlive:  4,
@@ -761,7 +777,7 @@ func TestConnCollection_newConn(t *testing.T) {
 			fields{
 				keepAlive:  4,
 				openErr:    errors.New("fail"),
-				dsn:        "pigeon://cccc:bbbb@uri?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4", //nolint:lll
+				dsn:        "pigeon://cccc:bbbb@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4", //nolint:lll
 				driverName: "testdriver",
 			},
 			args{&ConnConfig{
@@ -777,8 +793,24 @@ func TestConnCollection_newConn(t *testing.T) {
 		t.Run(
 			tt.name,
 			func(t *testing.T) { //nolint:paralleltest
+				if tt.fields.defaultScheme != "" {
+					prevScheme := params.URIDefaults.Scheme
+
+					defer func() {
+						params.URIDefaults.Scheme = prevScheme
+					}()
+
+					params.URIDefaults.Scheme = tt.fields.defaultScheme
+				}
+
+				var (
+					db  *sql.DB
+					m   sqlmock.Sqlmock
+					err error
+				)
+
 				if tt.expect.open {
-					db, m, err := sqlmock.NewWithDSN(
+					db, m, err = sqlmock.NewWithDSN(
 						tt.fields.dsn,
 						sqlmock.MonitorPingsOption(true),
 					)
@@ -809,12 +841,20 @@ func TestConnCollection_newConn(t *testing.T) {
 						err, tt.wantErr,
 					)
 				}
-
 				if (got == nil) != tt.wantNil {
 					t.Fatalf(
 						"ConnCollection.newConn() got = %v, wantNil %v",
 						got, tt.wantNil,
 					)
+				}
+				if m != nil {
+					if err := m.ExpectationsWereMet(); err != nil {
+						t.Fatalf(
+							"ConnCollection.newConn() "+
+								"expectations where not met: %s",
+							err.Error(),
+						)
+					}
 				}
 			},
 		)
