@@ -210,8 +210,6 @@ func (c *ConnCollection) newConn(conf *ConnConfig) (*sql.DB, error) {
 
 	u.RawQuery = queryParams.Encode()
 
-	c.logr.Infof("opening connection to %q", u.String())
-
 	db, err := sql.Open(c.driverName, u.String())
 	if err != nil {
 		return nil, zbxerr.Wrap(err, "failed to open DB connection")
