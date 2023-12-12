@@ -27,9 +27,9 @@ import (
 
 	"git.zabbix.com/ap/mssql/plugin/handlers"
 	"git.zabbix.com/ap/mssql/plugin/params"
+	"git.zabbix.com/ap/plugin-support/errs"
 	"git.zabbix.com/ap/plugin-support/log"
 	"git.zabbix.com/ap/plugin-support/uri"
-	"git.zabbix.com/ap/plugin-support/zbxerr"
 )
 
 var (
@@ -89,7 +89,7 @@ func (c *ConnCollection) WithConnHandlerFunc(
 			},
 		)
 		if err != nil {
-			return nil, zbxerr.Wrap(err, "failed to get conn")
+			return nil, errs.Wrap(err, "failed to get conn")
 		}
 
 		return handler(conn, metricParams, extraParams...)
@@ -150,7 +150,7 @@ func (c *ConnCollection) get(conf ConnConfig) (*sql.DB, error) {
 
 	conn, err := c.newConn(&conf)
 	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to create conn")
+		return nil, errs.Wrap(err, "failed to create conn")
 	}
 
 	c.conns[conf] = conn
@@ -176,12 +176,12 @@ func (c *ConnCollection) newConn(conf *ConnConfig) (*sql.DB, error) {
 		conf.URI, conf.User, conf.Password, params.URIDefaults,
 	)
 	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to set URI defaults")
+		return nil, errs.Wrap(err, "failed to set URI defaults")
 	}
 
 	u, err := url.Parse(connURI.String())
 	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to parse URI")
+		return nil, errs.Wrap(err, "failed to parse URI")
 	}
 
 	queryParams := u.Query()
@@ -212,14 +212,14 @@ func (c *ConnCollection) newConn(conf *ConnConfig) (*sql.DB, error) {
 
 	db, err := sql.Open(c.driverName, u.String())
 	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to open DB connection")
+		return nil, errs.Wrap(err, "failed to open DB connection")
 	}
 
 	db.SetConnMaxIdleTime(time.Duration(c.keepAlive) * time.Second)
 
 	err = db.Ping()
 	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to ping")
+		return nil, errs.Wrap(err, "failed to ping")
 	}
 
 	return db, nil

@@ -27,8 +27,8 @@ import (
 	"strings"
 
 	"git.zabbix.com/ap/mssql/plugin/params"
+	"git.zabbix.com/ap/plugin-support/errs"
 	"git.zabbix.com/ap/plugin-support/log"
-	"git.zabbix.com/ap/plugin-support/zbxerr"
 	mssql "github.com/microsoft/go-mssqldb"
 )
 
@@ -85,7 +85,7 @@ func (nuid *nullUniqueIdentifier) Scan(value any) error {
 
 	err := nuid.uuid.Scan(value)
 	if err != nil {
-		return zbxerr.Wrap(err, "failed to scan UniqueIdentifier")
+		return errs.Wrap(err, "failed to scan UniqueIdentifier")
 	}
 
 	nuid.valid = true
@@ -102,7 +102,7 @@ func (nuid nullUniqueIdentifier) Value() (driver.Value, error) {
 	// check that the underlying UUID is valid.
 	_, err := nuid.uuid.Value()
 	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to get UniqueIdentifier value")
+		return nil, errs.Wrap(err, "failed to get UniqueIdentifier value")
 	}
 
 	return nuid.uuid.String(), nil
@@ -112,7 +112,7 @@ func (nuid nullUniqueIdentifier) Value() (driver.Value, error) {
 func (b nullBool) Value() (driver.Value, error) {
 	valuer, err := b.NullBool.Value()
 	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to get bool value")
+		return nil, errs.Wrap(err, "failed to get bool value")
 	}
 
 	if valuer == nil {
@@ -121,7 +121,7 @@ func (b nullBool) Value() (driver.Value, error) {
 
 	v, ok := valuer.(bool)
 	if !ok {
-		return nil, zbxerr.Errorf("failed cast NullBool.Value() as bool")
+		return nil, errs.Errorf("failed cast NullBool.Value() as bool")
 	}
 
 	if v {
@@ -139,12 +139,12 @@ func WithJSONResponse(handler HandlerFunc) HandlerFunc {
 	) (any, error) {
 		res, err := handler(metricParams, extraParams...)
 		if err != nil {
-			return nil, zbxerr.Wrap(err, "failed to execute handler")
+			return nil, errs.Wrap(err, "failed to execute handler")
 		}
 
 		jsonRes, err := json.Marshal(res)
 		if err != nil {
-			return nil, zbxerr.Wrap(err, "failed to marshal result to JSON")
+			return nil, errs.Wrap(err, "failed to marshal result to JSON")
 		}
 
 		return string(jsonRes), nil
@@ -155,7 +155,7 @@ func WithJSONResponse(handler HandlerFunc) HandlerFunc {
 func (cq CustomQueries) Load(customQueriesDirFS fs.FS, logr log.Logger) error {
 	queryFilePaths, err := fs.Glob(customQueriesDirFS, "*.sql")
 	if err != nil {
-		return zbxerr.Wrap(err, "failed to match glob pattern")
+		return errs.Wrap(err, "failed to match glob pattern")
 	}
 
 	queries := make(map[string]string)
@@ -165,14 +165,14 @@ func (cq CustomQueries) Load(customQueriesDirFS fs.FS, logr log.Logger) error {
 		err := func() error {
 			f, err := customQueriesDirFS.Open(qfp)
 			if err != nil {
-				return zbxerr.Wrap(err, "failed to open custom query file")
+				return errs.Wrap(err, "failed to open custom query file")
 			}
 
 			defer f.Close() //nolint:errcheck // not checking err.
 
 			data, err := io.ReadAll(f)
 			if err != nil {
-				return zbxerr.Wrapf(
+				return errs.Wrapf(
 					err,
 					"failed to read contents of custom query file %s",
 					qfp,
@@ -210,7 +210,7 @@ func (cq CustomQueries) HandlerFunc(
 
 	query, ok := cq[name]
 	if !ok {
-		return nil, zbxerr.Errorf("custom query %q not found", name)
+		return nil, errs.Errorf("custom query %q not found", name)
 	}
 
 	return QueryHandlerFunc(query)(conn, metricParams, extraParams...)
@@ -230,14 +230,14 @@ func QueryHandlerFunc(query string) ConnHandlerFunc {
 
 		rows, err := conn.Query(query, args...)
 		if err != nil {
-			return nil, zbxerr.Wrap(err, "failed to query")
+			return nil, errs.Wrap(err, "failed to query")
 		}
 
 		defer rows.Close() //nolint:errcheck // not checking err.
 
 		res, err := rowsToJSON(rows)
 		if err != nil {
-			return nil, zbxerr.Wrap(err, "failed to convert rows to json")
+			return nil, errs.Wrap(err, "failed to convert rows to json")
 		}
 
 		return res, nil
@@ -256,12 +256,12 @@ func VersionHandler(
 
 	err := row.Scan(&version)
 	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to scan version")
+		return nil, errs.Wrap(err, "failed to scan version")
 	}
 
 	err = row.Err()
 	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to iterate over rows")
+		return nil, errs.Wrap(err, "failed to iterate over rows")
 	}
 
 	return version, nil
@@ -271,7 +271,7 @@ func VersionHandler(
 func rowsToJSON(rows *sql.Rows) ([]map[string]any, error) {
 	cols, err := rows.ColumnTypes()
 	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to get column types")
+		return nil, errs.Wrap(err, "failed to get column types")
 	}
 
 	results := []map[string]any{}
@@ -300,7 +300,7 @@ func rowsToJSON(rows *sql.Rows) ([]map[string]any, error) {
 
 		err = rows.Scan(dest...)
 		if err != nil {
-			return nil, zbxerr.Wrap(err, "failed to scan row")
+			return nil, errs.Wrap(err, "failed to scan row")
 		}
 
 		res := make(map[string]any)
@@ -312,7 +312,7 @@ func rowsToJSON(rows *sql.Rows) ([]map[string]any, error) {
 			if ok {
 				val, err = valuer.Value()
 				if err != nil {
-					return nil, zbxerr.Wrap(err, "failed to get value")
+					return nil, errs.Wrap(err, "failed to get value")
 				}
 			}
 
@@ -324,7 +324,7 @@ func rowsToJSON(rows *sql.Rows) ([]map[string]any, error) {
 
 	err = rows.Err()
 	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to iterate over rows")
+		return nil, errs.Wrap(err, "failed to iterate over rows")
 	}
 
 	return results, nil
