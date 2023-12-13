@@ -19,8 +19,8 @@ package plugin
 
 import (
 	"git.zabbix.com/ap/plugin-support/conf"
+	"git.zabbix.com/ap/plugin-support/errs"
 	"git.zabbix.com/ap/plugin-support/plugin"
-	"git.zabbix.com/ap/plugin-support/zbxerr"
 )
 
 type session struct {
@@ -77,7 +77,7 @@ func (*mssqlPlugin) Validate(options any) error {
 
 	err := conf.Unmarshal(options, &opts)
 	if err != nil {
-		return zbxerr.Wrap(err, "failed to unmarshal configuration options")
+		return errs.Wrap(err, "failed to unmarshal configuration options")
 	}
 
 	return nil

@@ -24,6 +24,7 @@ import (
 	"git.zabbix.com/ap/mssql/plugin/dbconn"
 	"git.zabbix.com/ap/mssql/plugin/handlers"
 	"git.zabbix.com/ap/mssql/plugin/params"
+	"git.zabbix.com/ap/plugin-support/errs"
 	"git.zabbix.com/ap/plugin-support/metric"
 	"git.zabbix.com/ap/plugin-support/plugin"
 	"git.zabbix.com/ap/plugin-support/plugin/container"
@@ -117,14 +118,14 @@ func Launch() error {
 
 	h, err := container.NewHandler(Name)
 	if err != nil {
-		return zbxerr.Wrap(err, "failed to create new handler")
+		return errs.Wrap(err, "failed to create new handler")
 	}
 
 	p.Logger = h
 
 	err = h.Execute()
 	if err != nil {
-		return zbxerr.Wrap(err, "failed to execute plugin handler")
+		return errs.Wrap(err, "failed to execute plugin handler")
 	}
 
 	return nil
@@ -154,7 +155,7 @@ func (p *mssqlPlugin) Export(
 ) (any, error) {
 	m, ok := p.metrics[mssqlMetricKey(key)]
 	if !ok {
-		return nil, zbxerr.Wrapf(
+		return nil, errs.Wrapf(
 			zbxerr.ErrorUnsupportedMetric, "unknown metric %q", key,
 		)
 	}
@@ -163,17 +164,17 @@ func (p *mssqlPlugin) Export(
 		rawParams, p.config.Sessions,
 	)
 	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to evaluate metric parameters")
+		return nil, errs.Wrap(err, "failed to evaluate metric parameters")
 	}
 
 	err = metric.SetDefaults(metricParams, hardcodedParams, p.config.Default)
 	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to set default params")
+		return nil, errs.Wrap(err, "failed to set default params")
 	}
 
 	res, err := m.handler(metricParams, extraParams...)
 	if err != nil {
-		return nil, zbxerr.Wrap(err, "failed to execute handler")
+		return nil, errs.Wrap(err, "failed to execute handler")
 	}
 
 	return res, nil
@@ -355,7 +356,7 @@ func (p *mssqlPlugin) registerMetrics() error {
 
 	err := plugin.RegisterMetrics(p, Name, metricSet.List()...)
 	if err != nil {
-		return zbxerr.Wrap(err, "failed to register metrics")
+		return errs.Wrap(err, "failed to register metrics")
 	}
 
 	return nil
