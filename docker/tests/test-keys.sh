@@ -1,26 +1,55 @@
 #!/bin/bash
+#
+# very basic test for mssql-plugin
 
-URI="sqlserver://mssql-server.zabbix.sandbox:1433"
-USER="sa"
-PASSWORD="zabbix#33"
-CUSTOM_QUERY="test"
+DEFAULT_AGENT2_URI="mssql-plugin"
+DEFAULT_AGENT2_PORT="10050"
 
-# availabilityGroupGet = mssqlMetricKey("mssql.availability.group.get")
-# customQuery          = mssqlMetricKey("mssql.custom.query")
-# dbGet                = mssqlMetricKey("mssql.db.get")
-# jobStatusGet         = mssqlMetricKey("mssql.job.status.get")
-# lastBackupGet        = mssqlMetricKey("mssql.last.backup.get")
-# localDBGet           = mssqlMetricKey("mssql.local.db.get")
-# mirroringGet         = mssqlMetricKey("mssql.mirroring.get")
-# nonLocalDBGet        = mssqlMetricKey("mssql.nonlocal.db.get")
-# perfCounterGet       = mssqlMetricKey("mssql.perfcounter.get")
-# ping                 = mssqlMetricKey("mssql.ping")
-# quorumGet            = mssqlMetricKey("mssql.quorum.get")
-# quorumMemberGet      = mssqlMetricKey("mssql.quorum.member.get")
-# replicaGet           = mssqlMetricKey("mssql.replica.get")
-# version              = mssqlMetricKey("mssql.version")
+DEFAULT_MSSQL_URL="sqlserver://mssql:1433"
+DEFAULT_MSSQL_USER="sa"
+DEFAULT_MSSQL_PASSWORD=""
+DEFAULT_MSSQL_CUSTOM_QUERY="test"
 
-params="[$URI,$USER,$PASSWORD]"
+if [ -z "$AGENT2_URI" ]; then
+    AGENT2_URI=$DEFAULT_AGENT2_URI
+fi
+
+if [ -z "$AGENT2_PORT" ]; then
+    AGENT2_PORT=$DEFAULT_AGENT2_PORT
+fi
+
+if [ -z "$MSSQL_URL" ]; then
+    MSSQL_URL=$DEFAULT_MSSQL_URL
+fi
+
+if [ -z "$MSSQL_USER" ]; then
+    MSSQL_USER=$DEFAULT_MSSQL_USER
+fi
+
+if [ -z "$MSSQL_PASSWORD" ]; then
+    MSSQL_PASSWORD=$DEFAULT_MSSQL_PASSWORD
+fi
+
+if [ -z "$MSSQL_CUSTOM_QUERY" ]; then
+    MSSQL_CUSTOM_QUERY=$DEFAULT_MSSQL_CUSTOM_QUERY
+fi
+
+# mssql.availability.group.get
+# mssql.custom.query
+# mssql.db.get
+# mssql.job.status.get
+# mssql.last.backup.get
+# mssql.local.db.get
+# mssql.mirroring.get
+# mssql.nonlocal.db.get
+# mssql.perfcounter.get
+# mssql.ping
+# mssql.quorum.get
+# mssql.quorum.member.get
+# mssql.replica.get
+# mssql.version
+
+params="[$MSSQL_URL,$MSSQL_USER,$MSSQL_PASSWORD]"
 
 keys=(
     "mssql.availability.group.get"
@@ -37,12 +66,13 @@ keys=(
     "mssql.replica.get"
 )
 
+# TODO: fix
 function test_custom_query() {
     out=$(
         zabbix_get \
-            -s '127.0.0.1' \
-            -p '10050' \
-            -k "mssql.custom.query[$URI,$USER,$PASSWORD,$CUSTOM_QUERY]"
+            -s "$AGENT2_URI" \
+            -p "$AGENT2_PORT" \
+            -k "mssql.custom.query[$MSSQL_URL,$MSSQL_USER,$MSSQL_PASSWORD,$MSSQL_CUSTOM_QUERY]" 2>&1
     )
 
     echo "$out" | ./jq >/dev/null
@@ -57,20 +87,18 @@ function test_custom_query() {
 
 out=$(
     zabbix_get \
-        -s '127.0.0.1' \
-        -p '10050' \
-        -k "mssql.version$params"
+        -s "$AGENT2_URI" \
+        -p "$AGENT2_PORT" \
+        -k "mssql.version$params" 2>&1
 )
 echo "version; $out"
-
-test_custom_query
 
 for key in "${keys[@]}"; do
     out=$(
         zabbix_get \
-            -s '127.0.0.1' \
-            -p '10050' \
-            -k "$key$params"
+            -s "$AGENT2_URI" \
+            -p "$AGENT2_PORT" \
+            -k "$key$params" 2>&1
     )
 
     echo "$out" | ./jq >/dev/null
@@ -82,3 +110,5 @@ for key in "${keys[@]}"; do
 
     echo "PASS $key"
 done
+
+test_custom_query

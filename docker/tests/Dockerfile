@@ -10,5 +10,4 @@ COPY test-keys.sh get-jq.sh .
 
 RUN bash -c ./get-jq.sh
 
-# ENTRYPOINT ["tail", "-f", "/dev/null"]
 ENTRYPOINT ["bash", "-c", "/var/lib/zabbix/test-keys.sh"]

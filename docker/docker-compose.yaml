@@ -1,0 +1,88 @@
+version: "3.1"
+
+services:
+  mssql-plugin-tests:
+    container_name: mssql-plugin-tests
+    image: agent2-plugin/mssql-tests:7.0
+    build:
+      context: tests
+      dockerfile: Dockerfile
+    environment:
+      AGENT2_URI: mssql-plugin
+      AGENT2_PORT: 10050
+      MSSQL_URL: mssql
+      MSSQL_USER: sa
+      MSSQL_PASSWORD: haej7vaefa7Aicee
+      MSSQL_CUSTOM_QUERY: test
+    depends_on:
+      mssql:
+        condition: service_healthy
+      mssql-plugin:
+        condition: service_healthy
+
+  # zabbix agent2 with mssql plugin
+  mssql-plugin:
+    container_name: mssql-plugin
+    image: agent2-plugin/mssql:7.0
+    build:
+      context: ..
+      dockerfile: docker/mssql-plugin/Dockerfile
+    environment:
+      # accept all connections
+      ZBX_PASSIVESERVERS: ::/0
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/usr/bin/zabbix_get",
+          "-s",
+          "127.0.0.1",
+          "-p",
+          "10050",
+          "-k",
+          "agent.ping",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # mssql database setup runner. runs predefined setup scripts on the database
+  # instance
+  mssql-setup:
+    container_name: mssql-setup
+    image: agent2-plugin/mssql-setup:7.0
+    build:
+      context: mssql-setup
+      dockerfile: Dockerfile
+
+    environment:
+      MSSQL_SA_PASSWORD: haej7vaefa7Aicee
+    depends_on:
+      mssql:
+        condition: service_healthy
+
+  # mssql database instance
+  mssql:
+    container_name: mssql
+    image: mcr.microsoft.com/mssql/server:2022-CU10-ubuntu-22.04
+    environment:
+      ACCEPT_EULA: Y
+      # mssql requires legit password
+      MSSQL_SA_PASSWORD: haej7vaefa7Aicee
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/opt/mssql-tools/bin/sqlcmd",
+          "-U",
+          "sa",
+          "-P",
+          "haej7vaefa7Aicee",
+          "-Q",
+          "select 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # TODO: handle different versions of mssql

@@ -24,3 +24,5 @@ curl \
     "https://github.com/jqlang/jq/releases/download/jq-1.7.1/$DOWNLOAD_FILE"
 
 chmod +x ./jq
+
+echo '{"got": "jq"}' | ./jq
