@@ -1,30 +1,3 @@
----
-id: 58cebec7-67f5-43cc-b7f9-5a699cd55b03
-template:
-  content: |
-    # {{ .Name }}
-
-    <rat graph />
-
-    ---
-
-    ## Implemented in
-
-    - []()
-
-    ## Jenkins jobs:
-
-    - branch
-      - [backend_agent2_job]()
-      - [integration_job]()
----
-
-# Readme
-
-<rat graph />
-
----
-
 # MSSQL plugin for Zabbix agent 2
 
 This plugin provides a native Zabbix solution to monitor Microsoft SQL servers.
