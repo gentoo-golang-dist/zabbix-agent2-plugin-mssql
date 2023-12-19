@@ -4,13 +4,75 @@ This plugin provides a native Zabbix solution to monitor Microsoft SQL servers.
 
 It can monitor several MSSQL instances simultaneously, remote or local.
 
+<!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
+
+## Table of contents
+
+- [Requirements](#requirements)
+- [Supported MSSQL versions](#supported-mssql-versions)
+- [Setup](#setup)
+- [Command line options](#command-line-options)
+- [Microsoft SQL server requirements](#microsoft-sql-server-requirements)
+- [Connection configuration](#connection-configuration)
+  - [In metric key parameters](#in-metric-key-parameters)
+- [As a named session](#as-a-named-session)
+- [Configuration options](#configuration-options)
+  - [Plugin settings](#plugin-settings)
+    - [`Plugins.MSSQL.System.Path`](#pluginsmssqlsystempath)
+    - [`Plugins.MSSQL.Timeout`](#pluginsmssqltimeout)
+    - [`Plugins.MSSQL.KeepAlive`](#pluginsmssqlkeepalive)
+    - [`Plugins.MSSQL.CustomQueriesDir`](#pluginsmssqlcustomqueriesdir)
+  - [Session settings](#session-settings)
+    - [`Plugins.MSSQL.Sessions.*.Uri`](#pluginsmssqlsessionsuri)
+    - [`Plugins.MSSQL.Sessions.*.User`](#pluginsmssqlsessionsuser)
+    - [`Plugins.MSSQL.Sessions.*.Password`](#pluginsmssqlsessionspassword)
+    - [`Plugins.MSSQL.Sessions.*.CACertPath`](#pluginsmssqlsessionscacertpath)
+    - [`Plugins.MSSQL.Sessions.*.TrustServerCertificate`](#pluginsmssqlsessionstrustservercertificate)
+    - [`Plugins.MSSQL.Sessions.*.HostNameInCertificate`](#pluginsmssqlsessionshostnameincertificate)
+    - [`Plugins.MSSQL.Sessions.*.Encrypt`](#pluginsmssqlsessionsencrypt)
+    - [`Plugins.MSSQL.Sessions.*.TLSMinVersion`](#pluginsmssqlsessionstlsminversion)
+  - [Default settings](#default-settings)
+    - [`Plugins.MSSQL.Default.Uri`](#pluginsmssqldefaulturi)
+    - [`Plugins.MSSQL.Default.User`](#pluginsmssqldefaultuser)
+    - [`Plugins.MSSQL.Default.Password`](#pluginsmssqldefaultpassword)
+    - [`Plugins.MSSQL.Default.CACertPath`](#pluginsmssqldefaultcacertpath)
+    - [`Plugins.MSSQL.Default.TrustServerCertificate`](#pluginsmssqldefaulttrustservercertificate)
+    - [`Plugins.MSSQL.Default.HostNameInCertificate`](#pluginsmssqldefaulthostnameincertificate)
+    - [`Plugins.MSSQL.Default.Encrypt`](#pluginsmssqldefaultencrypt)
+    - [`Plugins.MSSQL.Default.TLSMinVersion`](#pluginsmssqldefaulttlsminversion)
+- [Metric keys](#metric-keys)
+  - [`mssql.availability.group.get[<commonParameters>]`](#mssqlavailabilitygroupgetcommonparameters)
+  - [`mssql.custom.query[<commonParameters>,<customQueryName>,<customQueryParameters>...]`](#mssqlcustomquerycommonparameterscustomquerynamecustomqueryparameters)
+  - [`mssql.db.get`](#mssqldbget)
+  - [`mssql.job.status.get`](#mssqljobstatusget)
+  - [`mssql.last.backup.get`](#mssqllastbackupget)
+  - [`mssql.local.db.get`](#mssqllocaldbget)
+  - [`mssql.mirroring.get`](#mssqlmirroringget)
+  - [`mssql.nonlocal.db.get`](#mssqlnonlocaldbget)
+  - [`mssql.perfcounter.get`](#mssqlperfcounterget)
+  - [`mssql.ping`](#mssqlping)
+  - [`mssql.quorum.get`](#mssqlquorumget)
+  - [`mssql.quorum.member.get`](#mssqlquorummemberget)
+  - [`mssql.replica.get`](#mssqlreplicaget)
+  - [`mssql.version`](#mssqlversion)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+
+<!-- TOC end -->
+
+<!-- TOC --><a name="requirements"></a>
+
 ## Requirements
 
 - Zabbix Agent 2 version 6.0.0 or newer
 - Go programming language version 1.20 or newer (required only to build the
   plugin from source)
 
+<!-- TOC --><a name="supported-mssql-versions"></a>
+
 ## Supported MSSQL versions
+
+<!-- TOC --><a name="setup"></a>
 
 ## Setup
 
@@ -38,6 +100,8 @@ This is the bare minimum required to get the plugin running. More information
 about available configuration settings is available in the section -
 Configuration options
 
+<!-- TOC --><a name="command-line-options"></a>
+
 ## Command line options
 
 The MSSQL plugin is not intended to be used as a command line utility, however
@@ -45,6 +109,8 @@ it does provide the following command line options.
 
 - `-h`, `--help` display a help message
 - `-V`, `--version` prints program version and license information
+
+<!-- TOC --><a name="microsoft-sql-server-requirements"></a>
 
 ## Microsoft SQL server requirements
 
@@ -82,11 +148,15 @@ server:
   GO
   ```
 
+<!-- TOC --><a name="connection-configuration"></a>
+
 ## Connection configuration
 
 To gather monitoring data the plugin needs to establish a connection to a MSSQL
 server. A connection can be configured in two ways. Read more about each
 connection configuration option in the following sections.
+
+<!-- TOC --><a name="in-metric-key-parameters"></a>
 
 ### In metric key parameters
 
@@ -106,6 +176,8 @@ URI.
 Read more about what parameters are available for each metric key in the
 section - metric keys.
 
+<!-- TOC --><a name="as-a-named-session"></a>
+
 ## As a named session
 
 Named sessions allow grouping database connection settings under a name. Define
@@ -122,11 +194,17 @@ used as the first parameter to a metric key `mssql.version[StagingEnv]` as
 opposed to defining each parameter separately
 `mssql.version[sqlserver://192.168.1.1,stage_user,stage_password]`.
 
+<!-- TOC --><a name="configuration-options"></a>
+
 ## Configuration options
+
+<!-- TOC --><a name="plugin-settings"></a>
 
 ### Plugin settings
 
 Global setting for the MSSQL plugin. Applied to all connections.
+
+<!-- TOC --><a name="pluginsmssqlsystempath"></a>
 
 #### `Plugins.MSSQL.System.Path`
 
@@ -137,6 +215,8 @@ Example usage:
 ```conf
 Plugins.MSSQL.System.Path=/usr/sbin/zabbix-agent2-plugin/zabbix-agent2-plugin-mssql
 ```
+
+<!-- TOC --><a name="pluginsmssqltimeout"></a>
 
 #### `Plugins.MSSQL.Timeout`
 
@@ -149,6 +229,8 @@ Example usage:
 Plugins.MSSQL.Timeout=10
 ```
 
+<!-- TOC --><a name="pluginsmssqlkeepalive"></a>
+
 #### `Plugins.MSSQL.KeepAlive`
 
 Specifies the time in seconds for waiting before unused connections will be
@@ -159,6 +241,8 @@ Example usage:
 ```conf
 Plugins.MSSQL.KeepAlive=600
 ```
+
+<!-- TOC --><a name="pluginsmssqlcustomqueriesdir"></a>
 
 #### `Plugins.MSSQL.CustomQueriesDir`
 
@@ -171,11 +255,15 @@ Example usage:
 Plugins.MSSQL.CustomQueriesDir=/path/to/custom/queries/dir
 ```
 
+<!-- TOC --><a name="session-settings"></a>
+
 ### Session settings
 
 For following session config options, the `*` symbol in the field name implies a
 session name. Replace `*` with the actual (like `production` or `stage`) session
 name.
+
+<!-- TOC --><a name="pluginsmssqlsessionsuri"></a>
 
 #### `Plugins.MSSQL.Sessions.*.Uri`
 
@@ -190,6 +278,8 @@ Example usage:
 Plugins.MSSQL.Sessions.exampleSession.Uri=sqlserver://localhost:1433
 ```
 
+<!-- TOC --><a name="pluginsmssqlsessionsuser"></a>
+
 #### `Plugins.MSSQL.Sessions.*.User`
 
 Specifies the username to be sent to a protected MSSQL server for the session
@@ -201,6 +291,8 @@ Example usage:
 Plugins.MSSQL.Sessions.exampleSession.User=myusername
 ```
 
+<!-- TOC --><a name="pluginsmssqlsessionspassword"></a>
+
 #### `Plugins.MSSQL.Sessions.*.Password`
 
 Specifies the password to be sent to a protected MSSQL server for session `*`.
@@ -210,6 +302,8 @@ Example usage:
 ```conf
 Plugins.MSSQL.Sessions.exampleSession.Password=mypassword
 ```
+
+<!-- TOC --><a name="pluginsmssqlsessionscacertpath"></a>
 
 #### `Plugins.MSSQL.Sessions.*.CACertPath`
 
@@ -223,6 +317,8 @@ Example usage:
 Plugins.MSSQL.Sessions.exampleSession.CACertPath=/path/to/certificate.crt
 ```
 
+<!-- TOC --><a name="pluginsmssqlsessionstrustservercertificate"></a>
+
 #### `Plugins.MSSQL.Sessions.*.TrustServerCertificate`
 
 Specifies whether the plugin should trust the server certificate without
@@ -234,6 +330,8 @@ Example usage:
 Plugins.MSSQL.Sessions.exampleSession.TrustServerCertificate=true
 ```
 
+<!-- TOC --><a name="pluginsmssqlsessionshostnameincertificate"></a>
+
 #### `Plugins.MSSQL.Sessions.*.HostNameInCertificate`
 
 Specifies the common name (CN) of the certificate of the MSSQL server for the
@@ -244,6 +342,8 @@ Example usage:
 ```conf
 Plugins.MSSQL.Sessions.exampleSession.HostNameInCertificate=myserver.domain.com
 ```
+
+<!-- TOC --><a name="pluginsmssqlsessionsencrypt"></a>
 
 #### `Plugins.MSSQL.Sessions.*.Encrypt`
 
@@ -263,6 +363,8 @@ Example usage:
 Plugins.MSSQL.Sessions.exampleSession.Encrypt=true
 ```
 
+<!-- TOC --><a name="pluginsmssqlsessionstlsminversion"></a>
+
 #### `Plugins.MSSQL.Sessions.*.TLSMinVersion`
 
 Specifies the minimum TLS version to use for session `*`. Possible values are:
@@ -274,11 +376,15 @@ Example usage:
 Plugins.MSSQL.Sessions.exampleSession.TLSMinVersion=1.2
 ```
 
+<!-- TOC --><a name="default-settings"></a>
+
 ### Default settings
 
 `Plugins.MSSQL.Default.*` fields define the default values, that will be used if
 no other value is specified. (The `*` symbol implies a specific config field
 like `Uri` or `Password`)
+
+<!-- TOC --><a name="pluginsmssqldefaulturi"></a>
 
 #### `Plugins.MSSQL.Default.Uri`
 
@@ -293,6 +399,8 @@ Example usage:
 Plugins.MSSQL.Default.Uri=sqlserver://myserver.domain.com:1433
 ```
 
+<!-- TOC --><a name="pluginsmssqldefaultuser"></a>
+
 #### `Plugins.MSSQL.Default.User`
 
 Specifies the default username to be sent to a protected MSSQL server.
@@ -303,6 +411,8 @@ Example usage:
 Plugins.MSSQL.Default.User=defaultuser
 ```
 
+<!-- TOC --><a name="pluginsmssqldefaultpassword"></a>
+
 #### `Plugins.MSSQL.Default.Password`
 
 Specifies the default password to be sent to a protected MSSQL server.
@@ -312,6 +422,8 @@ Example usage:
 ```conf
 Plugins.MSSQL.Default.Password=defaultpassword
 ```
+
+<!-- TOC --><a name="pluginsmssqldefaultcacertpath"></a>
 
 #### `Plugins.MSSQL.Default.CACertPath`
 
@@ -325,6 +437,8 @@ Example usage:
 Plugins.MSSQL.Default.CACertPath=/path/to/default-certificate.pem
 ```
 
+<!-- TOC --><a name="pluginsmssqldefaulttrustservercertificate"></a>
+
 #### `Plugins.MSSQL.Default.TrustServerCertificate`
 
 Specifies the default behavior of whether the plugin should trust the server
@@ -336,6 +450,8 @@ Example usage:
 Plugins.MSSQL.Default.TrustServerCertificate=false
 ```
 
+<!-- TOC --><a name="pluginsmssqldefaulthostnameincertificate"></a>
+
 #### `Plugins.MSSQL.Default.HostNameInCertificate`
 
 Specifies the default common name (CN) of the certificate of the MSSQL server.
@@ -345,6 +461,8 @@ Example usage:
 ```conf
 Plugins.MSSQL.Default.HostNameInCertificate=defaultserver.domain.com
 ```
+
+<!-- TOC --><a name="pluginsmssqldefaultencrypt"></a>
 
 #### `Plugins.MSSQL.Default.Encrypt`
 
@@ -363,6 +481,8 @@ Example usage:
 Plugins.MSSQL.Default.Encrypt=true
 ```
 
+<!-- TOC --><a name="pluginsmssqldefaulttlsminversion"></a>
+
 #### `Plugins.MSSQL.Default.TLSMinVersion`
 
 Specifies the default minimum TLS version to use. Possible values are: `1.0`,
@@ -373,6 +493,8 @@ Example usage:
 ```conf
 Plugins.MSSQL.Default.TLSMinVersion=1.1
 ```
+
+<!-- TOC --><a name="metric-keys"></a>
 
 ## Metric keys
 
@@ -395,9 +517,13 @@ Every metric key has the following parameters (further referred to as
 - User - Username to send to protected MSSQL server.
 - Password - Password to send to protected MSSQL server.
 
+<!-- TOC --><a name="mssqlavailabilitygroupgetcommonparameters"></a>
+
 ### `mssql.availability.group.get[<commonParameters>]`
 
 Returns the availability groups.
+
+<!-- TOC --><a name="mssqlcustomquerycommonparameterscustomquerynamecustomqueryparameters"></a>
 
 ### `mssql.custom.query[<commonParameters>,<customQueryName>,<customQueryParameters>...]`
 
@@ -429,53 +555,79 @@ and password parameters. The `QueryName` is the forth parameter after `URI`
 (session name is the first parameter, instead of `URI`), `User`, `Password`,
 hence the two empty parameters.
 
+<!-- TOC --><a name="mssqldbget"></a>
+
 ### `mssql.db.get`
 
 Returns the available databases.
+
+<!-- TOC --><a name="mssqljobstatusget"></a>
 
 ### `mssql.job.status.get`
 
 Returns the status of jobs.
 
+<!-- TOC --><a name="mssqllastbackupget"></a>
+
 ### `mssql.last.backup.get`
 
 Returns the last backup time for all databases.
+
+<!-- TOC --><a name="mssqllocaldbget"></a>
 
 ### `mssql.local.db.get`
 
 Returns local DB info.
 
+<!-- TOC --><a name="mssqlmirroringget"></a>
+
 ### `mssql.mirroring.get`
 
 Returns mirroring info.
+
+<!-- TOC --><a name="mssqlnonlocaldbget"></a>
 
 ### `mssql.nonlocal.db.get`
 
 Returns non-local DB info.
 
+<!-- TOC --><a name="mssqlperfcounterget"></a>
+
 ### `mssql.perfcounter.get`
 
 Returns the performance counters.
+
+<!-- TOC --><a name="mssqlping"></a>
 
 ### `mssql.ping`
 
 Ping the database. Test if connection is correctly configured.
 
+<!-- TOC --><a name="mssqlquorumget"></a>
+
 ### `mssql.quorum.get`
 
 Returns the quorum info.
+
+<!-- TOC --><a name="mssqlquorummemberget"></a>
 
 ### `mssql.quorum.member.get`
 
 Returns the quorum members.
 
+<!-- TOC --><a name="mssqlreplicaget"></a>
+
 ### `mssql.replica.get`
 
 Returns the replicas.
 
+<!-- TOC --><a name="mssqlversion"></a>
+
 ### `mssql.version`
 
 Returns the MSSQL server version.
+
+<!-- TOC --><a name="troubleshooting"></a>
 
 ## Troubleshooting
 
@@ -491,6 +643,8 @@ zabbix_agent2 -R log_level_increase
 
 For more information about Zabbix agent 2 view
 [Zabbix documentation](https://www.zabbix.com/documentation/current/en/manual/concepts/agent2).
+
+<!-- TOC --><a name="contributing"></a>
 
 ## Contributing
 
