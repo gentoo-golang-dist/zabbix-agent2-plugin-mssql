@@ -3,7 +3,7 @@
 ## Overview 📖
 
 This Docker Compose setup is designed to facilitate the development and testing
-of a Zabbix Agent 2 plugin for Microsoft SQL Server (MSSQL). It automates the
+of a Zabbix agent 2 plugin for Microsoft SQL Server (MSSQL). It automates the
 deployment of multiple service containers to create a ready-made environment
 that enables developers to test the MSSQL plugin across different versions of
 the MSSQL server.
@@ -13,7 +13,7 @@ the MSSQL server.
 The environment consists of several linked Docker containers, each serving a
 distinct role:
 
-1. `mssql-plugin`: This container runs the Zabbix Agent 2 with the MSSQL plugin,
+1. `mssql-plugin`: This container runs the Zabbix agent 2 with the MSSQL plugin,
    ready for connections and data-gathering operations.
 2. `mssql-<version>-plugin-tests`: These containers are dedicated to running the
    plugin tests against specific versions of MSSQL (2022, 2019, and 2017). They
