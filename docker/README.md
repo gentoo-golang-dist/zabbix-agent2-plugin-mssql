@@ -13,15 +13,15 @@ the MSSQL server.
 The environment consists of several linked Docker containers, each serving a
 distinct role:
 
-1. **mssql-plugin**: This container runs the Zabbix Agent 2 with the MSSQL
-   plugin, ready for connections and data-gathering operations.
-2. **mssql-<version>-plugin-tests**: These containers are dedicated to running
-   the plugin tests against specific versions of MSSQL (2022, 2019, and 2017).
-   They rely on the `mssql-plugin` service being in a healthy state.
-3. **mssql-<version>-setup**: These containers are responsible for executing
+1. `mssql-plugin`: This container runs the Zabbix Agent 2 with the MSSQL plugin,
+   ready for connections and data-gathering operations.
+2. `mssql-<version>-plugin-tests`: These containers are dedicated to running the
+   plugin tests against specific versions of MSSQL (2022, 2019, and 2017). They
+   rely on the `mssql-plugin` service being in a healthy state.
+3. `mssql-<version>-setup`: These containers are responsible for executing
    database setup and configuration scripts tailored for each MSSQL version they
    are matched with.
-4. **mssql-<version>**: These are the actual database instances of MSSQL for the
+4. `mssql-<version>`: These are the actual database instances of MSSQL for the
    respective versions (2022, 2019, and 2017). They must accept the EULA and
    have a strong SA (System Administrator) password set, which is mandated by
    MSSQL for security reasons. MSSQL database docker images can only be run on
