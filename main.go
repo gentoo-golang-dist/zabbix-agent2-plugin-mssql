@@ -23,7 +23,7 @@ import (
 	"os"
 
 	"git.zabbix.com/ap/mssql/plugin"
-	"git.zabbix.com/ap/plugin-support/plugin/comms"
+	"git.zabbix.com/ap/plugin-support/plugin/flag"
 	"git.zabbix.com/ap/plugin-support/zbxerr"
 	_ "github.com/microsoft/go-mssqldb"
 )
@@ -52,7 +52,7 @@ var (
 )
 
 func main() {
-	err := comms.HandleFlags(
+	err := flag.HandleFlags(
 		plugin.Name,
 		os.Args[0],
 		fmt.Sprintf(copyrightMessage, PLUGIN_LICENSE_YEAR),
