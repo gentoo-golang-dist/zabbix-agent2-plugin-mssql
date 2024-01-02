@@ -212,7 +212,7 @@ func (p *mssqlPlugin) registerMetrics() error {
 		},
 		dbGet: {
 			metric: metric.New(
-				"Returns the availabile databases.",
+				"Returns the available databases.",
 				params.Join(params.BaseParams, params.TLSParams),
 				false,
 			),

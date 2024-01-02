@@ -1,0 +1,201 @@
+version: "3.1"
+
+services:
+  # zabbix agent2 with mssql plugin
+  mssql-plugin:
+    container_name: mssql-plugin
+    image: agent2-plugin/mssql
+    build:
+      context: ..
+      dockerfile: docker/mssql-plugin/Dockerfile
+    environment:
+      # accept all connections
+      ZBX_PASSIVESERVERS: ::/0
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/usr/bin/zabbix_get",
+          "-s",
+          "127.0.0.1",
+          "-p",
+          "10050",
+          "-k",
+          "agent.ping",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # test runners for each mssql version
+  mssql-2022-plugin-tests:
+    container_name: mssql-2022-plugin-tests
+    image: agent2-plugin/mssql-2022-tests
+    build:
+      context: tests
+      dockerfile: Dockerfile
+    environment:
+      AGENT2_URI: mssql-plugin
+      AGENT2_PORT: 10050
+      MSSQL_URL: mssql-2022
+      MSSQL_USER: zabbix
+      MSSQL_PASSWORD: quu5Ieso
+      MSSQL_CUSTOM_QUERY: test
+    depends_on:
+      mssql-2022-setup:
+        condition: service_completed_successfully
+      mssql-plugin:
+        condition: service_healthy
+
+  mssql-2019-plugin-tests:
+    container_name: mssql-2019-plugin-tests
+    image: agent2-plugin/mssql-2019-tests
+    build:
+      context: tests
+      dockerfile: Dockerfile
+    environment:
+      AGENT2_URI: mssql-plugin
+      AGENT2_PORT: 10050
+      MSSQL_URL: mssql-2019
+      MSSQL_USER: zabbix
+      MSSQL_PASSWORD: quu5Ieso
+      MSSQL_CUSTOM_QUERY: test
+    depends_on:
+      mssql-2019-setup:
+        condition: service_completed_successfully
+      mssql-plugin:
+        condition: service_healthy
+
+  mssql-2017-plugin-tests:
+    container_name: mssql-2017-plugin-tests
+    image: agent2-plugin/mssql-2017-tests
+    build:
+      context: tests
+      dockerfile: Dockerfile
+    environment:
+      AGENT2_URI: mssql-plugin
+      AGENT2_PORT: 10050
+      MSSQL_URL: mssql-2017
+      MSSQL_USER: zabbix
+      MSSQL_PASSWORD: quu5Ieso
+      MSSQL_CUSTOM_QUERY: test
+    depends_on:
+      mssql-2017-setup:
+        condition: service_completed_successfully
+      mssql-plugin:
+        condition: service_healthy
+
+  # mssql database setup runner. runs predefined setup scripts on the database
+  # instances.
+  mssql-2022-setup:
+    container_name: mssql-2022-setup
+    image: agent2-plugin/mssql-2022-setup
+    build:
+      context: setup
+      dockerfile: Dockerfile
+    environment:
+      MSSQL_SA_PASSWORD: haej7vaefa7Aicee
+      MSSQL_URL: mssql-2022
+      MSSQL_VERSION: "2022"
+    depends_on:
+      mssql-2022:
+        condition: service_healthy
+
+  mssql-2019-setup:
+    container_name: mssql-2019-setup
+    image: agent2-plugin/mssql-2019-setup
+    build:
+      context: setup
+      dockerfile: Dockerfile
+    environment:
+      MSSQL_SA_PASSWORD: haej7vaefa7Aicee
+      MSSQL_URL: mssql-2019
+      MSSQL_VERSION: "2019"
+    depends_on:
+      mssql-2019:
+        condition: service_healthy
+
+  mssql-2017-setup:
+    container_name: mssql-2017-setup
+    image: agent2-plugin/mssql-2017-setup
+    build:
+      context: setup
+      dockerfile: Dockerfile
+    environment:
+      MSSQL_SA_PASSWORD: haej7vaefa7Aicee
+      MSSQL_URL: mssql-2017
+      MSSQL_VERSION: "2017"
+    depends_on:
+      mssql-2017:
+        condition: service_healthy
+
+  # mssql database instances
+  mssql-2022:
+    container_name: mssql-2022
+    image: mcr.microsoft.com/mssql/server:2022-CU10-ubuntu-22.04
+    environment:
+      ACCEPT_EULA: Y
+      # mssql requires legit password
+      MSSQL_SA_PASSWORD: haej7vaefa7Aicee
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/opt/mssql-tools/bin/sqlcmd",
+          "-U",
+          "sa",
+          "-P",
+          "haej7vaefa7Aicee",
+          "-Q",
+          "select 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mssql-2019:
+    container_name: mssql-2019
+    image: mcr.microsoft.com/mssql/server:2019-CU24-ubuntu-20.04
+    environment:
+      ACCEPT_EULA: Y
+      # mssql requires legit password
+      MSSQL_SA_PASSWORD: haej7vaefa7Aicee
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/opt/mssql-tools/bin/sqlcmd",
+          "-U",
+          "sa",
+          "-P",
+          "haej7vaefa7Aicee",
+          "-Q",
+          "select 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  mssql-2017:
+    container_name: mssql-2017
+    image: mcr.microsoft.com/mssql/server:2017-CU31-ubuntu-18.04
+    environment:
+      ACCEPT_EULA: Y
+      # mssql requires legit password
+      MSSQL_SA_PASSWORD: haej7vaefa7Aicee
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/opt/mssql-tools/bin/sqlcmd",
+          "-U",
+          "sa",
+          "-P",
+          "haej7vaefa7Aicee",
+          "-Q",
+          "select 1",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+# /opt/mssql-tools/bin/sqlcmd -U sa -P haej7vaefa7Aicee -Q 'select 1'
