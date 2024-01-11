@@ -7,7 +7,7 @@ services:
     image: agent2-plugin/mssql
     build:
       context: ..
-      dockerfile: docker/mssql-plugin/Dockerfile
+      dockerfile: docker/plugin/Dockerfile
     environment:
       # accept all connections
       ZBX_PASSIVESERVERS: ::/0
