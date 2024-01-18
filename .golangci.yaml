@@ -1,0 +1,229 @@
+# version: 1.54.1
+# everything should be sorted in alphabetical order
+
+run:
+  timeout: 1m
+  allow-parallel-runners: true
+
+linters-settings:
+  decorder:
+    dec-order:
+      - const
+      - var
+      - type
+      - func
+    disable-dec-order-check: false
+    disable-init-func-first-check: false
+
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+
+  gocritic:
+    disabled-checks:
+      - unnamedResult
+    enabled-tags:
+      - diagnostic
+      - style
+      - performance
+      - experimental
+      - opinionated
+
+  gocyclo:
+    min-complexity: 10
+
+  goheader:
+    template: |-
+      ** Zabbix
+      ** Copyright 2001-{{YEAR}} Zabbix SIA
+      **
+      ** Licensed under the Apache License, Version 2.0 (the "License");
+      ** you may not use this file except in compliance with the License.
+      ** You may obtain a copy of the License at
+      **
+      **     http://www.apache.org/licenses/LICENSE-2.0
+      **
+      ** Unless required by applicable law or agreed to in writing, software
+      ** distributed under the License is distributed on an "AS IS" BASIS,
+      ** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      ** See the License for the specific language governing permissions and
+      ** limitations under the License.
+      *
+
+  gomodguard:
+    blocked:
+      modules:
+        - io/ioutil:
+      local_replace_directives: false
+
+  govet:
+    enable-all: true
+    disable:
+      - fieldalignment
+      - shadow
+
+  interfacebloat:
+    max: 6
+
+  lll:
+    line-length: 80
+    tab-width: 4
+
+  makezero:
+    always: true
+
+  revive:
+    enable-all-rules: true
+    severity: error
+    rules:
+      # settings
+      - name: argument-limit
+        arguments:
+          - 5
+
+      - name: comment-spacings
+        arguments:
+          - nolint
+
+      - name: exported
+        arguments:
+          - checkPrivateReceivers
+          - disableStutteringCheck
+
+      - name: function-result-limit
+        arguments:
+          - 4
+
+      - name: max-public-structs
+        arguments:
+          - 5
+
+      # disabled
+      - name: add-constant
+        disabled: true
+      - name: argument-limit
+        disabled: true
+      - name: banned-characters
+        disabled: true
+      - name: cognitive-complexity
+        disabled: true
+      - name: confusing-naming
+        disabled: true
+      - name: confusing-results
+        disabled: true
+      - name: cyclomatic
+        disabled: true
+      - name: error-strings ## for zbx
+        disabled: true
+      - name: file-header
+        disabled: true
+      - name: flag-parameter
+        disabled: true
+      - name: function-length
+        disabled: true
+      - name: import-shadowing
+        disabled: true
+      - name: line-length-limit
+        disabled: true
+      - name: unhandled-error
+        disabled: true
+      - name: package-comments
+        disabled: true
+
+  stylecheck:
+    checks: ["all", "-ST1000", "-ST1003"]
+    dot-import-whitelist: []
+    http-status-code-whitelist: []
+
+  tagalign:
+    align: false # could be true if https://github.com/momaek/formattag is used.
+    order:
+      - yaml
+      - json
+      - yml
+      - toml
+      - mapstructure
+      - binding
+      - validate
+
+  tagliatelle:
+    case:
+      rules:
+        json: camel
+        yaml: camel
+        xml: camel
+        bson: camel
+        avro: snake
+        mapstructure: kebab
+        env: upperSnake
+        envconfig: upperSnake
+
+linters:
+  enable-all: true
+  disable:
+    # gomodguard is better
+    - depguard
+
+    # always check marshal errors
+    - errchkjson
+
+    # triggers on switches with default case.
+    - exhaustive
+
+    # allow use go default zero values .
+    - exhaustruct
+
+    # cyclomatic complexity checkers already enforce limit on function length.
+    # no need to count lines.
+    - funlen
+
+    # conflicts with gci and goimports. the formatter should still be used, only
+    # lint can't enforce it.
+    - gofumpt
+
+    # conflicts with gofumpt and gci. the tool still should be used but gci
+    # needs be the last formatter.
+    - goimports
+
+    # const one = 1 - just no
+    - gomnd
+
+    # don't use shorthand ifs
+    - ifshort
+
+    # revive warns about this
+    - nakedret
+
+    # current unit test situation is bad enough as is. no need to introduce new
+    # unit testing practices.
+    - testpackage
+
+    # having one length vars is fine.
+    - varnamelen
+
+    # deprecated
+    - deadcode
+    - exhaustivestruct
+    - golint
+    - ifshort
+    - interfacer
+    - maligned
+    - nosnakecase
+    - scopelint
+    - structcheck
+    - varcheck
+
+issues:
+  exclude-use-default: false
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
+        - goerr113
+        - wrapcheck
+        - gocritic
+
+severity:
+  default-severity: error
