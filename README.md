@@ -6,8 +6,6 @@ It can monitor several MSSQL instances simultaneously, remote or local.
 
 <!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 
-## Table of contents
-
 - [Requirements](#requirements)
 - [Supported MSSQL versions](#supported-mssql-versions)
 - [Setup](#setup)
@@ -31,6 +29,7 @@ It can monitor several MSSQL instances simultaneously, remote or local.
     - [`Plugins.MSSQL.Sessions.*.HostNameInCertificate`](#pluginsmssqlsessionshostnameincertificate)
     - [`Plugins.MSSQL.Sessions.*.Encrypt`](#pluginsmssqlsessionsencrypt)
     - [`Plugins.MSSQL.Sessions.*.TLSMinVersion`](#pluginsmssqlsessionstlsminversion)
+    - [`Plugins.MSSQL.Sessions.*.Database`](#pluginsmssqlsessionsdatabase)
   - [Default settings](#default-settings)
     - [`Plugins.MSSQL.Default.Uri`](#pluginsmssqldefaulturi)
     - [`Plugins.MSSQL.Default.User`](#pluginsmssqldefaultuser)
@@ -40,6 +39,7 @@ It can monitor several MSSQL instances simultaneously, remote or local.
     - [`Plugins.MSSQL.Default.HostNameInCertificate`](#pluginsmssqldefaulthostnameincertificate)
     - [`Plugins.MSSQL.Default.Encrypt`](#pluginsmssqldefaultencrypt)
     - [`Plugins.MSSQL.Default.TLSMinVersion`](#pluginsmssqldefaulttlsminversion)
+    - [`Plugins.MSSQL.Default.Database`](#pluginsmssqldefaultdatabase)
 - [Metric keys](#metric-keys)
   - [`mssql.availability.group.get[<commonParameters>]`](#mssqlavailabilitygroupgetcommonparameters)
   - [`mssql.custom.query[<commonParameters>,<customQueryName>,<customQueryParameters>...]`](#mssqlcustomquerycommonparameterscustomquerynamecustomqueryparameters)
@@ -222,6 +222,8 @@ Plugins.MSSQL.System.Path=/usr/sbin/zabbix-agent2-plugin/zabbix-agent2-plugin-ms
 
 Specifies the amount of time to wait for a server to respond when first
 connecting and on follow-up operations in the session. Range: 1-30 in seconds.
+If not specified, the value defaults to global timeout value defined in agent 2
+configuration.
 
 Example usage:
 
@@ -234,7 +236,7 @@ Plugins.MSSQL.Timeout=10
 #### `Plugins.MSSQL.KeepAlive`
 
 Specifies the time in seconds for waiting before unused connections will be
-closed. Range: 60-900 in seconds.
+closed. Range: 60-900 in seconds. The default value is 300 (seconds).
 
 Example usage:
 
@@ -248,6 +250,11 @@ Plugins.MSSQL.KeepAlive=600
 
 Specifies the file path to a directory containing user-defined `.sql` files with
 custom queries that the plugin can execute.
+
+The plugin loads all available `.sql` files in the configured directory at
+startup. This means that any changes to the custom query files will not be
+reflected until the plugin is restarted. The plugin is started and stopped
+together with Zabbix agent 2.
 
 Example usage:
 
@@ -376,6 +383,18 @@ Example usage:
 Plugins.MSSQL.Sessions.exampleSession.TLSMinVersion=1.2
 ```
 
+<!-- TOC --><a name="pluginsmssqlsessionsdatabase"></a>
+
+#### `Plugins.MSSQL.Sessions.*.Database`
+
+Specifies the database name to connect to.
+
+Example usage:
+
+```conf
+Plugins.MSSQL.Sessions.exampleSession.Database=customers
+```
+
 <!-- TOC --><a name="default-settings"></a>
 
 ### Default settings
@@ -492,6 +511,18 @@ Example usage:
 
 ```conf
 Plugins.MSSQL.Default.TLSMinVersion=1.1
+```
+
+<!-- TOC --><a name="pluginsmssqldefaultdatabase"></a>
+
+#### `Plugins.MSSQL.Default.Database`
+
+Specifies the default database name to connect to.
+
+Example usage:
+
+```conf
+Plugins.MSSQL.Default.Database=prod
 ```
 
 <!-- TOC --><a name="metric-keys"></a>

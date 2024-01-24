@@ -1,6 +1,6 @@
 /*
 ** Zabbix
-** Copyright 2001-2023 Zabbix SIA
+** Copyright 2001-2024 Zabbix SIA
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@
 package handlers
 
 import (
+	"context"
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
@@ -661,6 +662,7 @@ func TestCustomQueries_HandlerFunc(t *testing.T) {
 			}
 
 			got, err := tt.cq.HandlerFunc(
+				context.Background(),
 				db,
 				tt.args.metricParams,
 				tt.args.extraParams...)
@@ -764,6 +766,7 @@ func TestQueryHandlerFunc(t *testing.T) {
 				WillReturnError(tt.fields.queryErr)
 
 			resp, err := QueryHandlerFunc(tt.args.query)(
+				context.Background(),
 				db,
 				nil,
 				tt.args.extraParams...,
@@ -816,7 +819,7 @@ func TestVersionHandler(t *testing.T) {
 		{
 			"+valid",
 			fields{resp: "1.2.3"},
-			"1.2.3",
+			"1.2.3 lvl 69 nice",
 			false,
 		},
 		{
@@ -842,15 +845,22 @@ func TestVersionHandler(t *testing.T) {
 				t.Fatalf("failed to create mock DB: %s", err)
 			}
 
-			m.ExpectQuery(`^SELECT SERVERPROPERTY\('productversion'\)$`).
+			m.ExpectQuery(
+				`SELECT
+                     SERVERPROPERTY\('productversion'\),
+                     SERVERPROPERTY\('productlevel'\),
+                     SERVERPROPERTY\('edition'\)`,
+			).
 				WillReturnRows(
-					sqlmock.NewRows([]string{"version"}).
-						AddRow("1.2.3").
+					sqlmock.NewRows(
+						[]string{"productversion", "productlevel", "edition"},
+					).
+						AddRow("1.2.3", "lvl 69", "nice").
 						RowError(0, tt.fields.rowsErr),
 				).
 				WillReturnError(tt.fields.queryErr)
 
-			got, err := VersionHandler(db, nil)
+			got, err := VersionHandler(context.Background(), db, nil)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"VersionHandler() error = %v, wantErr %v",
