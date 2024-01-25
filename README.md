@@ -6,6 +6,8 @@ It can monitor several MSSQL instances simultaneously, remote or local.
 
 <!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 
+## Table of contents
+
 - [Requirements](#requirements)
 - [Supported MSSQL versions](#supported-mssql-versions)
 - [Setup](#setup)
@@ -590,7 +592,7 @@ hence the two empty parameters.
 
 ### `mssql.db.get`
 
-Returns the available databases.
+Returns all available databases.
 
 <!-- TOC --><a name="mssqljobstatusget"></a>
 
@@ -608,7 +610,9 @@ Returns the last backup time for all databases.
 
 ### `mssql.local.db.get`
 
-Returns local DB info.
+Returns databases that are participating in an Always On availability group and
+replica (primary or secondary) and are located on the server that the connection
+was established to.
 
 <!-- TOC --><a name="mssqlmirroringget"></a>
 
@@ -620,7 +624,9 @@ Returns mirroring info.
 
 ### `mssql.nonlocal.db.get`
 
-Returns non-local DB info.
+Returns databases that are participating in an Always On availability group and
+replica (primary or secondary) located on other servers (The database is not
+local to the SQL Server instance that the connection was established to).
 
 <!-- TOC --><a name="mssqlperfcounterget"></a>
 
