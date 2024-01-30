@@ -82,10 +82,10 @@ func (c *ConnCollection) WithConnHandlerFunc(
 				User:                   metricParams[params.User.Name()],
 				Password:               metricParams[params.Password.Name()],
 				CACertPath:             metricParams[params.CACertPath.Name()],
-				TrustServerCertificate: metricParams[params.TrustServerCertificate.Name()], //nolint:lll // no wrap.
-				HostNameInCertificate:  metricParams[params.HostNameInCertificate.Name()],  //nolint:lll // no wrap.
+				TrustServerCertificate: metricParams[params.TrustServerCertificate.Name()],
+				HostNameInCertificate:  metricParams[params.HostNameInCertificate.Name()],
 				Encrypt:                metricParams[params.Encrypt.Name()],
-				TLSMinVersion:          metricParams[params.TLSMinVersion.Name()], //nolint:lll // no wrap.
+				TLSMinVersion:          metricParams[params.TLSMinVersion.Name()],
 			},
 		)
 		if err != nil {

@@ -186,7 +186,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 		{
 			"+valid",
 			fields{
-				dsn: "pigeon://8888:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn: "pigeon://8888:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
 			},
 			args{
 				metricParams: map[string]string{
@@ -207,7 +207,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 		{
 			"+extraParams",
 			fields{
-				dsn: "pigeon://7777:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn: "pigeon://7777:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
 			},
 			args{
 				metricParams: map[string]string{
@@ -231,7 +231,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 		{
 			"-getErr",
 			fields{
-				dsn:    "pigeon://6666:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn:    "pigeon://6666:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
 				getErr: errors.New("fail"),
 			},
 			args{
@@ -345,7 +345,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 			"+valid",
 			expect{true},
 			fields{
-				dsn: "pigeon://aaaa:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn: "pigeon://aaaa:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
 			},
 			args{
 				metricParams: map[string]string{
@@ -362,7 +362,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 			expect{false},
 			fields{
 				getErr: errors.New("fail"),
-				dsn:    "pigeon://aaaa:bbbb@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn:    "pigeon://aaaa:bbbb@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
 			},
 			args{
 				metricParams: map[string]string{
@@ -379,7 +379,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 			expect{true},
 			fields{
 				pingErr: errors.New("fail"),
-				dsn:     "pigeon://aaaa:cccc@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn:     "pigeon://aaaa:cccc@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
 			},
 			args{
 				metricParams: map[string]string{
@@ -539,7 +539,7 @@ func TestConnCollection_get(t *testing.T) {
 			expect{true},
 			fields{
 				conns:      map[ConnConfig]*sql.DB{},
-				dsn:        "pigeon://rrrr:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn:        "pigeon://rrrr:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
 				driverName: "testdriver",
 			},
 			args{
@@ -565,7 +565,7 @@ func TestConnCollection_get(t *testing.T) {
 				conns: map[ConnConfig]*sql.DB{
 					{}: {},
 				},
-				dsn:        "pigeon://jjjj:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn:        "pigeon://jjjj:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
 				driverName: "testdriver",
 			},
 			args{
@@ -590,7 +590,7 @@ func TestConnCollection_get(t *testing.T) {
 			expect{true},
 			fields{
 				conns:      map[ConnConfig]*sql.DB{},
-				dsn:        "pigeon://kkkk:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0", //nolint:lll
+				dsn:        "pigeon://kkkk:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
 				newConnErr: errors.New("fail"),
 				driverName: "testdriver",
 			},
@@ -716,7 +716,7 @@ func TestConnCollection_newConn(t *testing.T) {
 			expect{true, true},
 			fields{
 				keepAlive:  4,
-				dsn:        "pigeon://aaaa:bbbb@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4", //nolint:lll
+				dsn:        "pigeon://aaaa:bbbb@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4",
 				driverName: "testdriver",
 			},
 			args{&ConnConfig{
@@ -777,7 +777,7 @@ func TestConnCollection_newConn(t *testing.T) {
 			fields{
 				keepAlive:  4,
 				openErr:    errors.New("fail"),
-				dsn:        "pigeon://cccc:bbbb@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4", //nolint:lll
+				dsn:        "pigeon://cccc:bbbb@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4",
 				driverName: "testdriver",
 			},
 			args{&ConnConfig{
