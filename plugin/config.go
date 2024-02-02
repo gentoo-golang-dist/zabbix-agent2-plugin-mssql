@@ -32,6 +32,7 @@ type session struct {
 	HostNameInCertificate  string `conf:"optional"`
 	Encrypt                string `conf:"optional"`
 	TLSMinVersion          string `conf:"optional"`
+	Database               string `conf:"optional"`
 }
 
 type pluginConfig struct {
@@ -40,7 +41,7 @@ type pluginConfig struct {
 	// first connecting and on follow up operations in the session.
 	Timeout int `conf:"optional,range=1:30"`
 	// KeepAlive is a time to wait before unused connections will be closed.
-	KeepAlive int `conf:"optional,range=0:900,default=60"`
+	KeepAlive int `conf:"optional,range=60:900,default=300"`
 	// Sessions stores pre-defined named sets of connections settings.
 	Sessions map[string]session `conf:"optional"`
 	// Default stores default connection parameter values from configuration

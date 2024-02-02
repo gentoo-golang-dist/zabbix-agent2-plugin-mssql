@@ -1,6 +1,6 @@
 /*
 ** Zabbix
-** Copyright 2001-2023 Zabbix SIA
+** Copyright 2001-2024 Zabbix SIA
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ func Test_mssqlPlugin_Start(t *testing.T) {
 	log.DefaultLogger = stdlog.New(os.Stdout, "", stdlog.LstdFlags)
 
 	sampleConnCollection := &dbconn.ConnCollection{}
-	sampleConnCollection.Init(30, &mssqlPlugin{})
+	sampleConnCollection.Init(30, 29, &mssqlPlugin{})
 
 	type fields struct {
 		Base          plugin.Base
@@ -66,6 +66,7 @@ func Test_mssqlPlugin_Start(t *testing.T) {
 				conns: &dbconn.ConnCollection{},
 				config: &pluginConfig{
 					KeepAlive:        30,
+					Timeout:          29,
 					CustomQueriesDir: "",
 				},
 				customQueries: handlers.CustomQueries{},

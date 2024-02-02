@@ -18,6 +18,7 @@
 package handlers
 
 import (
+	"context"
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
@@ -53,7 +54,10 @@ type HandlerFunc func(
 // ConnHandlerFunc describes the signature all connection handler functions
 // must have.
 type ConnHandlerFunc func(
-	conn *sql.DB, metricParams map[string]string, extraParams ...string,
+	ctx context.Context,
+	conn *sql.DB,
+	metricParams map[string]string,
+	extraParams ...string,
 ) (any, error)
 
 // CustomQueries stores user defined custom queries.
@@ -204,7 +208,10 @@ func (cq CustomQueries) Load(customQueriesDirFS fs.FS, logr log.Logger) error {
 
 // HandlerFunc handles a single metric request to execute a custom query.
 func (cq CustomQueries) HandlerFunc(
-	conn *sql.DB, metricParams map[string]string, extraParams ...string,
+	ctx context.Context,
+	conn *sql.DB,
+	metricParams map[string]string,
+	extraParams ...string,
 ) (any, error) {
 	name := metricParams[params.QueryName.Name()]
 
@@ -213,14 +220,17 @@ func (cq CustomQueries) HandlerFunc(
 		return nil, errs.Errorf("custom query %q not found", name)
 	}
 
-	return QueryHandlerFunc(query)(conn, metricParams, extraParams...)
+	return QueryHandlerFunc(query)(ctx, conn, metricParams, extraParams...)
 }
 
 // QueryHandlerFunc returns a handler function that will execute the specified
 // query with arguments, formatting result rows as JSON.
 func QueryHandlerFunc(query string) ConnHandlerFunc {
 	return func(
-		conn *sql.DB, _ map[string]string, extraParams ...string,
+		ctx context.Context,
+		conn *sql.DB,
+		_ map[string]string,
+		extraParams ...string,
 	) (any, error) {
 		args := make([]any, 0, len(extraParams))
 
@@ -228,7 +238,7 @@ func QueryHandlerFunc(query string) ConnHandlerFunc {
 			args = append(args, p)
 		}
 
-		rows, err := conn.Query(query, args...)
+		rows, err := conn.QueryContext(ctx, query, args...)
 		if err != nil {
 			return nil, errs.Wrap(err, "failed to query")
 		}
@@ -246,15 +256,22 @@ func QueryHandlerFunc(query string) ConnHandlerFunc {
 
 // VersionHandler handler func that returns the version of the database server.
 func VersionHandler(
-	conn *sql.DB, _ map[string]string, _ ...string,
+	ctx context.Context, conn *sql.DB, _ map[string]string, _ ...string,
 ) (any, error) {
-	const query = "SELECT SERVERPROPERTY('productversion')"
+	const query = `SELECT
+                     SERVERPROPERTY('productversion'),
+                     SERVERPROPERTY('productlevel'),
+                     SERVERPROPERTY('edition')`
 
-	row := conn.QueryRow(query)
+	row := conn.QueryRowContext(ctx, query)
 
-	var version string
+	var (
+		productVersion string
+		productLevel   string
+		edition        string
+	)
 
-	err := row.Scan(&version)
+	err := row.Scan(&productVersion, &productLevel, &edition)
 	if err != nil {
 		return nil, errs.Wrap(err, "failed to scan version")
 	}
@@ -264,7 +281,10 @@ func VersionHandler(
 		return nil, errs.Wrap(err, "failed to iterate over rows")
 	}
 
-	return version, nil
+	return strings.Join(
+		[]string{productVersion, productLevel, edition},
+		" ",
+	), nil
 }
 
 //nolint:gocyclo,cyclop // it's not that big (thats what she said).
