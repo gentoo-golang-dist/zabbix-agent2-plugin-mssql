@@ -121,7 +121,7 @@ func Launch() error {
 		return errs.Wrap(err, "failed to create new handler")
 	}
 
-	p.Logger = h
+	p.Logger = &h
 
 	err = h.Execute()
 	if err != nil {
