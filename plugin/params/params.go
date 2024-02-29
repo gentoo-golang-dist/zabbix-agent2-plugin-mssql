@@ -45,6 +45,18 @@ var (
 		TLSMinVersion,
 	}
 
+	// AzureParams groups all item key configuration parameters specific for
+	// Azure SQL Database. All item keys except for ping, version and
+	// custom query are not meant for Azure SQL Database. (The underlying
+	// queries where not designed for Azure) Also Azure does not allow
+	// switching databases in a query, hence the only way to gather any data
+	// from Azure DB is to specify DB name at connection. This is as an extra
+	// bit of functionality to allow users that really want to monitor something
+	// on Azure to be able to do that in their very custom own way.
+	AzureParams = []*metric.Param{
+		Database,
+	}
+
 	// URI is a metric param tha specifies database connection URI.
 	URI = metric.NewConnParam(
 		"URI", "URL connection string to connect to the database.",
@@ -121,6 +133,13 @@ var (
 	).WithValidator(
 		metric.SetValidator{Set: []string{"", "1.0", "1.1", "1.2", "1.3"}},
 	)
+
+	// Database is a metric param tha specifies the database connection should
+	// be established to.
+	Database = metric.NewSessionOnlyParam(
+		"Database", "Database name that the connection will be established to.",
+	).
+		WithDefault("")
 )
 
 // Join combines multiple parameter groups into one.

@@ -121,7 +121,7 @@ func Launch() error {
 		return errs.Wrap(err, "failed to create new handler")
 	}
 
-	p.Logger = h
+	p.Logger = &h
 
 	err = h.Execute()
 	if err != nil {
@@ -135,7 +135,7 @@ func Launch() error {
 // initialized in Start, to ensure that config has been loaded before.
 // (Start is called after Configure).
 func (p *mssqlPlugin) Start() {
-	p.conns.Init(p.config.KeepAlive, p)
+	p.conns.Init(p.config.KeepAlive, p.config.Timeout, p)
 
 	err := p.customQueries.Load(os.DirFS(p.config.CustomQueriesDir), p)
 	if err != nil {
@@ -185,7 +185,17 @@ func (p *mssqlPlugin) registerMetrics() error {
 		availabilityGroupGet: {
 			metric: metric.New(
 				"Returns the availability groups.",
-				params.Join(params.BaseParams, params.TLSParams),
+				params.Join(
+					params.BaseParams,
+					params.TLSParams,
+					// AzureParams are added to all item keys (not only the ones
+					// that actually need it e.g. ping, version and
+					// custom query) because EvalParams from plugin-support
+					// can't handle session config struct that is super set
+					// of params needed by a particular metric. It panics in
+					// such a case. 😩🔫
+					params.AzureParams,
+				),
 				false,
 			),
 			handler: handlers.WithJSONResponse(
@@ -201,6 +211,7 @@ func (p *mssqlPlugin) registerMetrics() error {
 					params.BaseParams,
 					params.CustomQueryParams,
 					params.TLSParams,
+					params.AzureParams,
 				),
 				true,
 			),
@@ -213,7 +224,11 @@ func (p *mssqlPlugin) registerMetrics() error {
 		dbGet: {
 			metric: metric.New(
 				"Returns the available databases.",
-				params.Join(params.BaseParams, params.TLSParams),
+				params.Join(
+					params.BaseParams,
+					params.TLSParams,
+					params.AzureParams,
+				),
 				false,
 			),
 			handler: handlers.WithJSONResponse(
@@ -225,7 +240,11 @@ func (p *mssqlPlugin) registerMetrics() error {
 		jobStatusGet: {
 			metric: metric.New(
 				"Return the status of jobs.",
-				params.Join(params.BaseParams, params.TLSParams),
+				params.Join(
+					params.BaseParams,
+					params.TLSParams,
+					params.AzureParams,
+				),
 				false,
 			),
 			handler: handlers.WithJSONResponse(
@@ -237,7 +256,11 @@ func (p *mssqlPlugin) registerMetrics() error {
 		lastBackupGet: {
 			metric: metric.New(
 				"Return the last backup time for all databases.",
-				params.Join(params.BaseParams, params.TLSParams),
+				params.Join(
+					params.BaseParams,
+					params.TLSParams,
+					params.AzureParams,
+				),
 				false,
 			),
 			handler: handlers.WithJSONResponse(
@@ -249,7 +272,11 @@ func (p *mssqlPlugin) registerMetrics() error {
 		localDBGet: {
 			metric: metric.New(
 				"Return local DB info.",
-				params.Join(params.BaseParams, params.TLSParams),
+				params.Join(
+					params.BaseParams,
+					params.TLSParams,
+					params.AzureParams,
+				),
 				false,
 			),
 			handler: handlers.WithJSONResponse(
@@ -261,7 +288,11 @@ func (p *mssqlPlugin) registerMetrics() error {
 		mirroringGet: {
 			metric: metric.New(
 				"Return mirroring info.",
-				params.Join(params.BaseParams, params.TLSParams),
+				params.Join(
+					params.BaseParams,
+					params.TLSParams,
+					params.AzureParams,
+				),
 				false,
 			),
 			handler: handlers.WithJSONResponse(
@@ -273,7 +304,11 @@ func (p *mssqlPlugin) registerMetrics() error {
 		nonLocalDBGet: {
 			metric: metric.New(
 				"Return non-local DB info.",
-				params.Join(params.BaseParams, params.TLSParams),
+				params.Join(
+					params.BaseParams,
+					params.TLSParams,
+					params.AzureParams,
+				),
 				false,
 			),
 			handler: handlers.WithJSONResponse(
@@ -285,7 +320,11 @@ func (p *mssqlPlugin) registerMetrics() error {
 		perfCounterGet: {
 			metric: metric.New(
 				"Return the performance counters.",
-				params.Join(params.BaseParams, params.TLSParams),
+				params.Join(
+					params.BaseParams,
+					params.TLSParams,
+					params.AzureParams,
+				),
 				false,
 			),
 			handler: handlers.WithJSONResponse(
@@ -297,7 +336,11 @@ func (p *mssqlPlugin) registerMetrics() error {
 		ping: {
 			metric: metric.New(
 				"Ping the database.",
-				params.Join(params.BaseParams, params.TLSParams),
+				params.Join(
+					params.BaseParams,
+					params.TLSParams,
+					params.AzureParams,
+				),
 				false,
 			),
 			handler: p.conns.PingHandler,
@@ -305,7 +348,11 @@ func (p *mssqlPlugin) registerMetrics() error {
 		quorumGet: {
 			metric: metric.New(
 				"Return the quorum info.",
-				params.Join(params.BaseParams, params.TLSParams),
+				params.Join(
+					params.BaseParams,
+					params.TLSParams,
+					params.AzureParams,
+				),
 				false,
 			),
 			handler: handlers.WithJSONResponse(
@@ -317,7 +364,11 @@ func (p *mssqlPlugin) registerMetrics() error {
 		quorumMemberGet: {
 			metric: metric.New(
 				"Return the quorum members.",
-				params.Join(params.BaseParams, params.TLSParams),
+				params.Join(
+					params.BaseParams,
+					params.TLSParams,
+					params.AzureParams,
+				),
 				false,
 			),
 			handler: handlers.WithJSONResponse(
@@ -329,7 +380,11 @@ func (p *mssqlPlugin) registerMetrics() error {
 		replicaGet: {
 			metric: metric.New(
 				"Return the replicas.",
-				params.Join(params.BaseParams, params.TLSParams),
+				params.Join(
+					params.BaseParams,
+					params.TLSParams,
+					params.AzureParams,
+				),
 				false,
 			),
 			handler: handlers.WithJSONResponse(
@@ -341,7 +396,11 @@ func (p *mssqlPlugin) registerMetrics() error {
 		version: {
 			metric: metric.New(
 				"Returns the MSSQL server version.",
-				params.Join(params.BaseParams, params.TLSParams),
+				params.Join(
+					params.BaseParams,
+					params.TLSParams,
+					params.AzureParams,
+				),
 				false,
 			),
 			handler: p.conns.WithConnHandlerFunc(handlers.VersionHandler),
