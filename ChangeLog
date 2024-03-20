@@ -5,6 +5,4 @@ New features:
 [ZBXNEXT-8672] implement metric handlers (rzvejs)
 [ZBXNEXT-6235] initial implementation for MSSQL loadable Zabbix agent 2 plugin (rzvejs)
 
-Bug fixes:
-
 --------------------------------------------------------------------------------
