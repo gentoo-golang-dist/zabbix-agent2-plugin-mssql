@@ -1,3 +1,9 @@
+Changes for 6.0.29rc1
+
+Bug fixes:
+[ZBX-24186] added support of arm64 to Makefile (mprihodko)
+
+--------------------------------------------------------------------------------
 Changes for 6.0.28
 
 6.0.28rc1 was released as 6.0.28 without any changes
