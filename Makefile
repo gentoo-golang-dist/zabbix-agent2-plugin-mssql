@@ -4,6 +4,7 @@ PACKAGE=zabbix-agent2-plugin-mssql
 TOPDIR := $(CURDIR)
 
 ifeq ($(OS),Windows_NT)
+GOOS := windows
 SHELL := cmd
 TOPDIR := $(subst /,\,$(CURDIR))
 PACKAGE:=$(PACKAGE).exe
@@ -23,17 +24,38 @@ endif
 RFLAGS := $(RFLAGS) --input-format=rc -O coff
 
 ifeq ("$(ARCH)", "")
+ifdef PROCESSOR_ARCHITECTURE
 	ARCH := $(PROCESSOR_ARCHITECTURE)
-endif
-endif
-
-ifeq ("$(ARCH)", "x86")
-	GOARCH := 386
-	RFLAGS := $(RFLAGS) --target=pe-i386
-
 else
-	GOARCH := amd64
+	ARCH := x86
+endif
+endif
+
+ifeq ($(ARCH), x86)
+	RFLAGS := $(RFLAGS) --target=pe-i386
+else ifeq ($(ARCH), AMD64)
 	RFLAGS := $(RFLAGS) --target=pe-x86-64
+else ifeq (,$(findstring ARM,$(ARCH)))
+$(error Unsupported CPU architecture: $(ARCH))
+endif
+endif
+
+ifeq ($(ARCH), x86)
+	GOARCH := 386
+else ifeq ($(ARCH), AMD64)
+	GOARCH := amd64
+else ifeq ($(ARCH), ARM)
+	GOARCH := arm
+else ifeq ($(ARCH), ARM64)
+	GOARCH := arm64
+endif
+
+ifndef GOOS
+GOOS := $(shell go env GOOS)
+endif
+
+ifndef GOARCH
+GOARCH := $(shell go env GOARCH)
 endif
 
 DISTFILES = \
@@ -59,8 +81,13 @@ ifneq ("$(WINDRES)","")
 endif
 
 build: .build_rc
+ifeq ($(OS),Windows_NT)
+	set GOOS=$(GOOS)
 	set GOARCH=$(GOARCH)
 	go build -o "$(TOPDIR)/$(PACKAGE)"
+else
+	GOOS="$(GOOS)" GOARCH="$(GOARCH)" go build -o "$(TOPDIR)/$(PACKAGE)"
+endif
 
 clean:
 ifeq ($(OS),Windows_NT)
