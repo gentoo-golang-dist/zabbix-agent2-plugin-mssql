@@ -1,3 +1,9 @@
+Changes for 6.0.29rc1
+
+New features:
+[ZBXNEXT-9039] added Go compiler version to Zabbix agent 2 plugin version output (mprihodko)
+
+--------------------------------------------------------------------------------
 Changes for 6.0.28
 
 6.0.28rc1 was released as 6.0.28 without any changes
