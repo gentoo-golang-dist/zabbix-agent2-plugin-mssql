@@ -36,7 +36,9 @@ ifeq ($(ARCH), x86)
 else ifeq ($(ARCH), AMD64)
 	RFLAGS := $(RFLAGS) --target=pe-x86-64
 else ifeq (,$(findstring ARM,$(ARCH)))
+ifneq ($(ARCH), $(PROCESSOR_ARCHITECTURE))
 $(error Unsupported CPU architecture: $(ARCH))
+endif
 endif
 endif
 
