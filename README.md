@@ -74,14 +74,8 @@ It can monitor several MSSQL instances simultaneously, remote or local.
 
 ## Supported Operating Systems and Architectures
 
-The plugin and its dependencies are pure Go, hence supported on all platforms
-that Go supports. (Linux, Windows, macOS, and, etc.)
-
-To view the list of supported platforms (OS and architecture), run:
-
-```sh
-go tool dist list
-```
+The plugin will work on all operating systems and architectures that the Go
+programming language and Zabbix agent 2 supports.
 
 <!-- TOC --><a name="setup"></a>
 
