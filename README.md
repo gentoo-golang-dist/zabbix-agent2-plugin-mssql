@@ -6,10 +6,8 @@ It can monitor several MSSQL instances simultaneously, remote or local.
 
 <!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 
-## Table of contents
-
 - [Requirements](#requirements)
-- [Supported MSSQL versions](#supported-mssql-versions)
+- [Supported Operating Systems and Architectures](#supported-operating-systems-and-architectures)
 - [Setup](#setup)
 - [Command line options](#command-line-options)
 - [Microsoft SQL server requirements](#microsoft-sql-server-requirements)
@@ -70,9 +68,18 @@ It can monitor several MSSQL instances simultaneously, remote or local.
 - Go programming language version 1.20 or newer (required only to build the
   plugin from source)
 
-<!-- TOC --><a name="supported-mssql-versions"></a>
+<!-- TOC --><a name="supported-operating-systems-and-architectures"></a>
 
-## Supported MSSQL versions
+## Supported Operating Systems and Architectures
+
+The plugin and its dependencies are pure Go, hence supported on all platforms
+that Go supports.
+
+To view the list of supported platforms, run:
+
+```sh
+go tool dist list
+```
 
 <!-- TOC --><a name="setup"></a>
 
