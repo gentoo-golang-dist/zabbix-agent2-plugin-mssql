@@ -6,6 +6,8 @@ It can monitor several MSSQL instances simultaneously, remote or local.
 
 <!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 
+## Table of contents
+
 - [Requirements](#requirements)
 - [Supported Operating Systems and Architectures](#supported-operating-systems-and-architectures)
 - [Setup](#setup)
