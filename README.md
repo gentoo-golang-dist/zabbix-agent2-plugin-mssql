@@ -75,9 +75,9 @@ It can monitor several MSSQL instances simultaneously, remote or local.
 ## Supported Operating Systems and Architectures
 
 The plugin and its dependencies are pure Go, hence supported on all platforms
-that Go supports.
+that Go supports. (Linux, Windows, macOS, and, etc.)
 
-To view the list of supported platforms, run:
+To view the list of supported platforms (OS and architecture), run:
 
 ```sh
 go tool dist list
