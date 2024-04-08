@@ -1,5 +1,5 @@
-git.zabbix.com/ap/plugin-support v1.2.2-0.20240229095958-858bf946dade h1:dER2H1ONx+91XQWV5MR6MnogphJ6hZe+3gQKqlwDCmM=
-git.zabbix.com/ap/plugin-support v1.2.2-0.20240229095958-858bf946dade/go.mod h1:FLyfsn/a9DjxDBgeMZsgIyTuvvnRm64Tuf32DaA0zcs=
+git.zabbix.com/ap/plugin-support v1.2.2-0.20240408123000-71b4240e2838 h1:/gYJlTKWJq8BFWPwDohMPhsouf2pbNY9Oxv7AXsu/h0=
+git.zabbix.com/ap/plugin-support v1.2.2-0.20240408123000-71b4240e2838/go.mod h1:FLyfsn/a9DjxDBgeMZsgIyTuvvnRm64Tuf32DaA0zcs=
 github.com/Azure/azure-sdk-for-go/sdk/azcore v1.7.1 h1:/iHxaJhsFr0+xVFfbMr5vxz848jyiWuIEDhYq3y5odY=
 github.com/Azure/azure-sdk-for-go/sdk/azidentity v1.3.0 h1:vcYCAze6p19qBW7MhZybIsqD8sMV8js0NyQM8JDnVtg=
 github.com/Azure/azure-sdk-for-go/sdk/internal v1.3.0 h1:sXr+ck84g/ZlZUOZiNELInmMgOsuGwdjjVkEIde0OtY=

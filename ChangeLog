@@ -1,6 +1,7 @@
 Changes for 6.0.29rc1
 
 New features:
+[ZBX-24210] improve new conn creation concurrency, bump plugin support version (rzvejs)
 [ZBXNEXT-8947] updated README with supported platforms (rzvejs)
 
 --------------------------------------------------------------------------------
