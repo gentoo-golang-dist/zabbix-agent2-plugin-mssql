@@ -3,6 +3,7 @@ Changes for 7.0.0rc1
 New features:
 
 Bug fixes:
+[ZBX-24186] added support of arm64 to Makefile (mprihodko)
 
 --------------------------------------------------------------------------------
 Changes for 7.0.0beta3
