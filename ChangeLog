@@ -1,9 +1,22 @@
-Changes for 6.4.14rc1
+Changes for 6.4.15rc1
 
 New features:
 [ZBXNEXT-9039] added Go compiler version to Zabbix agent 2 plugin version output (mprihodko)
 
+Bug fixes:
+[ZBX-24186] added support of arm64 to Makefile (mprihodko)
+
 --------------------------------------------------------------------------------
+Changes for 6.4.14
+
+6.4.14rc1 was released as 6.4.14 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.4.14rc1
+
+New features:
+[ZBXNEXT-8947] updated README with supported platforms (rzvejs)
+
 Changes for 6.4.13
 
 6.4.13rc1 was released as 6.4.13 without any changes
