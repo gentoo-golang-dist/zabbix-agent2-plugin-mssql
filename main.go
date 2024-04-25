@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"os"
 
-	"git.zabbix.com/ap/mssql/plugin"
 	_ "github.com/microsoft/go-mssqldb"
+	"golang.zabbix.com/plugin/mssql/plugin"
 	"golang.zabbix.com/sdk/plugin/flag"
 	"golang.zabbix.com/sdk/zbxerr"
 )
