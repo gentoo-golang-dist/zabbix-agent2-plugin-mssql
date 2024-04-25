@@ -31,10 +31,10 @@ import (
 	"testing/fstest"
 	"time"
 
-	"git.zabbix.com/ap/plugin-support/log"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/go-cmp/cmp"
 	mssql "github.com/microsoft/go-mssqldb"
+	"golang.zabbix.com/sdk/log"
 )
 
 var (
