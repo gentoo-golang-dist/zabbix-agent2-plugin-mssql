@@ -18,8 +18,8 @@
 package params
 
 import (
-	"git.zabbix.com/ap/plugin-support/metric"
-	"git.zabbix.com/ap/plugin-support/uri"
+	"golang.zabbix.com/sdk/metric"
+	"golang.zabbix.com/sdk/uri"
 )
 
 //nolint:gochecknoglobals // global constants.

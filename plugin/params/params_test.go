@@ -20,8 +20,8 @@ package params
 import (
 	"testing"
 
-	"git.zabbix.com/ap/plugin-support/metric"
 	"github.com/google/go-cmp/cmp"
+	"golang.zabbix.com/sdk/metric"
 )
 
 func TestJoin(t *testing.T) {
