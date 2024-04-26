@@ -27,10 +27,10 @@ import (
 	"sync"
 	"testing"
 
-	"git.zabbix.com/ap/mssql/plugin/params"
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"golang.zabbix.com/plugin/mssql/plugin/params"
 	"golang.zabbix.com/sdk/log"
 )
 

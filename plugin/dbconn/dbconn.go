@@ -26,8 +26,8 @@ import (
 	"sync"
 	"time"
 
-	"git.zabbix.com/ap/mssql/plugin/handlers"
-	"git.zabbix.com/ap/mssql/plugin/params"
+	"golang.zabbix.com/plugin/mssql/plugin/handlers"
+	"golang.zabbix.com/plugin/mssql/plugin/params"
 	"golang.zabbix.com/sdk/errs"
 	"golang.zabbix.com/sdk/log"
 	"golang.zabbix.com/sdk/uri"
