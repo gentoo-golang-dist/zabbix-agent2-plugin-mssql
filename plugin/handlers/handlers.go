@@ -27,10 +27,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"git.zabbix.com/ap/mssql/plugin/params"
-	"git.zabbix.com/ap/plugin-support/errs"
-	"git.zabbix.com/ap/plugin-support/log"
 	mssql "github.com/microsoft/go-mssqldb"
+	"golang.zabbix.com/plugin/mssql/plugin/params"
+	"golang.zabbix.com/sdk/errs"
+	"golang.zabbix.com/sdk/log"
 )
 
 var (

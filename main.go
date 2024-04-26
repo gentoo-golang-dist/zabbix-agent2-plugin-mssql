@@ -22,10 +22,10 @@ import (
 	"fmt"
 	"os"
 
-	"git.zabbix.com/ap/mssql/plugin"
-	"git.zabbix.com/ap/plugin-support/plugin/flag"
-	"git.zabbix.com/ap/plugin-support/zbxerr"
 	_ "github.com/microsoft/go-mssqldb"
+	"golang.zabbix.com/plugin/mssql/plugin"
+	"golang.zabbix.com/sdk/plugin/flag"
+	"golang.zabbix.com/sdk/zbxerr"
 )
 
 const copyrightMessage = //
