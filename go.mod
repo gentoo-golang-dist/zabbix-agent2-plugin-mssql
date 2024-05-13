@@ -1,4 +1,4 @@
-module git.zabbix.com/ap/mssql
+module golang.zabbix.com/plugin/mssql
 
 go 1.20
 
