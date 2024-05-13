@@ -2,6 +2,7 @@ Changes for 7.0.0rc1
 
 New features:
 [ZBXNEXT-9039] added Go compiler version to Zabbix agent 2 plugin version output (mprihodko)
+[ZBX-24210] improve new conn creation concurrency, bump plugin support version (rzvejs)
 
 Bug fixes:
 [ZBX-24186] added support of arm64 to Makefile (mprihodko)
