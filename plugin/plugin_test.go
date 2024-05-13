@@ -27,14 +27,14 @@ import (
 	"testing"
 	"time"
 
-	"git.zabbix.com/ap/mssql/plugin/dbconn"
-	"git.zabbix.com/ap/mssql/plugin/handlers"
-	"git.zabbix.com/ap/mssql/plugin/params"
-	"git.zabbix.com/ap/plugin-support/log"
-	"git.zabbix.com/ap/plugin-support/metric"
-	"git.zabbix.com/ap/plugin-support/plugin"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	"golang.zabbix.com/plugin/mssql/plugin/dbconn"
+	"golang.zabbix.com/plugin/mssql/plugin/handlers"
+	"golang.zabbix.com/plugin/mssql/plugin/params"
+	"golang.zabbix.com/sdk/log"
+	"golang.zabbix.com/sdk/metric"
+	"golang.zabbix.com/sdk/plugin"
 )
 
 //nolint:paralleltest,tparallel
