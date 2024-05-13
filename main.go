@@ -16,7 +16,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"os"
 
 	_ "github.com/microsoft/go-mssqldb"
@@ -37,14 +36,13 @@ var (
 	PLUGIN_VERSION_MAJOR = 7
 	PLUGIN_VERSION_MINOR = 0
 	PLUGIN_VERSION_PATCH = 0
-	PLUGIN_LICENSE_YEAR  = 2023
 )
 
 func main() {
 	err := flag.HandleFlags(
 		plugin.Name,
 		os.Args[0],
-		fmt.Sprintf(copyrightMessage, PLUGIN_LICENSE_YEAR),
+		copyrightMessage,
 		PLUGIN_VERSION_RC,
 		PLUGIN_VERSION_MAJOR,
 		PLUGIN_VERSION_MINOR,
