@@ -1,6 +1,7 @@
 Changes for 7.0.0rc1
 
 New features:
+[ZBXNEXT-9168] replaced the software license with AGPL-3.0-only (Sasha)
 [ZBXNEXT-9039] added Go compiler version to Zabbix agent 2 plugin version output (mprihodko)
 [ZBX-24210] improve new conn creation concurrency, bump plugin support version (rzvejs)
 
