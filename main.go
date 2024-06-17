@@ -29,7 +29,7 @@ import (
 )
 
 const copyrightMessage = //
-`Copyright 2001-%d Zabbix SIA
+`Copyright (C) 2001-%d Zabbix SIA
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
