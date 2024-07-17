@@ -12,7 +12,7 @@ WINDRES = windres.exe
 ifneq ("$(shell findstr ZABBIX_RC_NUM $(TOPDIR)\windres\resource.h)","")
 ifeq ("$(WINDRES_FLAGS)","")
 WINDRES_FLAGS := \
-	-D ZABBIX_LICENSE_YEARS='\"$(word 3,$(shell findstr Copyright $(TOPDIR)\main.go | findstr 2001-20))\"' \
+	-D ZABBIX_LICENSE_YEARS='\"$(word 4,$(shell findstr Copyright $(TOPDIR)\main.go | findstr 2001-20))\"' \
 	-D ZABBIX_VERSION_MAJOR=$(lastword $(shell findstr VERSION_MAJOR $(TOPDIR)\main.go | findstr =)) \
 	-D ZABBIX_VERSION_MINOR=$(lastword $(shell findstr VERSION_MINOR $(TOPDIR)\main.go | findstr =)) \
 	-D ZABBIX_VERSION_PATCH=$(lastword $(shell findstr VERSION_PATCH $(TOPDIR)\main.go | findstr =)) \
@@ -118,7 +118,7 @@ ifneq ($(OS),Windows_NT)
 	minor_verison=$(lastword $(shell grep 'PLUGIN_VERSION_MINOR =' ./main.go)); \
 	patch_verison=$(lastword $(shell grep 'PLUGIN_VERSION_PATCH =' ./main.go)); \
 	alphatag=$(lastword $(shell grep 'PLUGIN_VERSION_RC    =' ./main.go)); \
-	lic_years=$(word 3, $(shell grep ' Copyright 2001-' ./main.go)); \
+	lic_years=$(word 4, $(shell grep ' Copyright (C) 2001-' ./main.go)); \
 	distdir="$(PACKAGE)-$${major_verison}.$${minor_verison}.$${patch_verison}$${alphatag}"; \
 	dist_archive="$${distdir}.tar.gz"; \
 	mkdir -p ./$${distdir}; \
