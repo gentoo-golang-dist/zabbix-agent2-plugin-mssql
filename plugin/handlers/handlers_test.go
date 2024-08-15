@@ -296,7 +296,7 @@ func Test_nullBool_Value(t *testing.T) {
 func TestWithJSONResponse(t *testing.T) {
 	newHandlerFunc := func(handlerErr error, invalidJSON bool) HandlerFunc {
 		return func(
-			metricParams map[string]string, extraParams ...string,
+			metricParams map[string]string, timeout int, extraParams ...string,
 		) (any, error) {
 			if handlerErr != nil {
 				return nil, handlerErr
@@ -390,6 +390,7 @@ func TestWithJSONResponse(t *testing.T) {
 				tt.args.handler,
 			)(
 				tt.args.params,
+				0,
 				tt.args.extraParams...,
 			)
 			if (err != nil) != tt.wantErr {

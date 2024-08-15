@@ -304,7 +304,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 
 					return "handler called", nil
 				},
-			)(tt.args.metricParams, tt.args.extraParams...)
+			)(tt.args.metricParams, 0, tt.args.extraParams...)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"ConnCollection.WithConnHandlerFunc() "+
@@ -424,7 +424,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 				m.ExpectPing().WillReturnError(tt.fields.pingErr)
 			}
 
-			got, err := c.PingHandler(tt.args.metricParams)
+			got, err := c.PingHandler(tt.args.metricParams, 0)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"ConnCollection.PingHandler() error = %v, wantErr %v",

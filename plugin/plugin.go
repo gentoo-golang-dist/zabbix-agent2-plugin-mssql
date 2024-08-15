@@ -148,7 +148,7 @@ func (p *mssqlPlugin) Stop() {
 
 // Export collects all the metrics.
 func (p *mssqlPlugin) Export(
-	key string, rawParams []string, _ plugin.ContextProvider,
+	key string, rawParams []string, ctx plugin.ContextProvider,
 ) (any, error) {
 	m, ok := p.metrics[mssqlMetricKey(key)]
 	if !ok {
@@ -169,7 +169,7 @@ func (p *mssqlPlugin) Export(
 		return nil, errs.Wrap(err, "failed to set default params")
 	}
 
-	res, err := m.handler(metricParams, extraParams...)
+	res, err := m.handler(metricParams, ctx.Timeout(), extraParams...)
 	if err != nil {
 		return nil, errs.Wrap(err, "failed to execute handler")
 	}

@@ -19,6 +19,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/fs"
 	"path/filepath"
@@ -45,7 +46,7 @@ var (
 
 // HandlerFunc describes the signature all metric handler functions must have.
 type HandlerFunc func(
-	metricParams map[string]string, extraParams ...string,
+	metricParams map[string]string, timeout int, extraParams ...string,
 ) (any, error)
 
 // ConnHandlerFunc describes the signature all connection handler functions
@@ -136,9 +137,9 @@ func (b nullBool) Value() (driver.Value, error) {
 // to a JSON object and returning it as string.
 func WithJSONResponse(handler HandlerFunc) HandlerFunc {
 	return func(
-		metricParams map[string]string, extraParams ...string,
+		metricParams map[string]string, timeout int, extraParams ...string,
 	) (any, error) {
-		res, err := handler(metricParams, extraParams...)
+		res, err := handler(metricParams, timeout, extraParams...)
 		if err != nil {
 			return nil, errs.Wrap(err, "failed to execute handler")
 		}
@@ -237,6 +238,11 @@ func QueryHandlerFunc(query string) ConnHandlerFunc {
 
 		rows, err := conn.QueryContext(ctx, query, args...)
 		if err != nil {
+			ctxErr := ctx.Err()
+			if ctxErr != nil && errors.Is(ctxErr, context.DeadlineExceeded) {
+				return nil, errs.New("query execution timeout exceeded")
+			}
+
 			return nil, errs.Wrap(err, "failed to query")
 		}
 

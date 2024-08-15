@@ -34,6 +34,14 @@ import (
 	"golang.zabbix.com/sdk/plugin"
 )
 
+type mockCtx struct {
+	plugin.ContextProvider
+}
+
+func (mockCtx) Timeout() int {
+	return 0
+}
+
 //nolint:paralleltest,tparallel
 func Test_mssqlPlugin_Start(t *testing.T) {
 	log.DefaultLogger = stdlog.New(os.Stdout, "", stdlog.LstdFlags)
@@ -135,7 +143,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 
 	newHandler := func(err error, failMarshal bool) handlers.HandlerFunc {
 		return func(
-			metricParams map[string]string, extraParams ...string,
+			metricParams map[string]string, timeout int, extraParams ...string,
 		) (any, error) {
 			if err != nil {
 				return nil, err
@@ -176,6 +184,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 	type args struct {
 		key       string
 		rawParams []string
+		ctx       mockCtx
 	}
 
 	tests := []struct {
@@ -307,7 +316,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 				customQueries: tt.fields.customQueries,
 			}
 
-			got, err := p.Export(tt.args.key, tt.args.rawParams, nil)
+			got, err := p.Export(tt.args.key, tt.args.rawParams, tt.args.ctx)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"mssqlPlugin.Export() error = %v, wantErr %v",

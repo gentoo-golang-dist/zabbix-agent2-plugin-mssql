@@ -75,11 +75,15 @@ func (c *ConnCollection) WithConnHandlerFunc(
 	handler handlers.ConnHandlerFunc,
 ) handlers.HandlerFunc {
 	return func(
-		metricParams map[string]string, extraParams ...string,
+		metricParams map[string]string, timeout int, extraParams ...string,
 	) (any, error) {
+		if c.queryTimeout > timeout {
+			timeout = c.queryTimeout
+		}
+
 		ctx, cancel := context.WithTimeout(
 			context.Background(),
-			time.Duration(c.queryTimeout)*time.Second,
+			time.Duration(timeout)*time.Second,
 		)
 		defer cancel()
 
@@ -94,11 +98,15 @@ func (c *ConnCollection) WithConnHandlerFunc(
 
 // PingHandler tries to ping the database, returning 1 on success 0 on failure.
 func (c *ConnCollection) PingHandler(
-	metricParams map[string]string, _ ...string,
+	metricParams map[string]string, timeout int, _ ...string,
 ) (any, error) {
+	if c.queryTimeout > timeout {
+		timeout = c.queryTimeout
+	}
+
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
-		time.Duration(c.queryTimeout)*time.Second,
+		time.Duration(timeout)*time.Second,
 	)
 	defer cancel()
 
