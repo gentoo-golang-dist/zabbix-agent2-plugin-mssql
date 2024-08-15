@@ -37,4 +37,6 @@ golang.org/x/tools v0.11.0 h1:EMCa6U9S2LtZXLAMoWiR/R8dAQFRqbAitmbJ2UKhoi8=
 golang.org/x/tools v0.11.0/go.mod h1:anzJrxPjNtfgiYQYirP2CPGzGLxrH2u2QBhn6Bf3qY8=
 golang.zabbix.com/sdk v1.2.2-0.20240702114056-b5e52e006951 h1:3ejH82t573hX5GGP0Ai0mQqx9WSliMhmx3Gd1G4UNMU=
 golang.zabbix.com/sdk v1.2.2-0.20240702114056-b5e52e006951/go.mod h1:KFfJAnUsBIfLemmPVz7TJPliJAwYUSuj4v3n5W1qrCQ=
+golang.zabbix.com/sdk v1.2.2-0.20240802114252-70b137d6c220 h1:Nu3dd+Lc1WfkHyt9Y525+IGwRmXDHahXNyYyTmrdzVg=
+golang.zabbix.com/sdk v1.2.2-0.20240802114252-70b137d6c220/go.mod h1:KFfJAnUsBIfLemmPVz7TJPliJAwYUSuj4v3n5W1qrCQ=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
