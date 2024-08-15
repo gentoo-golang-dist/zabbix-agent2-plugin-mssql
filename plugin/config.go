@@ -53,7 +53,7 @@ type pluginConfig struct {
 func (p *mssqlPlugin) Configure(global *plugin.GlobalOptions, options any) {
 	pConfig := &pluginConfig{}
 
-	err := conf.Unmarshal(options, pConfig)
+	err := conf.UnmarshalStrict(options, pConfig)
 	if err != nil {
 		p.Errf("cannot unmarshal configuration options: %s", err.Error())
 
@@ -72,7 +72,7 @@ func (p *mssqlPlugin) Configure(global *plugin.GlobalOptions, options any) {
 func (*mssqlPlugin) Validate(options any) error {
 	var opts pluginConfig
 
-	err := conf.Unmarshal(options, &opts)
+	err := conf.UnmarshalStrict(options, &opts)
 	if err != nil {
 		return errs.Wrap(err, "failed to unmarshal configuration options")
 	}
