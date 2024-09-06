@@ -296,7 +296,7 @@ func Test_nullBool_Value(t *testing.T) {
 func TestWithJSONResponse(t *testing.T) {
 	newHandlerFunc := func(handlerErr error, invalidJSON bool) HandlerFunc {
 		return func(
-			metricParams map[string]string, timeout int, extraParams ...string,
+			timeout time.Duration, metricParams map[string]string, extraParams ...string,
 		) (any, error) {
 			if handlerErr != nil {
 				return nil, handlerErr
@@ -331,6 +331,7 @@ func TestWithJSONResponse(t *testing.T) {
 
 	type args struct {
 		handler     HandlerFunc
+		timeout     time.Duration
 		params      map[string]string
 		extraParams []string
 	}
@@ -345,6 +346,7 @@ func TestWithJSONResponse(t *testing.T) {
 			"+valid",
 			args{
 				handler: newHandlerFunc(nil, false),
+				timeout: time.Second,
 				params: map[string]string{
 					"param1": "value1",
 					"param2": "value2",
@@ -358,6 +360,7 @@ func TestWithJSONResponse(t *testing.T) {
 			"-handlerErr",
 			args{
 				handler: newHandlerFunc(errors.New("fail"), false),
+				timeout: time.Second,
 				params: map[string]string{
 					"param1": "value1",
 					"param2": "value2",
@@ -371,6 +374,7 @@ func TestWithJSONResponse(t *testing.T) {
 			"-marshalErr",
 			args{
 				handler: newHandlerFunc(nil, true),
+				timeout: time.Second,
 				params: map[string]string{
 					"param1": "value1",
 					"param2": "value2",
@@ -389,8 +393,8 @@ func TestWithJSONResponse(t *testing.T) {
 			got, err := WithJSONResponse(
 				tt.args.handler,
 			)(
+				tt.args.timeout,
 				tt.args.params,
-				0,
 				tt.args.extraParams...,
 			)
 			if (err != nil) != tt.wantErr {

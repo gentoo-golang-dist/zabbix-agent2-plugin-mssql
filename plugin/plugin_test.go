@@ -36,10 +36,11 @@ import (
 
 type mockCtx struct {
 	plugin.ContextProvider
+	timeout int
 }
 
-func (mockCtx) Timeout() int {
-	return 0
+func (m mockCtx) Timeout() int {
+	return m.timeout
 }
 
 //nolint:paralleltest,tparallel
@@ -47,7 +48,7 @@ func Test_mssqlPlugin_Start(t *testing.T) {
 	log.DefaultLogger = stdlog.New(os.Stdout, "", stdlog.LstdFlags)
 
 	sampleConnCollection := &dbconn.ConnCollection{}
-	sampleConnCollection.Init(30, 29, &mssqlPlugin{})
+	sampleConnCollection.Init(30, &mssqlPlugin{})
 
 	type fields struct {
 		Base          plugin.Base
@@ -143,7 +144,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 
 	newHandler := func(err error, failMarshal bool) handlers.HandlerFunc {
 		return func(
-			metricParams map[string]string, timeout int, extraParams ...string,
+			timeout time.Duration, metricParams map[string]string, extraParams ...string,
 		) (any, error) {
 			if err != nil {
 				return nil, err
@@ -170,6 +171,14 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 			}
 
 			return "handler called", nil
+		}
+	}
+
+	newTimeoutHandler := func() handlers.HandlerFunc {
+		return func(
+			timeout time.Duration, _ map[string]string, _ ...string,
+		) (any, error) {
+			return timeout, nil
 		}
 	}
 
@@ -301,6 +310,62 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 			},
 			nil,
 			true,
+		},
+		{
+			"+itemTimeoutLargerThanConfigTimeout",
+			fields{
+				metrics: map[mssqlMetricKey]*mssqlMetric{
+					dbGet: {
+						metric: metric.New(
+							"Test.",
+							nil,
+							false,
+						),
+						handler: newTimeoutHandler(),
+					},
+				},
+				conns: &dbconn.ConnCollection{},
+				config: &pluginConfig{
+					Timeout: 3,
+				},
+			},
+			args{
+				key:       string(dbGet),
+				rawParams: []string{},
+				ctx: mockCtx{
+					timeout: 10,
+				},
+			},
+			time.Second * 10,
+			false,
+		},
+		{
+			"+itemTimeoutSmallerThanConfigTimeout",
+			fields{
+				metrics: map[mssqlMetricKey]*mssqlMetric{
+					dbGet: {
+						metric: metric.New(
+							"Test.",
+							nil,
+							false,
+						),
+						handler: newTimeoutHandler(),
+					},
+				},
+				conns: &dbconn.ConnCollection{},
+				config: &pluginConfig{
+					Timeout: 8,
+				},
+			},
+			args{
+				key:       string(dbGet),
+				rawParams: []string{},
+				ctx: mockCtx{
+					timeout: 3,
+				},
+			},
+			time.Second * 8,
+			false,
 		},
 	}
 	for _, tt := range tests {

@@ -24,6 +24,7 @@ import (
 	"io/fs"
 	"path/filepath"
 	"strings"
+	"time"
 
 	mssql "github.com/microsoft/go-mssqldb"
 	"golang.zabbix.com/plugin/mssql/plugin/params"
@@ -46,7 +47,7 @@ var (
 
 // HandlerFunc describes the signature all metric handler functions must have.
 type HandlerFunc func(
-	metricParams map[string]string, timeout int, extraParams ...string,
+	timeout time.Duration, metricParams map[string]string, extraParams ...string,
 ) (any, error)
 
 // ConnHandlerFunc describes the signature all connection handler functions
@@ -137,9 +138,9 @@ func (b nullBool) Value() (driver.Value, error) {
 // to a JSON object and returning it as string.
 func WithJSONResponse(handler HandlerFunc) HandlerFunc {
 	return func(
-		metricParams map[string]string, timeout int, extraParams ...string,
+		timeout time.Duration, metricParams map[string]string, extraParams ...string,
 	) (any, error) {
-		res, err := handler(metricParams, timeout, extraParams...)
+		res, err := handler(timeout, metricParams, extraParams...)
 		if err != nil {
 			return nil, errs.Wrap(err, "failed to execute handler")
 		}
