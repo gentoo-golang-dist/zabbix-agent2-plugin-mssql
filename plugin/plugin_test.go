@@ -39,7 +39,7 @@ type mockCtx struct {
 	timeout int
 }
 
-func (m mockCtx) Timeout() int {
+func (m *mockCtx) Timeout() int {
 	return m.timeout
 }
 
@@ -193,7 +193,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 	type args struct {
 		key       string
 		rawParams []string
-		ctx       mockCtx
+		pluginCtx plugin.ContextProvider
 	}
 
 	tests := []struct {
@@ -226,6 +226,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 				rawParams: []string{
 					"sqlserver://uri", "dddd", "8888", "extra", "param",
 				},
+				pluginCtx: &mockCtx{},
 			},
 			"handler called",
 			false,
@@ -253,6 +254,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 				rawParams: []string{
 					"sqlserver://uri", "dddd", "8888", "extra", "param",
 				},
+				pluginCtx: &mockCtx{},
 			},
 			nil,
 			true,
@@ -280,6 +282,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 				rawParams: []string{
 					"sqlserver://uri", "dddd", "8888", "extra", "param",
 				},
+				pluginCtx: &mockCtx{},
 			},
 			nil,
 			true,
@@ -307,6 +310,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 				rawParams: []string{
 					"sqlserver://uri", "dddd", "8888", "extra", "param",
 				},
+				pluginCtx: &mockCtx{},
 			},
 			nil,
 			true,
@@ -332,9 +336,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 			args{
 				key:       string(dbGet),
 				rawParams: []string{},
-				ctx: mockCtx{
-					timeout: 10,
-				},
+				pluginCtx: &mockCtx{timeout: 10},
 			},
 			time.Second * 10,
 			false,
@@ -360,9 +362,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 			args{
 				key:       string(dbGet),
 				rawParams: []string{},
-				ctx: mockCtx{
-					timeout: 3,
-				},
+				pluginCtx: &mockCtx{timeout: 3},
 			},
 			time.Second * 8,
 			false,
@@ -381,7 +381,11 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 				customQueries: tt.fields.customQueries,
 			}
 
-			got, err := p.Export(tt.args.key, tt.args.rawParams, tt.args.ctx)
+			got, err := p.Export(
+				tt.args.key,
+				tt.args.rawParams,
+				tt.args.pluginCtx,
+			)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"mssqlPlugin.Export() error = %v, wantErr %v",

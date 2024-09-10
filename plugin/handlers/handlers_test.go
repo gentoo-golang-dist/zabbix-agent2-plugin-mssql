@@ -160,6 +160,7 @@ func Test_nullUniqueIdentifier_Scan(t *testing.T) {
 					err, tt.wantErr,
 				)
 			}
+
 			if diff := cmp.Diff(
 				tt.wantNUID, nuid,
 				cmp.AllowUnexported(nullUniqueIdentifier{}),
@@ -294,6 +295,8 @@ func Test_nullBool_Value(t *testing.T) {
 }
 
 func TestWithJSONResponse(t *testing.T) {
+	t.Parallel()
+
 	newHandlerFunc := func(handlerErr error, invalidJSON bool) HandlerFunc {
 		return func(
 			timeout time.Duration, metricParams map[string]string, extraParams ...string,
@@ -319,6 +322,14 @@ func TestWithJSONResponse(t *testing.T) {
 				t.Fatalf("extraParams mismatch (+want -got):\n%s", diff)
 			}
 
+			if timeout != time.Second {
+				t.Fatalf(
+					"timeout mismatch want: %s, got: %s)",
+					time.Second.String(),
+					timeout.String(),
+				)
+			}
+
 			if invalidJSON {
 				return time.Unix(100000000000000000, 0), nil
 			}
@@ -326,8 +337,6 @@ func TestWithJSONResponse(t *testing.T) {
 			return map[string]any{"a": 1, "b": 2, "c": "3"}, nil
 		}
 	}
-
-	t.Parallel()
 
 	type args struct {
 		handler     HandlerFunc
