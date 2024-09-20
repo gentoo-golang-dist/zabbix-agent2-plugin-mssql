@@ -258,6 +258,14 @@ func (c *ConnCollection) newConn(
 
 	u.RawQuery = queryParams.Encode()
 
+	// handling if named server instance.
+	if connURI.Path() != "" {
+		// instance name is given in path.
+		u.Path = connURI.Path()
+		// host needs to be without port, so taking original.
+		u.Host = connURI.Host()
+	}
+
 	db, err := sql.Open(c.driverName, u.String())
 	if err != nil {
 		return nil, errs.Wrap(err, "failed to open DB connection")
