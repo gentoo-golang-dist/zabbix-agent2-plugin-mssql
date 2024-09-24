@@ -49,6 +49,7 @@ type connConfig struct {
 	Encrypt                string
 	TLSMinVersion          string
 	Database               string
+	InstanceName           string
 }
 
 // ConnCollection is a collection of connections to the database.
@@ -256,15 +257,15 @@ func (c *ConnCollection) newConn(
 		queryParams.Add("tlsMinVersion", conf.TLSMinVersion)
 	}
 
-	u.RawQuery = queryParams.Encode()
-
 	// handling if named server instance.
-	if connURI.Path() != "" {
-		// instance name is given in path.
-		u.Path = connURI.Path()
+	if conf.InstanceName != "" {
+		// instance name as session param
+		u.Path = conf.InstanceName
 		// host needs to be without port, so taking original.
 		u.Host = connURI.Host()
 	}
+
+	u.RawQuery = queryParams.Encode()
 
 	db, err := sql.Open(c.driverName, u.String())
 	if err != nil {
@@ -292,5 +293,6 @@ func newConnConfig(metricParams map[string]string) connConfig {
 		Encrypt:                metricParams[params.Encrypt.Name()],
 		TLSMinVersion:          metricParams[params.TLSMinVersion.Name()],
 		Database:               metricParams[params.Database.Name()],
+		InstanceName:           metricParams[params.InstanceName.Name()],
 	}
 }

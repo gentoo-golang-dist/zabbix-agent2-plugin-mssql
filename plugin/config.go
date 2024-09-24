@@ -33,6 +33,7 @@ type session struct {
 	Encrypt                string `conf:"optional"`
 	TLSMinVersion          string `conf:"optional"`
 	Database               string `conf:"optional"`
+	InstanceName           string `conf:"optional"`
 }
 
 type pluginConfig struct {

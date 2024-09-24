@@ -29,6 +29,7 @@ var (
 		URI,
 		User,
 		Password,
+		InstanceName,
 	}
 
 	// CustomQueryParams groups all parameters unique for a custom query metric.
@@ -86,6 +87,12 @@ var (
 		"Password", "MSSQL database users password.",
 	)
 
+	// InstanceName is a connection param that specifies name of named server instance.
+	InstanceName = metric.NewConnParam(
+		"InstanceName",
+		"Name of server named instance.",
+	)
+
 	// QueryName is a metric param that specifies name of a custom query.
 	QueryName = metric.NewParam(
 		"QueryName",
@@ -134,7 +141,7 @@ var (
 		metric.SetValidator{Set: []string{"", "1.0", "1.1", "1.2", "1.3"}},
 	)
 
-	// Database is a metric param tha specifies the database connection should
+	// Database is a metric param that specifies the database connection should
 	// be established to.
 	Database = metric.NewSessionOnlyParam(
 		"Database", "Database name that the connection will be established to.",
