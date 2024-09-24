@@ -1,8 +1,18 @@
-Changes for 7.0.4rc1
+Changes for 7.0.5rc1
 
 New features:
 
 Bug fixes:
+
+--------------------------------------------------------------------------------
+Changes for 7.0.4
+
+7.0.4rc1 was released as 7.0.4 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.0.4rc1
+
+7.0.3 was released as 7.0.4rc1 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 7.0.3
@@ -85,11 +95,21 @@ New features:
 [ZBXNEXT-6235] initial implementation for MSSQL loadable Zabbix agent 2 plugin (rzvejs)
 
 --------------------------------------------------------------------------------
-Changes for 6.4.19rc1
+Changes for 6.4.20rc1
 
 New features:
 
 Bug fixes:
+
+--------------------------------------------------------------------------------
+Changes for 6.4.19
+
+6.4.19rc1 was released as 6.4.19 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.4.19rc1
+
+6.4.18 was released as 6.4.19rc1 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 6.4.18
@@ -175,11 +195,14 @@ New features:
 [ZBXNEXT-6235] initial implementation for MSSQL loadable Zabbix agent 2 plugin (rzvejs)
 
 --------------------------------------------------------------------------------
+Changes for 6.0.34rc2
+
+6.0.34rc1 was released as 6.0.34rc2 without any changes
+
+--------------------------------------------------------------------------------
 Changes for 6.0.34rc1
 
-New features:
-
-Bug fixes:
+6.0.33 was released as 6.0.34rc1 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 6.0.33
