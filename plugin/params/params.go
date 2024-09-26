@@ -87,12 +87,6 @@ var (
 		"Password", "MSSQL database users password.",
 	)
 
-	// InstanceName is a connection param that specifies name of named server instance.
-	InstanceName = metric.NewConnParam(
-		"InstanceName",
-		"Name of server named instance.",
-	)
-
 	// QueryName is a metric param that specifies name of a custom query.
 	QueryName = metric.NewParam(
 		"QueryName",
@@ -147,6 +141,12 @@ var (
 		"Database", "Database name that the connection will be established to.",
 	).
 		WithDefault("")
+
+	// InstanceName is a session param that specifies name of named server instance.
+	InstanceName = metric.NewSessionOnlyParam(
+		"InstanceName",
+		"Name of server named instance.",
+	)
 )
 
 // Join combines multiple parameter groups into one.
