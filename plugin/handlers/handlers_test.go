@@ -163,6 +163,7 @@ func Test_nullUniqueIdentifier_Scan(t *testing.T) {
 					err, tt.wantErr,
 				)
 			}
+
 			if diff := cmp.Diff(
 				tt.wantNUID, nuid,
 				cmp.AllowUnexported(nullUniqueIdentifier{}),
