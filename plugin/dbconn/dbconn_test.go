@@ -680,6 +680,7 @@ func TestConnCollection_get(t *testing.T) {
 			); diff != "" {
 				t.Fatalf("ConnCollection.get() = %s", diff)
 			}
+
 			if m != nil {
 				if err := m.ExpectationsWereMet(); err != nil {
 					t.Fatalf("ConnCollection.get() = %s", err.Error())
@@ -850,12 +851,14 @@ func TestConnCollection_newConn(t *testing.T) {
 						err, tt.wantErr,
 					)
 				}
+
 				if (got == nil) != tt.wantNil {
 					t.Fatalf(
 						"ConnCollection.newConn() got = %v, wantNil %v",
 						got, tt.wantNil,
 					)
 				}
+
 				if m != nil {
 					if err := m.ExpectationsWereMet(); err != nil {
 						t.Fatalf(
