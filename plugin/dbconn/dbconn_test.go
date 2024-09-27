@@ -141,7 +141,6 @@ func TestConnCollection_Init(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -463,7 +462,6 @@ func TestConnCollection_Close(t *testing.T) {
 		{"-closeErr", fields{errors.New("fail")}},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) { //nolint:paralleltest
 			t.Parallel()
 
@@ -677,6 +675,7 @@ func TestConnCollection_get(t *testing.T) {
 			); diff != "" {
 				t.Fatalf("ConnCollection.get() = %s", diff)
 			}
+
 			if m != nil {
 				if err := m.ExpectationsWereMet(); err != nil {
 					t.Fatalf("ConnCollection.get() = %s", err.Error())
@@ -847,12 +846,14 @@ func TestConnCollection_newConn(t *testing.T) {
 						err, tt.wantErr,
 					)
 				}
+
 				if (got == nil) != tt.wantNil {
 					t.Fatalf(
 						"ConnCollection.newConn() got = %v, wantNil %v",
 						got, tt.wantNil,
 					)
 				}
+
 				if m != nil {
 					if err := m.ExpectationsWereMet(); err != nil {
 						t.Fatalf(
@@ -908,7 +909,6 @@ func Test_newConnConfig(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
