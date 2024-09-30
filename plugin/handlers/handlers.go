@@ -99,6 +99,7 @@ func (nuid *nullUniqueIdentifier) Scan(value any) error {
 // Value implements the driver Valuer interface.
 func (nuid nullUniqueIdentifier) Value() (driver.Value, error) {
 	if !nuid.valid {
+		// here nil is a valid return representing NULL value from DB
 		return nil, nil //nolint:nilnil
 	}
 
@@ -119,6 +120,7 @@ func (b nullBool) Value() (driver.Value, error) {
 	}
 
 	if valuer == nil {
+		// here nil is a valid return representing NULL value from DB
 		return nil, nil //nolint:nilnil
 	}
 
@@ -128,10 +130,10 @@ func (b nullBool) Value() (driver.Value, error) {
 	}
 
 	if v {
-		return 1, nil
+		return int64(1), nil
 	}
 
-	return 0, nil
+	return int64(0), nil
 }
 
 // WithJSONResponse wraps a handler function, marshaling its response
