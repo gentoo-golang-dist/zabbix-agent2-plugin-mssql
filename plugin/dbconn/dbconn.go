@@ -51,19 +51,17 @@ type connConfig struct {
 // ConnCollection is a collection of connections to the database.
 // Allows managing multiple connections.
 type ConnCollection struct {
-	mu           sync.Mutex
-	conns        map[connConfig]*sql.DB
-	keepAlive    int
-	queryTimeout int
-	logr         log.Logger
-	driverName   string // always sqlserver, allow to change for unit tests.
+	mu         sync.Mutex
+	conns      map[connConfig]*sql.DB
+	keepAlive  int
+	logr       log.Logger
+	driverName string // always sqlserver, allow to change for unit tests.
 }
 
 // Init initializes a pre-allocated connection collection.
-func (c *ConnCollection) Init(keepAlive, queryTimeout int, logr log.Logger) {
+func (c *ConnCollection) Init(keepAlive int, logr log.Logger) {
 	c.conns = make(map[connConfig]*sql.DB)
 	c.keepAlive = keepAlive
-	c.queryTimeout = queryTimeout
 	c.logr = logr
 	c.driverName = "sqlserver"
 }
@@ -75,11 +73,11 @@ func (c *ConnCollection) WithConnHandlerFunc(
 	handler handlers.ConnHandlerFunc,
 ) handlers.HandlerFunc {
 	return func(
-		metricParams map[string]string, extraParams ...string,
+		timeout time.Duration, metricParams map[string]string, extraParams ...string,
 	) (any, error) {
 		ctx, cancel := context.WithTimeout(
 			context.Background(),
-			time.Duration(c.queryTimeout)*time.Second,
+			timeout,
 		)
 		defer cancel()
 
@@ -94,11 +92,11 @@ func (c *ConnCollection) WithConnHandlerFunc(
 
 // PingHandler tries to ping the database, returning 1 on success 0 on failure.
 func (c *ConnCollection) PingHandler(
-	metricParams map[string]string, _ ...string,
+	timeout time.Duration, metricParams map[string]string, _ ...string,
 ) (any, error) {
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
-		time.Duration(c.queryTimeout)*time.Second,
+		timeout,
 	)
 	defer cancel()
 
