@@ -34,12 +34,21 @@ import (
 	"golang.zabbix.com/sdk/plugin"
 )
 
+type mockCtx struct {
+	plugin.ContextProvider
+	timeout int
+}
+
+func (m *mockCtx) Timeout() int {
+	return m.timeout
+}
+
 //nolint:paralleltest,tparallel
 func Test_mssqlPlugin_Start(t *testing.T) {
 	log.DefaultLogger = stdlog.New(os.Stdout, "", stdlog.LstdFlags)
 
 	sampleConnCollection := &dbconn.ConnCollection{}
-	sampleConnCollection.Init(30, 29, &mssqlPlugin{})
+	sampleConnCollection.Init(30, &mssqlPlugin{})
 
 	type fields struct {
 		Base          plugin.Base
@@ -133,7 +142,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 
 	newHandler := func(err error, failMarshal bool) handlers.HandlerFunc {
 		return func(
-			metricParams map[string]string, extraParams ...string,
+			timeout time.Duration, metricParams map[string]string, extraParams ...string,
 		) (any, error) {
 			if err != nil {
 				return nil, err
@@ -163,6 +172,14 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 		}
 	}
 
+	newTimeoutHandler := func() handlers.HandlerFunc {
+		return func(
+			timeout time.Duration, _ map[string]string, _ ...string,
+		) (any, error) {
+			return timeout, nil
+		}
+	}
+
 	type fields struct {
 		Base          plugin.Base
 		conns         *dbconn.ConnCollection
@@ -174,6 +191,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 	type args struct {
 		key       string
 		rawParams []string
+		pluginCtx plugin.ContextProvider
 	}
 
 	tests := []struct {
@@ -206,6 +224,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 				rawParams: []string{
 					"sqlserver://uri", "dddd", "8888", "extra", "param",
 				},
+				pluginCtx: &mockCtx{},
 			},
 			"handler called",
 			false,
@@ -233,6 +252,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 				rawParams: []string{
 					"sqlserver://uri", "dddd", "8888", "extra", "param",
 				},
+				pluginCtx: &mockCtx{},
 			},
 			nil,
 			true,
@@ -260,6 +280,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 				rawParams: []string{
 					"sqlserver://uri", "dddd", "8888", "extra", "param",
 				},
+				pluginCtx: &mockCtx{},
 			},
 			nil,
 			true,
@@ -287,9 +308,62 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 				rawParams: []string{
 					"sqlserver://uri", "dddd", "8888", "extra", "param",
 				},
+				pluginCtx: &mockCtx{},
 			},
 			nil,
 			true,
+		},
+		{
+			"+itemTimeoutLargerThanConfigTimeout",
+			fields{
+				metrics: map[mssqlMetricKey]*mssqlMetric{
+					dbGet: {
+						metric: metric.New(
+							"Test.",
+							nil,
+							false,
+						),
+						handler: newTimeoutHandler(),
+					},
+				},
+				conns: &dbconn.ConnCollection{},
+				config: &pluginConfig{
+					Timeout: 3,
+				},
+			},
+			args{
+				key:       string(dbGet),
+				rawParams: []string{},
+				pluginCtx: &mockCtx{timeout: 10},
+			},
+			time.Second * 10,
+			false,
+		},
+		{
+			"+itemTimeoutSmallerThanConfigTimeout",
+			fields{
+				metrics: map[mssqlMetricKey]*mssqlMetric{
+					dbGet: {
+						metric: metric.New(
+							"Test.",
+							nil,
+							false,
+						),
+						handler: newTimeoutHandler(),
+					},
+				},
+				conns: &dbconn.ConnCollection{},
+				config: &pluginConfig{
+					Timeout: 8,
+				},
+			},
+			args{
+				key:       string(dbGet),
+				rawParams: []string{},
+				pluginCtx: &mockCtx{timeout: 3},
+			},
+			time.Second * 8,
+			false,
 		},
 	}
 	for _, tt := range tests {
@@ -304,7 +378,11 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 				customQueries: tt.fields.customQueries,
 			}
 
-			got, err := p.Export(tt.args.key, tt.args.rawParams, nil)
+			got, err := p.Export(
+				tt.args.key,
+				tt.args.rawParams,
+				tt.args.pluginCtx,
+			)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"mssqlPlugin.Export() error = %v, wantErr %v",
