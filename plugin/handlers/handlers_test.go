@@ -148,7 +148,6 @@ func Test_nullUniqueIdentifier_Scan(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -215,7 +214,6 @@ func Test_nullUniqueIdentifier_Value(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -256,13 +254,13 @@ func Test_nullBool_Value(t *testing.T) {
 		{
 			"+validTrue",
 			fields{NullBool: sql.NullBool{Bool: true, Valid: true}},
-			1,
+			int64(1),
 			false,
 		},
 		{
 			"+validFalse",
 			fields{NullBool: sql.NullBool{Bool: false, Valid: true}},
-			0,
+			int64(0),
 			false,
 		},
 		{
@@ -273,7 +271,6 @@ func Test_nullBool_Value(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -386,7 +383,6 @@ func TestWithJSONResponse(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -551,7 +547,6 @@ func TestCustomQueries_Load(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -642,7 +637,6 @@ func TestCustomQueries_HandlerFunc(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -747,7 +741,6 @@ func TestQueryHandlerFunc(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -837,7 +830,6 @@ func TestVersionHandler(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -918,7 +910,18 @@ func Test_rowsToJSON(t *testing.T) {
 					AddRow("bool", true).
 					AddRow("nil", nil).
 					AddRow("bytes", []byte("abc")).
-					AddRow("time", now),
+					AddRow("time", now).
+					AddRow("valid bool", &nullBool{
+						NullBool: sql.NullBool{Bool: true, Valid: true},
+					}).
+					AddRow("null bool", &nullBool{}).
+					AddRow("valid uuid", &nullUniqueIdentifier{
+						uuid: &mssql.UniqueIdentifier{
+							1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16,
+						},
+						valid: true,
+					}).
+					AddRow("null uuid", &nullUniqueIdentifier{valid: false}),
 			},
 			[]map[string]any{
 				{"type": wrapAny("int"), "val": wrapAny(int64(1))},
@@ -928,6 +931,13 @@ func Test_rowsToJSON(t *testing.T) {
 				{"type": wrapAny("nil"), "val": wrapAny(nil)},
 				{"type": wrapAny("bytes"), "val": wrapAny([]byte("abc"))},
 				{"type": wrapAny("time"), "val": wrapAny(now)},
+				{"type": wrapAny("valid bool"), "val": wrapAny(int64(1))},
+				{"type": wrapAny("null bool"), "val": wrapAny(nil)},
+				{
+					"type": wrapAny("valid uuid"),
+					"val":  wrapAny("01020304-0506-0708-090A-0C0D0E0F1000"),
+				},
+				{"type": wrapAny("null uuid"), "val": wrapAny(nil)},
 			},
 			false,
 		},
@@ -944,7 +954,6 @@ func Test_rowsToJSON(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
