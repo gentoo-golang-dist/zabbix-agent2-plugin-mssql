@@ -26,4 +26,4 @@ LEFT JOIN (
     ON act.job_id = job.job_id
   GROUP BY  job.job_id ) AS sja
     ON sja.job_id = sj.job_id
-WHERE Enabled = 1
+WHERE enabled = 1
