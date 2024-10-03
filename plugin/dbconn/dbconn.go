@@ -216,8 +216,19 @@ func (c *ConnCollection) newConn(
 		conf.TLSMinVersion,
 	)
 
+	parsedRawURI, err := uri.New(conf.URI, &uri.Defaults{Scheme: "sqlserver", Port: ""})
+	if err != nil {
+		return nil, errs.Wrap(err, "failed to parse raw URI")
+	}
+
+	param := *params.URIDefaults
+
+	if parsedRawURI.Path() != "" {
+		param.Port = parsedRawURI.Port()
+	}
+
 	connURI, err := uri.NewWithCreds(
-		conf.URI, conf.User, conf.Password, params.URIDefaults,
+		conf.URI, conf.User, conf.Password, &param,
 	)
 	if err != nil {
 		return nil, errs.Wrap(err, "failed to set URI defaults")
@@ -226,6 +237,12 @@ func (c *ConnCollection) newConn(
 	u, err := url.Parse(connURI.String())
 	if err != nil {
 		return nil, errs.Wrap(err, "failed to parse URI")
+	}
+
+	// handling if named server instance.
+	if connURI.Path() != "" {
+		// instance name is given in path.
+		u.Path = connURI.Path()
 	}
 
 	queryParams := u.Query()
