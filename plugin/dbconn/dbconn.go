@@ -216,22 +216,17 @@ func (c *ConnCollection) newConn(
 		conf.TLSMinVersion,
 	)
 
-	parsedRawURI, err := uri.New(conf.URI, &uri.Defaults{Scheme: "sqlserver", Port: ""})
-	if err != nil {
-		return nil, errs.Wrap(err, "failed to parse raw URI")
-	}
-
-	param := *params.URIDefaults
-
-	if parsedRawURI.Path() != "" {
-		param.Port = parsedRawURI.Port()
-	}
+	param := &uri.Defaults{Scheme: params.URIDefaults.Scheme, Port: ""}
 
 	connURI, err := uri.NewWithCreds(
-		conf.URI, conf.User, conf.Password, &param,
+		conf.URI, conf.User, conf.Password, param,
 	)
 	if err != nil {
 		return nil, errs.Wrap(err, "failed to set URI defaults")
+	}
+
+	if connURI.Port() == "" && connURI.Path() == "" {
+		connURI.SetPort(params.URIDefaults.Port)
 	}
 
 	u, err := url.Parse(connURI.String())
