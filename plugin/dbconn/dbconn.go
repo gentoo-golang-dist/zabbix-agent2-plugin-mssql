@@ -216,17 +216,28 @@ func (c *ConnCollection) newConn(
 		conf.TLSMinVersion,
 	)
 
-	param := &uri.Defaults{Scheme: params.URIDefaults.Scheme, Port: ""}
+	defaultParam := &uri.Defaults{Scheme: params.URIDefaults.Scheme}
+
+	// First time parse without setting port to default if empty.
+	// It is important to know if port is given to handle named instances.
+	parsedRawURI, err := uri.New(conf.URI, defaultParam)
+	if err != nil {
+		return nil, errs.Wrap(err, "failed to parse raw URI")
+	}
+
+	// Setting port to default.
+	defaultParam.Port = params.URIDefaults.Port
+	// If instance name is given leave port as is
+	// by overwriting to old value.
+	if parsedRawURI.Path() != "" {
+		defaultParam.Port = parsedRawURI.Port()
+	}
 
 	connURI, err := uri.NewWithCreds(
-		conf.URI, conf.User, conf.Password, param,
+		conf.URI, conf.User, conf.Password, defaultParam,
 	)
 	if err != nil {
 		return nil, errs.Wrap(err, "failed to set URI defaults")
-	}
-
-	if connURI.Port() == "" && connURI.Path() == "" {
-		connURI.SetPort(params.URIDefaults.Port)
 	}
 
 	u, err := url.Parse(connURI.String())
@@ -234,11 +245,7 @@ func (c *ConnCollection) newConn(
 		return nil, errs.Wrap(err, "failed to parse URI")
 	}
 
-	// handling if named server instance.
-	if connURI.Path() != "" {
-		// instance name is given in path.
-		u.Path = connURI.Path()
-	}
+	u.Path = connURI.Path()
 
 	queryParams := u.Query()
 	queryParams.Add("app name", "Zabbix agent 2 MSSQL plugin")
