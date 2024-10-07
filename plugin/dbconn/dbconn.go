@@ -225,7 +225,7 @@ func (c *ConnCollection) newConn(
 		return nil, errs.Wrap(err, "failed to parse raw URI")
 	}
 
-	// Setting port to default.
+	// Setting default port to default.
 	defaultParam.Port = params.URIDefaults.Port
 	// If instance name is given leave port as is
 	// by overwriting to old value.
@@ -233,6 +233,7 @@ func (c *ConnCollection) newConn(
 		defaultParam.Port = parsedRawURI.Port()
 	}
 
+	// Reparsing uri based on new port default value.
 	connURI, err := uri.NewWithCreds(
 		conf.URI, conf.User, conf.Password, defaultParam,
 	)
