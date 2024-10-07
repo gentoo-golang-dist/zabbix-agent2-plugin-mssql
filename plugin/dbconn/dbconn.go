@@ -20,6 +20,7 @@ package dbconn
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"net/url"
 	"path/filepath"
 	"strconv"
@@ -216,26 +217,8 @@ func (c *ConnCollection) newConn(
 		conf.TLSMinVersion,
 	)
 
-	defaultParam := &uri.Defaults{Scheme: params.URIDefaults.Scheme}
-
-	// First time parse without setting port to default if empty.
-	// It is important to know if port is given to handle named instances.
-	parsedRawURI, err := uri.New(conf.URI, defaultParam)
-	if err != nil {
-		return nil, errs.Wrap(err, "failed to parse raw URI")
-	}
-
-	// Setting default port to default.
-	defaultParam.Port = params.URIDefaults.Port
-	// If instance name is given leave port as is
-	// by overwriting to old value.
-	if parsedRawURI.Path() != "" {
-		defaultParam.Port = parsedRawURI.Port()
-	}
-
-	// Reparsing uri based on new port default value.
 	connURI, err := uri.NewWithCreds(
-		conf.URI, conf.User, conf.Password, defaultParam,
+		conf.URI, conf.User, conf.Password, &uri.Defaults{Scheme: params.URIDefaults.Scheme},
 	)
 	if err != nil {
 		return nil, errs.Wrap(err, "failed to set URI defaults")
@@ -244,6 +227,10 @@ func (c *ConnCollection) newConn(
 	u, err := url.Parse(connURI.String())
 	if err != nil {
 		return nil, errs.Wrap(err, "failed to parse URI")
+	}
+
+	if connURI.Port() == "" && connURI.Path() == "" {
+		u.Host = fmt.Sprintf("%s:%s", u.Hostname(), params.URIDefaults.Port)
 	}
 
 	u.Path = connURI.Path()
