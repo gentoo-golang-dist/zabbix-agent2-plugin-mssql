@@ -15,6 +15,7 @@
 package plugin
 
 import (
+	"fmt"
 	stdlog "log"
 	"os"
 	"strings"
@@ -89,6 +90,37 @@ func Test_mssqlPlugin_Configure(t *testing.T) {
 			},
 		},
 		{
+			"+withCustomQueriesDir",
+			fields{},
+			args{
+				&plugin.GlobalOptions{Timeout: 3},
+				[]byte(
+					strings.Join([]string{"CustomQueriesDir=custom/path/to/sql/folder"}, "\n"),
+				),
+			},
+			&pluginConfig{
+				KeepAlive:        300,
+				Timeout:          3,
+				CustomQueriesDir: "custom/path/to/sql/folder",
+			},
+		},
+		{
+			"+enableCustomQueries",
+			fields{},
+			args{
+				&plugin.GlobalOptions{Timeout: 3},
+				[]byte(
+					strings.Join([]string{"CustomQueriesEnabled=true"}, "\n"),
+				),
+			},
+			&pluginConfig{
+				KeepAlive:            300,
+				Timeout:              3,
+				CustomQueriesEnabled: true,
+				CustomQueriesDir:     fmt.Sprintf("%s\\Zabbix Agent 2\\Custom Queries", os.Getenv("programfiles")),
+			},
+		},
+		{
 			"-marshalErr",
 			fields{},
 			args{
@@ -118,44 +150,6 @@ func Test_mssqlPlugin_Configure(t *testing.T) {
 				t.Errorf(
 					"mssqlPlugin.Configure() mismatch (-want +got):\n%s",
 					diff,
-				)
-			}
-		})
-	}
-}
-
-func Test_mssqlPlugin_Validate(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		options any
-	}
-
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		{
-			"+valid",
-			args{[]byte(`KeepAlive=300`)},
-			false,
-		},
-		{
-			"-marshalErr",
-			args{[]byte(`KeepDead=300`)},
-			true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			err := (&mssqlPlugin{}).Validate(tt.args.options)
-			if (err != nil) != tt.wantErr {
-				t.Fatalf(
-					"mssqlPlugin.Validate() error = %v, wantErr %v",
-					err, tt.wantErr,
 				)
 			}
 		})

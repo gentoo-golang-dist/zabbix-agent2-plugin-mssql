@@ -15,6 +15,7 @@
 package plugin
 
 import (
+	"fmt"
 	"os"
 
 	"golang.zabbix.com/sdk/conf"
@@ -52,8 +53,8 @@ func (p *mssqlPlugin) Configure(global *plugin.GlobalOptions, options any) {
 		return
 	}
 
-	if p.config.CustomQueriesEnabled && p.config.CustomQueriesDir == "" {
-		p.config.CustomQueriesDir = os.Getenv("ProgramFiles")
+	if pConfig.CustomQueriesEnabled && pConfig.CustomQueriesDir == "" {
+		pConfig.CustomQueriesDir = fmt.Sprintf("%s\\Zabbix Agent 2\\Custom Queries", os.Getenv("programfiles"))
 	}
 
 	p.config = pConfig
