@@ -158,6 +158,10 @@ func (p *mssqlPlugin) Export(
 		)
 	}
 
+	if mssqlMetricKey(key) == customQuery && !p.config.CustomQueriesEnabled {
+		return nil, errs.Errorf("key %s is disabled", mssqlMetricKey(key))
+	}
+
 	metricParams, extraParams, hardcodedParams, err := m.metric.EvalParams(
 		rawParams, p.config.Sessions,
 	)
