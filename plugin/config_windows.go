@@ -54,7 +54,9 @@ func (p *mssqlPlugin) Configure(global *plugin.GlobalOptions, options any) {
 	}
 
 	if pConfig.CustomQueriesEnabled && pConfig.CustomQueriesDir == "" {
-		pConfig.CustomQueriesDir = fmt.Sprintf("%s\\Zabbix Agent 2\\Custom Queries", os.Getenv("programfiles"))
+		pConfig.CustomQueriesDir = fmt.Sprintf(
+			"%s\\Zabbix Agent 2\\Custom Queries\\Mssql", os.Getenv("programfiles"),
+		)
 	}
 
 	p.config = pConfig
