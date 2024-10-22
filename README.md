@@ -22,6 +22,7 @@ It can monitor several MSSQL instances simultaneously, remote or local.
     - [`Plugins.MSSQL.Timeout`](#pluginsmssqltimeout)
     - [`Plugins.MSSQL.KeepAlive`](#pluginsmssqlkeepalive)
     - [`Plugins.MSSQL.CustomQueriesDir`](#pluginsmssqlcustomqueriesdir)
+    - [`Plugins.MSSQL.CustomQueriesEnabled`](#pluginsmssqlcustomqueriesenabled)
   - [Session settings](#session-settings)
     - [`Plugins.MSSQL.Sessions.*.Uri`](#pluginsmssqlsessionsuri)
     - [`Plugins.MSSQL.Sessions.*.User`](#pluginsmssqlsessionsuser)
@@ -264,8 +265,25 @@ together with Zabbix agent 2.
 
 Example usage:
 
+Default: `/usr/local/share/zabbix/custom-queries/mysql` for unix systems
+
+Default: `*:\Program Files\Zabbix Agent 2\Custom Queries\Oracle` for windows systems,
+where * is drive name taken from `programfiles` environment variable
+
 ```conf
 Plugins.MSSQL.CustomQueriesDir=/path/to/custom/queries/dir
+```
+
+#### `Plugins.MSSQL.CustomQueriesEnabled`
+
+Enables or disables mssql.custom.query item. Disabled by defaut.
+
+Default: `false`
+
+Example usage:
+
+```conf
+Plugins.MSSQL.CustomQueriesEnabled=true
 ```
 
 <!-- TOC --><a name="session-settings"></a>
