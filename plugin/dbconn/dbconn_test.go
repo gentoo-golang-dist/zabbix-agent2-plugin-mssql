@@ -743,7 +743,7 @@ func TestConnCollection_newConn(t *testing.T) {
 				dsn: "pigeon://aaaa:bbbb@uri:1433?" +
 					"TrustServerCertificate=false&" +
 					"app+name=Zabbix+agent+2+MSSQL+plugin&" +
-					"certificate=%2Fa%2Fb%2Fc&" +
+					"certificate=abc&" +
 					"encrypt=true&" +
 					"hostNameInCertificate=server&" +
 					"keepAlive=4&" +
@@ -754,7 +754,7 @@ func TestConnCollection_newConn(t *testing.T) {
 				User:                   "aaaa",
 				Password:               "bbbb",
 				URI:                    "pigeon://uri",
-				CACertPath:             "/a/b/c",
+				CACertPath:             "abc",
 				TrustServerCertificate: "false",
 				HostNameInCertificate:  "server",
 				Encrypt:                "true",
