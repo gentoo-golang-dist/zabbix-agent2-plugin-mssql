@@ -178,6 +178,15 @@ URI.
 - WRONG: `mssql.ping[sqlserver://stage_user:stage_password@localhost:1433]`
 - CORRECT: `mssql.ping[sqlserver://localhost:1433,stage_user,stage_password]`
 
+It is also possible to connect to named instance by providing instance name in path part of the URI.
+
+Example:
+```
+sqlserver://localhost/InstanceName
+```
+
+**Note:** If both host and port are provided, the port will be used for the connection.
+
 Read more about what parameters are available for each metric key in the
 section - metric keys.
 
