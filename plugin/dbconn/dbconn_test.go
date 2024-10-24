@@ -736,6 +736,38 @@ func TestConnCollection_newConn(t *testing.T) {
 			false,
 		},
 		{
+			"+named",
+			expect{true, true},
+			fields{
+				keepAlive:  4,
+				dsn:        "pigeon://aaaa:bbbb@uri/InstanceName?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4",
+				driverName: "testdriver",
+			},
+			args{&connConfig{
+				User:     "aaaa",
+				Password: "bbbb",
+				URI:      "pigeon://uri/InstanceName",
+			}},
+			false,
+			false,
+		},
+		{
+			"+namedWithPort",
+			expect{true, true},
+			fields{
+				keepAlive:  4,
+				dsn:        "pigeon://aaaa:bbbb@uri:1435/InstanceName?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4",
+				driverName: "testdriver",
+			},
+			args{&connConfig{
+				User:     "aaaa",
+				Password: "bbbb",
+				URI:      "pigeon://uri:1435/InstanceName",
+			}},
+			false,
+			false,
+		},
+		{
 			"+validWithTLS",
 			expect{true, true},
 			fields{
