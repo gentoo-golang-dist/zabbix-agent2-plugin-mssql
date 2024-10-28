@@ -265,10 +265,10 @@ together with Zabbix agent 2.
 
 Example usage:
 
-Default: `/usr/local/share/zabbix/custom-queries/mysql` for unix systems
+Default: `/usr/local/share/zabbix/custom-queries/MSSQL` for unix systems
 
-Default: `*:\Program Files\Zabbix Agent 2\Custom Queries\Oracle` for windows systems,
-where * is drive name taken from `programfiles` environment variable
+Default: `*:\Program Files\Zabbix Agent 2\Custom Queries\MSSQL` for windows systems,
+where * is drive name taken from `ProgramFiles` environment variable
 
 ```conf
 Plugins.MSSQL.CustomQueriesDir=/path/to/custom/queries/dir
@@ -277,6 +277,7 @@ Plugins.MSSQL.CustomQueriesDir=/path/to/custom/queries/dir
 #### `Plugins.MSSQL.CustomQueriesEnabled`
 
 Enables or disables mssql.custom.query item. Disabled by defaut.
+If disabled, will not load any queries from custom query dir path.
 
 Default: `false`
 

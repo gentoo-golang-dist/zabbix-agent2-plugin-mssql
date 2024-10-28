@@ -15,8 +15,11 @@
 package plugin
 
 import (
+	"path/filepath"
+
 	"golang.zabbix.com/sdk/conf"
 	"golang.zabbix.com/sdk/errs"
+	"golang.zabbix.com/sdk/plugin"
 )
 
 type session struct {
@@ -31,6 +34,46 @@ type session struct {
 	Database               string `conf:"optional"`
 }
 
+type pluginConfig struct {
+	plugin.SystemOptions `conf:"optional,name=System"`
+	// Timeout is the amount of time to wait for a server to respond when
+	// first connecting and on follow up operations in the session.
+	Timeout int `conf:"optional,range=1:30"`
+	// KeepAlive is a time to wait before unused connections will be closed.
+	KeepAlive int `conf:"optional,range=60:900,default=300"`
+	// Sessions stores pre-defined named sets of connections settings.
+	Sessions map[string]session `conf:"optional"`
+	// Default stores default connection parameter values from configuration
+	// file.
+	Default session `conf:"optional"`
+	// CustomQueriesDir is absolute path directory containing user defined
+	// *.sql files with custom queries the plugin can execute.
+	CustomQueriesDir string `conf:"optional"`
+	// CustomQueriesEnabled disabled or enabled custom query functionality.
+	CustomQueriesEnabled bool `conf:"optional,default=false"`
+}
+
+// Configure implements the Configurator interface.
+// Initializes configuration structures.
+func (p *mssqlPlugin) Configure(global *plugin.GlobalOptions, options any) {
+	pConfig := &pluginConfig{}
+
+	err := conf.Unmarshal(options, pConfig)
+	if err != nil {
+		p.Errf("cannot unmarshal configuration options: %s", err.Error())
+
+		return
+	}
+
+	pConfig.setCustomQueriesDirDefault()
+
+	p.config = pConfig
+
+	if p.config.Timeout == 0 {
+		p.config.Timeout = global.Timeout
+	}
+}
+
 // Validate implements the Configurator interface.
 // Returns an error if validation of a plugin's configuration is failed.
 func (*mssqlPlugin) Validate(options any) error {
@@ -39,6 +82,10 @@ func (*mssqlPlugin) Validate(options any) error {
 	err := conf.Unmarshal(options, &opts)
 	if err != nil {
 		return errs.Wrap(err, "failed to unmarshal configuration options")
+	}
+
+	if opts.CustomQueriesEnabled && opts.CustomQueriesDir != "" && !filepath.IsAbs(opts.CustomQueriesDir) {
+		return errs.Errorf("opts.CustomQueriesDir path: '%s' must be absolute", opts.CustomQueriesDir)
 	}
 
 	return nil

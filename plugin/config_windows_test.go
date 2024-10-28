@@ -16,141 +16,64 @@ package plugin
 
 import (
 	"fmt"
-	stdlog "log"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"golang.zabbix.com/sdk/log"
-	"golang.zabbix.com/sdk/plugin"
 )
 
-//nolint:paralleltest,tparallel
-func Test_mssqlPlugin_Configure(t *testing.T) {
-	log.DefaultLogger = stdlog.New(os.Stdout, "", stdlog.LstdFlags)
+func Test_pluginConfig_setCustomQueriesDirDefault(t *testing.T) {
+	t.Parallel()
 
 	type fields struct {
-		config *pluginConfig
-	}
-
-	type args struct {
-		global  *plugin.GlobalOptions
-		options any
+		CustomQueriesDir     string
+		CustomQueriesEnabled bool
 	}
 
 	tests := []struct {
-		name       string
-		fields     fields
-		args       args
-		wantConfig *pluginConfig
+		name   string
+		fields fields
+		want   *pluginConfig
 	}{
 		{
 			"+valid",
-			fields{},
-			args{
-				&plugin.GlobalOptions{Timeout: 3},
-				[]byte(`KeepAlive=300`),
-			},
-			&pluginConfig{
-				KeepAlive: 300,
-				Timeout:   3,
-			},
-		},
-		{
-			"+withTimeout",
-			fields{},
-			args{
-				&plugin.GlobalOptions{Timeout: 3},
-				[]byte(
-					strings.Join([]string{"KeepAlive=300", "Timeout=2"}, "\n"),
-				),
-			},
-			&pluginConfig{
-				KeepAlive: 300,
-				Timeout:   2,
-			},
-		},
-		{
-			"+prevConfig",
 			fields{
-				&pluginConfig{
-					Timeout:          44,
-					KeepAlive:        22,
-					CustomQueriesDir: "aaa",
-				},
-			},
-			args{
-				&plugin.GlobalOptions{Timeout: 3},
-				[]byte(`KeepAlive=300`),
-			},
-			&pluginConfig{
-				KeepAlive: 300,
-				Timeout:   3,
-			},
-		},
-		{
-			"+withCustomQueriesDir",
-			fields{},
-			args{
-				&plugin.GlobalOptions{Timeout: 3},
-				[]byte(
-					strings.Join([]string{"CustomQueriesDir=custom/path/to/sql/folder"}, "\n"),
-				),
-			},
-			&pluginConfig{
-				KeepAlive:        300,
-				Timeout:          3,
-				CustomQueriesDir: "custom/path/to/sql/folder",
-			},
-		},
-		{
-			"+enableCustomQueries",
-			fields{},
-			args{
-				&plugin.GlobalOptions{Timeout: 3},
-				[]byte(
-					strings.Join([]string{"CustomQueriesEnabled=true"}, "\n"),
-				),
-			},
-			&pluginConfig{
-				KeepAlive:            300,
-				Timeout:              3,
+				CustomQueriesDir:     "path\\to\\dir",
 				CustomQueriesEnabled: true,
-				CustomQueriesDir:     fmt.Sprintf("%s\\Zabbix Agent 2\\Custom Queries", os.Getenv("programfiles")),
+			},
+			&pluginConfig{
+				CustomQueriesDir:     "path\\to\\dir",
+				CustomQueriesEnabled: true,
 			},
 		},
 		{
-			"-marshalErr",
-			fields{},
-			args{
-				&plugin.GlobalOptions{Timeout: 3},
-				[]byte(
-					strings.Join(
-						[]string{"KeepAlive=300", "Timeout=2", "invalid"},
-						"\n",
-					),
-				),
+			"+default",
+			fields{
+				CustomQueriesEnabled: true,
 			},
-			nil,
+			&pluginConfig{
+				CustomQueriesDir:     fmt.Sprintf("%s\\Zabbix Agent 2\\Custom Queries", os.Getenv("programfiles")),
+				CustomQueriesEnabled: true,
+			},
+		},
+		{
+			"-empty",
+			fields{},
+			&pluginConfig{},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			p := &mssqlPlugin{
-				config: tt.fields.config,
-				Base:   plugin.Base{Logger: log.New("test")},
+			pc := pluginConfig{
+				CustomQueriesDir:     tt.fields.CustomQueriesDir,
+				CustomQueriesEnabled: tt.fields.CustomQueriesEnabled,
 			}
 
-			p.Configure(tt.args.global, tt.args.options)
-
-			if diff := cmp.Diff(tt.wantConfig, p.config); diff != "" {
-				t.Errorf(
-					"mssqlPlugin.Configure() mismatch (-want +got):\n%s",
-					diff,
-				)
+			pc.setCustomQueriesDirDefault()
+			if diff := cmp.Diff(tt.want, &pc); diff != "" {
+				t.Fatalf("pluginConfig.setCustomQueriesDirDefault() = %s", diff)
 			}
 		})
 	}

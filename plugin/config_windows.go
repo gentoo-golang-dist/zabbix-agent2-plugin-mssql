@@ -17,51 +17,12 @@ package plugin
 import (
 	"fmt"
 	"os"
-
-	"golang.zabbix.com/sdk/conf"
-	"golang.zabbix.com/sdk/plugin"
 )
 
-type pluginConfig struct {
-	plugin.SystemOptions `conf:"optional,name=System"`
-	// Timeout is the amount of time to wait for a server to respond when
-	// first connecting and on follow up operations in the session.
-	Timeout int `conf:"optional,range=1:30"`
-	// KeepAlive is a time to wait before unused connections will be closed.
-	KeepAlive int `conf:"optional,range=60:900,default=300"`
-	// Sessions stores pre-defined named sets of connections settings.
-	Sessions map[string]session `conf:"optional"`
-	// Default stores default connection parameter values from configuration
-	// file.
-	Default session `conf:"optional"`
-	// CustomQueriesDir is absolute path directory containing user defined
-	// *.sql files with custom queries the plugin can execute.
-	CustomQueriesDir string `conf:"optional"`
-	// CustomQueriesEnabled disabled or enabled custom query functionality.
-	CustomQueriesEnabled bool `conf:"optional,default=false"`
-}
-
-// Configure implements the Configurator interface.
-// Initializes configuration structures.
-func (p *mssqlPlugin) Configure(global *plugin.GlobalOptions, options any) {
-	pConfig := &pluginConfig{}
-
-	err := conf.Unmarshal(options, pConfig)
-	if err != nil {
-		p.Errf("cannot unmarshal configuration options: %s", err.Error())
-
-		return
-	}
-
-	if pConfig.CustomQueriesEnabled && pConfig.CustomQueriesDir == "" {
-		pConfig.CustomQueriesDir = fmt.Sprintf(
+func (pc *pluginConfig) setCustomQueriesDirDefault() {
+	if pc.CustomQueriesEnabled && pc.CustomQueriesDir == "" {
+		pc.CustomQueriesDir = fmt.Sprintf(
 			"%s\\Zabbix Agent 2\\Custom Queries\\Mssql", os.Getenv("programfiles"),
 		)
-	}
-
-	p.config = pConfig
-
-	if p.config.Timeout == 0 {
-		p.config.Timeout = global.Timeout
 	}
 }
