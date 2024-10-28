@@ -265,7 +265,7 @@ together with Zabbix agent 2.
 
 Example usage:
 
-Default: `/usr/local/share/zabbix/custom-queries/MSSQL` for unix systems
+Default: `/usr/local/share/zabbix/custom-queries/mssql` for unix systems
 
 Default: `*:\Program Files\Zabbix Agent 2\Custom Queries\MSSQL` for windows systems,
 where * is drive name taken from `ProgramFiles` environment variable
