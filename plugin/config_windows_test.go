@@ -22,6 +22,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+const validTestPath = "C:\\valid\\abs\\path"
+
 func Test_pluginConfig_setCustomQueriesDirDefault(t *testing.T) {
 	t.Parallel()
 
@@ -38,11 +40,11 @@ func Test_pluginConfig_setCustomQueriesDirDefault(t *testing.T) {
 		{
 			"+valid",
 			fields{
-				CustomQueriesDir:     "path\\to\\dir",
+				CustomQueriesDir:     validTestPath,
 				CustomQueriesEnabled: true,
 			},
 			&pluginConfig{
-				CustomQueriesDir:     "path\\to\\dir",
+				CustomQueriesDir:     validTestPath,
 				CustomQueriesEnabled: true,
 			},
 		},
@@ -52,7 +54,9 @@ func Test_pluginConfig_setCustomQueriesDirDefault(t *testing.T) {
 				CustomQueriesEnabled: true,
 			},
 			&pluginConfig{
-				CustomQueriesDir:     fmt.Sprintf("%s\\Zabbix Agent 2\\Custom Queries", os.Getenv("programfiles")),
+				CustomQueriesDir: fmt.Sprintf(
+					"%s\\Zabbix Agent 2\\Custom Queries\\Mssql", os.Getenv("ProgramFiles"),
+				),
 				CustomQueriesEnabled: true,
 			},
 		},

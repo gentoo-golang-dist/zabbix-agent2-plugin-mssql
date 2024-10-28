@@ -22,7 +22,7 @@ import (
 func (pc *pluginConfig) setCustomQueriesDirDefault() {
 	if pc.CustomQueriesEnabled && pc.CustomQueriesDir == "" {
 		pc.CustomQueriesDir = fmt.Sprintf(
-			"%s\\Zabbix Agent 2\\Custom Queries\\Mssql", os.Getenv("programfiles"),
+			"%s\\Zabbix Agent 2\\Custom Queries\\Mssql", os.Getenv("ProgramFiles"),
 		)
 	}
 }

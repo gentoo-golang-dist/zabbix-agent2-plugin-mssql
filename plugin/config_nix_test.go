@@ -23,6 +23,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+const validTestPath = "/valid/abs/path"
+
 func Test_pluginConfig_setCustomQueriesDirDefault(t *testing.T) {
 	t.Parallel()
 
