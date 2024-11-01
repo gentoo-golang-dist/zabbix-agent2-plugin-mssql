@@ -227,7 +227,7 @@ Path to the MSSQL plugin executable.
 Example usage:
 
 ```conf
-Plugins.MSSQL.System.Path=/usr/sbin/zabbix-agent2-plugin/zabbix-agent2-plugin-mssql
+Plugins.MSSQL.System.Path=/usr/libexec/zabbix/zabbix-agent2-plugin-mssql
 ```
 
 <!-- TOC --><a name="pluginsmssqltimeout"></a>
