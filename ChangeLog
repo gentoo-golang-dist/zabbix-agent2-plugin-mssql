@@ -1,8 +1,10 @@
 Changes for 7.0.6rc1
 
 New features:
+[ZBXNEXT-9281] added configurable item timeout support (dgoloscapov)
 
 Bug fixes:
+[ZBX-25096] updated performance counter query (akotsegubov)
 
 --------------------------------------------------------------------------------
 Changes for 7.0.5
@@ -12,7 +14,8 @@ Changes for 7.0.5
 --------------------------------------------------------------------------------
 Changes for 7.0.5rc1
 
-7.0.4 was released as 7.0.5rc1 without any changes
+New features:
+[ZBXNEXT-9281] added configurable item timeout support (dgoloscapov)
 
 --------------------------------------------------------------------------------
 Changes for 7.0.4
@@ -22,7 +25,9 @@ Changes for 7.0.4
 --------------------------------------------------------------------------------
 Changes for 7.0.4rc1
 
-7.0.3 was released as 7.0.4rc1 without any changes
+Bug fixes:
+[ZBX-24619] updated atomic variables to be more safe (esneiders)
+[ZBX-24245] fixed invalid Zabbix agent 2 and plugin protocol log message (esneiders)
 
 --------------------------------------------------------------------------------
 Changes for 7.0.3
