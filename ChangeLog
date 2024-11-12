@@ -1,13 +1,20 @@
 Changes for 7.2.0beta1
 
 New features:
+[ZBXNEXT-9292] added named instance support in URI (sjurgensons)
 
 Bug fixes:
+[ZBX-25096] updated performance counter query (akotsegubov)
 
 --------------------------------------------------------------------------------
 Changes for 7.2.0alpha1
 
-7.0.5rc1 was released as 7.2.0alpha1 without any changes
+New features:
+[ZBXNEXT-9281] added configurable item timeout support (dgoloscapov)
+
+Bug fixses:
+[ZBX-24245] fixed invalid Zabbix agent 2 and plugin protocol log message (esneiders)
+[ZBX-24619] updated atomic variables to be more safe (esneiders)
 
 --------------------------------------------------------------------------------
 Changes for 7.0.6rc1
@@ -119,9 +126,7 @@ New features:
 --------------------------------------------------------------------------------
 Changes for 6.4.20rc1
 
-New features:
-
-Bug fixes:
+6.4.19 was released as 6.4.20rc1 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 6.4.19
