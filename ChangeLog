@@ -19,7 +19,11 @@ Bug fixses:
 --------------------------------------------------------------------------------
 Changes for 7.0.6rc1
 
-7.0.5 was released as 7.0.6rc1 without any changes
+New features:
+[ZBXNEXT-9281] added configurable item timeout support (dgoloscapov)
+
+Bug fixes:
+[ZBX-25096] updated performance counter query (akotsegubov)
 
 --------------------------------------------------------------------------------
 Changes for 7.0.5
