@@ -24,6 +24,13 @@ Bug fixses:
 [ZBX-24619] updated atomic variables to be more safe (esneiders)
 
 --------------------------------------------------------------------------------
+Changes for 7.0.7rc1
+
+New features:
+
+Bug fixes:
+
+--------------------------------------------------------------------------------
 Changes for 7.0.6
 
 7.0.6rc1 was released as 7.0.6 without any changes
