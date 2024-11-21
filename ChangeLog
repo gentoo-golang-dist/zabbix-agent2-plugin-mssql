@@ -3,8 +3,6 @@ Changes for 7.2.0rc1
 New features:
 [ZBXNEXT-9533] added support of configuration parameters specified by environment variables (mprihodko)
 
-Bug fixes:
-
 --------------------------------------------------------------------------------
 Changes for 7.2.0beta1
 
