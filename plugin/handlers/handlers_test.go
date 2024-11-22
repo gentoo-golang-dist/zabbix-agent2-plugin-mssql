@@ -145,7 +145,6 @@ func Test_nullUniqueIdentifier_Scan(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -160,6 +159,7 @@ func Test_nullUniqueIdentifier_Scan(t *testing.T) {
 					err, tt.wantErr,
 				)
 			}
+
 			if diff := cmp.Diff(
 				tt.wantNUID, nuid,
 				cmp.AllowUnexported(nullUniqueIdentifier{}),
@@ -211,7 +211,6 @@ func Test_nullUniqueIdentifier_Value(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -252,13 +251,13 @@ func Test_nullBool_Value(t *testing.T) {
 		{
 			"+validTrue",
 			fields{NullBool: sql.NullBool{Bool: true, Valid: true}},
-			1,
+			int64(1),
 			false,
 		},
 		{
 			"+validFalse",
 			fields{NullBool: sql.NullBool{Bool: false, Valid: true}},
-			0,
+			int64(0),
 			false,
 		},
 		{
@@ -269,7 +268,6 @@ func Test_nullBool_Value(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -294,9 +292,11 @@ func Test_nullBool_Value(t *testing.T) {
 }
 
 func TestWithJSONResponse(t *testing.T) {
+	t.Parallel()
+
 	newHandlerFunc := func(handlerErr error, invalidJSON bool) HandlerFunc {
 		return func(
-			metricParams map[string]string, extraParams ...string,
+			timeout time.Duration, metricParams map[string]string, extraParams ...string,
 		) (any, error) {
 			if handlerErr != nil {
 				return nil, handlerErr
@@ -319,6 +319,14 @@ func TestWithJSONResponse(t *testing.T) {
 				t.Fatalf("extraParams mismatch (+want -got):\n%s", diff)
 			}
 
+			if timeout != time.Second {
+				t.Fatalf(
+					"timeout mismatch want: %s, got: %s)",
+					time.Second.String(),
+					timeout.String(),
+				)
+			}
+
 			if invalidJSON {
 				return time.Unix(100000000000000000, 0), nil
 			}
@@ -327,10 +335,9 @@ func TestWithJSONResponse(t *testing.T) {
 		}
 	}
 
-	t.Parallel()
-
 	type args struct {
 		handler     HandlerFunc
+		timeout     time.Duration
 		params      map[string]string
 		extraParams []string
 	}
@@ -345,6 +352,7 @@ func TestWithJSONResponse(t *testing.T) {
 			"+valid",
 			args{
 				handler: newHandlerFunc(nil, false),
+				timeout: time.Second,
 				params: map[string]string{
 					"param1": "value1",
 					"param2": "value2",
@@ -358,6 +366,7 @@ func TestWithJSONResponse(t *testing.T) {
 			"-handlerErr",
 			args{
 				handler: newHandlerFunc(errors.New("fail"), false),
+				timeout: time.Second,
 				params: map[string]string{
 					"param1": "value1",
 					"param2": "value2",
@@ -371,6 +380,7 @@ func TestWithJSONResponse(t *testing.T) {
 			"-marshalErr",
 			args{
 				handler: newHandlerFunc(nil, true),
+				timeout: time.Second,
 				params: map[string]string{
 					"param1": "value1",
 					"param2": "value2",
@@ -382,13 +392,13 @@ func TestWithJSONResponse(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
 			got, err := WithJSONResponse(
 				tt.args.handler,
 			)(
+				tt.args.timeout,
 				tt.args.params,
 				tt.args.extraParams...,
 			)
@@ -547,7 +557,6 @@ func TestCustomQueries_Load(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -638,7 +647,6 @@ func TestCustomQueries_HandlerFunc(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -743,7 +751,6 @@ func TestQueryHandlerFunc(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -833,7 +840,6 @@ func TestVersionHandler(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -914,7 +920,18 @@ func Test_rowsToJSON(t *testing.T) {
 					AddRow("bool", true).
 					AddRow("nil", nil).
 					AddRow("bytes", []byte("abc")).
-					AddRow("time", now),
+					AddRow("time", now).
+					AddRow("valid bool", &nullBool{
+						NullBool: sql.NullBool{Bool: true, Valid: true},
+					}).
+					AddRow("null bool", &nullBool{}).
+					AddRow("valid uuid", &nullUniqueIdentifier{
+						uuid: &mssql.UniqueIdentifier{
+							1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16,
+						},
+						valid: true,
+					}).
+					AddRow("null uuid", &nullUniqueIdentifier{valid: false}),
 			},
 			[]map[string]any{
 				{"type": wrapAny("int"), "val": wrapAny(int64(1))},
@@ -924,6 +941,13 @@ func Test_rowsToJSON(t *testing.T) {
 				{"type": wrapAny("nil"), "val": wrapAny(nil)},
 				{"type": wrapAny("bytes"), "val": wrapAny([]byte("abc"))},
 				{"type": wrapAny("time"), "val": wrapAny(now)},
+				{"type": wrapAny("valid bool"), "val": wrapAny(int64(1))},
+				{"type": wrapAny("null bool"), "val": wrapAny(nil)},
+				{
+					"type": wrapAny("valid uuid"),
+					"val":  wrapAny("01020304-0506-0708-090A-0C0D0E0F1000"),
+				},
+				{"type": wrapAny("null uuid"), "val": wrapAny(nil)},
 			},
 			false,
 		},
@@ -940,7 +964,6 @@ func Test_rowsToJSON(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 

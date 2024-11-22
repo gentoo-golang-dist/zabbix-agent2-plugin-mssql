@@ -17,6 +17,7 @@ package plugin
 import (
 	_ "embed"
 	"os"
+	"time"
 
 	"golang.zabbix.com/plugin/mssql/plugin/dbconn"
 	"golang.zabbix.com/plugin/mssql/plugin/handlers"
@@ -118,7 +119,7 @@ func Launch() error {
 		return errs.Wrap(err, "failed to create new handler")
 	}
 
-	p.Logger = &h
+	p.Logger = h
 
 	err = h.Execute()
 	if err != nil {
@@ -132,7 +133,7 @@ func Launch() error {
 // initialized in Start, to ensure that config has been loaded before.
 // (Start is called after Configure).
 func (p *mssqlPlugin) Start() {
-	p.conns.Init(p.config.KeepAlive, p.config.Timeout, p)
+	p.conns.Init(p.config.KeepAlive, p)
 
 	err := p.customQueries.Load(os.DirFS(p.config.CustomQueriesDir), p)
 	if err != nil {
@@ -148,7 +149,7 @@ func (p *mssqlPlugin) Stop() {
 
 // Export collects all the metrics.
 func (p *mssqlPlugin) Export(
-	key string, rawParams []string, _ plugin.ContextProvider,
+	key string, rawParams []string, pluginCtx plugin.ContextProvider,
 ) (any, error) {
 	m, ok := p.metrics[mssqlMetricKey(key)]
 	if !ok {
@@ -169,7 +170,12 @@ func (p *mssqlPlugin) Export(
 		return nil, errs.Wrap(err, "failed to set default params")
 	}
 
-	res, err := m.handler(metricParams, extraParams...)
+	timeout := time.Second * time.Duration(p.config.Timeout)
+	if timeout < time.Second*time.Duration(pluginCtx.Timeout()) {
+		timeout = time.Second * time.Duration(pluginCtx.Timeout())
+	}
+
+	res, err := m.handler(timeout, metricParams, extraParams...)
 	if err != nil {
 		return nil, errs.Wrap(err, "failed to execute handler")
 	}

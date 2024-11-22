@@ -23,6 +23,7 @@ import (
 	"os"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/go-cmp/cmp"
@@ -90,11 +91,10 @@ func TestConnCollection_Init(t *testing.T) {
 	sampleLogr := &struct{ log.Logger }{}
 
 	type fields struct {
-		conns        map[connConfig]*sql.DB
-		keepAlive    int
-		queryTimeout int
-		logr         log.Logger
-		driverName   string
+		conns      map[connConfig]*sql.DB
+		keepAlive  int
+		logr       log.Logger
+		driverName string
 	}
 
 	type args struct {
@@ -114,45 +114,40 @@ func TestConnCollection_Init(t *testing.T) {
 			fields{},
 			args{10, 11, sampleLogr},
 			&ConnCollection{
-				conns:        make(map[connConfig]*sql.DB),
-				keepAlive:    10,
-				queryTimeout: 11,
-				logr:         sampleLogr,
-				driverName:   "sqlserver",
+				conns:      make(map[connConfig]*sql.DB),
+				keepAlive:  10,
+				logr:       sampleLogr,
+				driverName: "sqlserver",
 			},
 		},
 		{
 			"-overwrite",
 			fields{
-				conns:        map[connConfig]*sql.DB{{}: nil},
-				keepAlive:    3,
-				queryTimeout: 4,
-				logr:         log.New("aaa"),
-				driverName:   "lol",
+				conns:      map[connConfig]*sql.DB{{}: nil},
+				keepAlive:  3,
+				logr:       log.New("aaa"),
+				driverName: "lol",
 			},
 			args{10, 11, sampleLogr},
 			&ConnCollection{
-				conns:        make(map[connConfig]*sql.DB),
-				keepAlive:    10,
-				queryTimeout: 11,
-				logr:         sampleLogr,
-				driverName:   "sqlserver",
+				conns:      make(map[connConfig]*sql.DB),
+				keepAlive:  10,
+				logr:       sampleLogr,
+				driverName: "sqlserver",
 			},
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
 			c := &ConnCollection{
-				conns:        tt.fields.conns,
-				keepAlive:    tt.fields.keepAlive,
-				queryTimeout: tt.fields.queryTimeout,
-				logr:         tt.fields.logr,
-				driverName:   tt.fields.driverName,
+				conns:      tt.fields.conns,
+				keepAlive:  tt.fields.keepAlive,
+				logr:       tt.fields.logr,
+				driverName: tt.fields.driverName,
 			}
-			c.Init(tt.args.keepAlive, tt.args.queryTimetout, tt.args.logr)
+			c.Init(tt.args.keepAlive, tt.args.logr)
 
 			if diff := cmp.Diff(
 				tt.want, c, cmp.AllowUnexported(ConnCollection{}, sync.Mutex{}),
@@ -173,6 +168,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 	}
 
 	type args struct {
+		timeout      time.Duration
 		metricParams map[string]string
 		extraParams  []string
 	}
@@ -192,6 +188,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 				dsn: "pigeon://8888:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
 			},
 			args{
+				timeout: time.Second * 10,
 				metricParams: map[string]string{
 					params.URI.Name():      "pigeon://uri",
 					params.User.Name():     "8888",
@@ -213,6 +210,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 				dsn: "pigeon://7777:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
 			},
 			args{
+				timeout: time.Second * 10,
 				metricParams: map[string]string{
 					params.URI.Name():      "pigeon://uri",
 					params.User.Name():     "7777",
@@ -238,6 +236,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 				getErr: errors.New("fail"),
 			},
 			args{
+				timeout: time.Second * 10,
 				metricParams: map[string]string{
 					params.URI.Name():      "pigeon://uri",
 					params.User.Name():     "6666",
@@ -253,10 +252,9 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) { //nolint:paralleltest
 			c := &ConnCollection{
-				conns:        map[connConfig]*sql.DB{},
-				driverName:   "testdriver",
-				logr:         log.New("aaa"),
-				queryTimeout: 1,
+				conns:      map[connConfig]*sql.DB{},
+				driverName: "testdriver",
+				logr:       log.New("aaa"),
 			}
 
 			db, m, err := sqlmock.NewWithDSN(
@@ -275,13 +273,29 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 
 			got, err := c.WithConnHandlerFunc(
 				func(
-					_ context.Context,
+					ctx context.Context,
 					db *sql.DB,
 					metricParams map[string]string,
 					extraParams ...string,
 				) (any, error) {
-					if db == nil {
+					deadline, deadlineSet := ctx.Deadline()
+					if !deadlineSet {
+						t.Fatal(
+							"ConnCollection.WithConnHandlerFunc() context deadline is not set",
+						)
+					}
+
+					ctxTimeout := time.Until(deadline).Round(time.Second)
+					if ctxTimeout != tt.args.timeout {
 						t.Fatalf(
+							"ConnCollection.WithConnHandlerFunc() "+
+								"context timeout is not correctly set: "+
+								"got %v, expected %v", ctxTimeout, tt.args.timeout,
+						)
+					}
+
+					if db == nil {
+						t.Fatal(
 							"ConnCollection.WithConnHandlerFunc() db is nil",
 						)
 					}
@@ -304,7 +318,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 
 					return "handler called", nil
 				},
-			)(tt.args.metricParams, tt.args.extraParams...)
+			)(tt.args.timeout, tt.args.metricParams, tt.args.extraParams...)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"ConnCollection.WithConnHandlerFunc() "+
@@ -335,6 +349,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 	}
 
 	type args struct {
+		timeout      time.Duration
 		metricParams map[string]string
 	}
 
@@ -358,6 +373,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 					params.User.Name():     "aaaa",
 					params.Password.Name(): "dddd",
 				},
+				timeout: time.Second * 10,
 			},
 			1,
 			false,
@@ -375,6 +391,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 					params.User.Name():     "aaaa",
 					params.Password.Name(): "bbbb",
 				},
+				timeout: time.Second * 10,
 			},
 			0,
 			false,
@@ -392,6 +409,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 					params.User.Name():     "aaaa",
 					params.Password.Name(): "cccc",
 				},
+				timeout: time.Second * 10,
 			},
 			0,
 			false,
@@ -400,10 +418,9 @@ func TestConnCollection_PingHandler(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) { //nolint:paralleltest
 			c := &ConnCollection{
-				conns:        map[connConfig]*sql.DB{},
-				logr:         log.New("test"),
-				driverName:   "testdriver",
-				queryTimeout: 1,
+				conns:      map[connConfig]*sql.DB{},
+				logr:       log.New("test"),
+				driverName: "testdriver",
 			}
 
 			db, m, err := sqlmock.NewWithDSN(
@@ -424,7 +441,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 				m.ExpectPing().WillReturnError(tt.fields.pingErr)
 			}
 
-			got, err := c.PingHandler(tt.args.metricParams)
+			got, err := c.PingHandler(tt.args.timeout, tt.args.metricParams)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"ConnCollection.PingHandler() error = %v, wantErr %v",
@@ -463,7 +480,6 @@ func TestConnCollection_Close(t *testing.T) {
 		{"-closeErr", fields{errors.New("fail")}},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) { //nolint:paralleltest
 			t.Parallel()
 
@@ -677,6 +693,7 @@ func TestConnCollection_get(t *testing.T) {
 			); diff != "" {
 				t.Fatalf("ConnCollection.get() = %s", diff)
 			}
+
 			if m != nil {
 				if err := m.ExpectationsWereMet(); err != nil {
 					t.Fatalf("ConnCollection.get() = %s", err.Error())
@@ -734,6 +751,38 @@ func TestConnCollection_newConn(t *testing.T) {
 			false,
 		},
 		{
+			"+named",
+			expect{true, true},
+			fields{
+				keepAlive:  4,
+				dsn:        "pigeon://aaaa:bbbb@uri/InstanceName?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4",
+				driverName: "testdriver",
+			},
+			args{&connConfig{
+				User:     "aaaa",
+				Password: "bbbb",
+				URI:      "pigeon://uri/InstanceName",
+			}},
+			false,
+			false,
+		},
+		{
+			"+namedWithPort",
+			expect{true, true},
+			fields{
+				keepAlive:  4,
+				dsn:        "pigeon://aaaa:bbbb@uri:1435/InstanceName?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4",
+				driverName: "testdriver",
+			},
+			args{&connConfig{
+				User:     "aaaa",
+				Password: "bbbb",
+				URI:      "pigeon://uri:1435/InstanceName",
+			}},
+			false,
+			false,
+		},
+		{
 			"+validWithTLS",
 			expect{true, true},
 			fields{
@@ -741,7 +790,7 @@ func TestConnCollection_newConn(t *testing.T) {
 				dsn: "pigeon://aaaa:bbbb@uri:1433?" +
 					"TrustServerCertificate=false&" +
 					"app+name=Zabbix+agent+2+MSSQL+plugin&" +
-					"certificate=%2Fa%2Fb%2Fc&" +
+					"certificate=abc&" +
 					"encrypt=true&" +
 					"hostNameInCertificate=server&" +
 					"keepAlive=4&" +
@@ -752,7 +801,7 @@ func TestConnCollection_newConn(t *testing.T) {
 				User:                   "aaaa",
 				Password:               "bbbb",
 				URI:                    "pigeon://uri",
-				CACertPath:             "/a/b/c",
+				CACertPath:             "abc",
 				TrustServerCertificate: "false",
 				HostNameInCertificate:  "server",
 				Encrypt:                "true",
@@ -847,12 +896,14 @@ func TestConnCollection_newConn(t *testing.T) {
 						err, tt.wantErr,
 					)
 				}
+
 				if (got == nil) != tt.wantNil {
 					t.Fatalf(
 						"ConnCollection.newConn() got = %v, wantNil %v",
 						got, tt.wantNil,
 					)
 				}
+
 				if m != nil {
 					if err := m.ExpectationsWereMet(); err != nil {
 						t.Fatalf(
@@ -908,7 +959,6 @@ func Test_newConnConfig(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 

@@ -178,6 +178,15 @@ URI.
 - WRONG: `mssql.ping[sqlserver://stage_user:stage_password@localhost:1433]`
 - CORRECT: `mssql.ping[sqlserver://localhost:1433,stage_user,stage_password]`
 
+It is also possible to connect to a named instance by providing the instance name in the path part of the URI.
+
+Example:
+```
+sqlserver://localhost/InstanceName
+```
+
+**Note:** If both the instance name and the port are provided, the port will be used for the connection.
+
 Read more about what parameters are available for each metric key in the
 section - metric keys.
 
@@ -218,7 +227,7 @@ Path to the MSSQL plugin executable.
 Example usage:
 
 ```conf
-Plugins.MSSQL.System.Path=/usr/sbin/zabbix-agent2-plugin/zabbix-agent2-plugin-mssql
+Plugins.MSSQL.System.Path=/usr/libexec/zabbix/zabbix-agent2-plugin-mssql
 ```
 
 <!-- TOC --><a name="pluginsmssqltimeout"></a>
@@ -227,8 +236,9 @@ Plugins.MSSQL.System.Path=/usr/sbin/zabbix-agent2-plugin/zabbix-agent2-plugin-ms
 
 Specifies the amount of time to wait for a server to respond when first
 connecting and on follow-up operations in the session. Range: 1-30 in seconds.
-If not specified, the value defaults to global timeout value defined in agent 2
-configuration.
+Global item-type timeout (or individual item timeout) will override this value if it is greater.
+If not specified, the value defaults to global timeout value defined in Zabbix agent 2
+configuration file.
 
 Example usage:
 

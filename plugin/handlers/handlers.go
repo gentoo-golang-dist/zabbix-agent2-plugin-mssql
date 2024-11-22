@@ -19,10 +19,12 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/fs"
 	"path/filepath"
 	"strings"
+	"time"
 
 	mssql "github.com/microsoft/go-mssqldb"
 	"golang.zabbix.com/plugin/mssql/plugin/params"
@@ -45,7 +47,7 @@ var (
 
 // HandlerFunc describes the signature all metric handler functions must have.
 type HandlerFunc func(
-	metricParams map[string]string, extraParams ...string,
+	timeout time.Duration, metricParams map[string]string, extraParams ...string,
 ) (any, error)
 
 // ConnHandlerFunc describes the signature all connection handler functions
@@ -97,7 +99,8 @@ func (nuid *nullUniqueIdentifier) Scan(value any) error {
 // Value implements the driver Valuer interface.
 func (nuid nullUniqueIdentifier) Value() (driver.Value, error) {
 	if !nuid.valid {
-		return nil, nil
+		// here nil is a valid return representing NULL value from DB
+		return nil, nil //nolint:nilnil
 	}
 
 	// check that the underlying UUID is valid.
@@ -117,7 +120,8 @@ func (b nullBool) Value() (driver.Value, error) {
 	}
 
 	if valuer == nil {
-		return nil, nil
+		// here nil is a valid return representing NULL value from DB
+		return nil, nil //nolint:nilnil
 	}
 
 	v, ok := valuer.(bool)
@@ -126,19 +130,19 @@ func (b nullBool) Value() (driver.Value, error) {
 	}
 
 	if v {
-		return 1, nil
+		return int64(1), nil
 	}
 
-	return 0, nil
+	return int64(0), nil
 }
 
 // WithJSONResponse wraps a handler function, marshaling its response
 // to a JSON object and returning it as string.
 func WithJSONResponse(handler HandlerFunc) HandlerFunc {
 	return func(
-		metricParams map[string]string, extraParams ...string,
+		timeout time.Duration, metricParams map[string]string, extraParams ...string,
 	) (any, error) {
-		res, err := handler(metricParams, extraParams...)
+		res, err := handler(timeout, metricParams, extraParams...)
 		if err != nil {
 			return nil, errs.Wrap(err, "failed to execute handler")
 		}
@@ -237,6 +241,11 @@ func QueryHandlerFunc(query string) ConnHandlerFunc {
 
 		rows, err := conn.QueryContext(ctx, query, args...)
 		if err != nil {
+			ctxErr := ctx.Err()
+			if ctxErr != nil && errors.Is(ctxErr, context.DeadlineExceeded) {
+				return nil, errs.New("query execution timeout exceeded")
+			}
+
 			return nil, errs.Wrap(err, "failed to query")
 		}
 
