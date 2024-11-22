@@ -144,7 +144,6 @@ func TestConnCollection_Init(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -466,7 +465,6 @@ func TestConnCollection_Close(t *testing.T) {
 		{"-closeErr", fields{errors.New("fail")}},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) { //nolint:paralleltest
 			t.Parallel()
 
@@ -680,6 +678,7 @@ func TestConnCollection_get(t *testing.T) {
 			); diff != "" {
 				t.Fatalf("ConnCollection.get() = %s", diff)
 			}
+
 			if m != nil {
 				if err := m.ExpectationsWereMet(); err != nil {
 					t.Fatalf("ConnCollection.get() = %s", err.Error())
@@ -737,6 +736,38 @@ func TestConnCollection_newConn(t *testing.T) {
 			false,
 		},
 		{
+			"+named",
+			expect{true, true},
+			fields{
+				keepAlive:  4,
+				dsn:        "pigeon://aaaa:bbbb@uri/InstanceName?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4",
+				driverName: "testdriver",
+			},
+			args{&connConfig{
+				User:     "aaaa",
+				Password: "bbbb",
+				URI:      "pigeon://uri/InstanceName",
+			}},
+			false,
+			false,
+		},
+		{
+			"+namedWithPort",
+			expect{true, true},
+			fields{
+				keepAlive:  4,
+				dsn:        "pigeon://aaaa:bbbb@uri:1435/InstanceName?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4",
+				driverName: "testdriver",
+			},
+			args{&connConfig{
+				User:     "aaaa",
+				Password: "bbbb",
+				URI:      "pigeon://uri:1435/InstanceName",
+			}},
+			false,
+			false,
+		},
+		{
 			"+validWithTLS",
 			expect{true, true},
 			fields{
@@ -744,7 +775,7 @@ func TestConnCollection_newConn(t *testing.T) {
 				dsn: "pigeon://aaaa:bbbb@uri:1433?" +
 					"TrustServerCertificate=false&" +
 					"app+name=Zabbix+agent+2+MSSQL+plugin&" +
-					"certificate=%2Fa%2Fb%2Fc&" +
+					"certificate=abc&" +
 					"encrypt=true&" +
 					"hostNameInCertificate=server&" +
 					"keepAlive=4&" +
@@ -755,7 +786,7 @@ func TestConnCollection_newConn(t *testing.T) {
 				User:                   "aaaa",
 				Password:               "bbbb",
 				URI:                    "pigeon://uri",
-				CACertPath:             "/a/b/c",
+				CACertPath:             "abc",
 				TrustServerCertificate: "false",
 				HostNameInCertificate:  "server",
 				Encrypt:                "true",
@@ -850,12 +881,14 @@ func TestConnCollection_newConn(t *testing.T) {
 						err, tt.wantErr,
 					)
 				}
+
 				if (got == nil) != tt.wantNil {
 					t.Fatalf(
 						"ConnCollection.newConn() got = %v, wantNil %v",
 						got, tt.wantNil,
 					)
 				}
+
 				if m != nil {
 					if err := m.ExpectationsWereMet(); err != nil {
 						t.Fatalf(
@@ -911,7 +944,6 @@ func Test_newConnConfig(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 

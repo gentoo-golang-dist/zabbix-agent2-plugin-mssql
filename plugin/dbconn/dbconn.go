@@ -20,6 +20,7 @@ package dbconn
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"net/url"
 	"path/filepath"
 	"strconv"
@@ -217,7 +218,7 @@ func (c *ConnCollection) newConn(
 	)
 
 	connURI, err := uri.NewWithCreds(
-		conf.URI, conf.User, conf.Password, params.URIDefaults,
+		conf.URI, conf.User, conf.Password, &uri.Defaults{Scheme: params.URIDefaults.Scheme},
 	)
 	if err != nil {
 		return nil, errs.Wrap(err, "failed to set URI defaults")
@@ -227,6 +228,12 @@ func (c *ConnCollection) newConn(
 	if err != nil {
 		return nil, errs.Wrap(err, "failed to parse URI")
 	}
+
+	if connURI.Port() == "" && connURI.Path() == "" {
+		u.Host = fmt.Sprintf("%s:%s", u.Hostname(), params.URIDefaults.Port)
+	}
+
+	u.Path = connURI.Path()
 
 	queryParams := u.Query()
 	queryParams.Add("app name", "Zabbix agent 2 MSSQL plugin")
