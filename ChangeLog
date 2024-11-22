@@ -1,8 +1,55 @@
-Changes for 7.0.3rc1
+Changes for 7.0.7rc1
 
 New features:
 
 Bug fixes:
+
+--------------------------------------------------------------------------------
+Changes for 7.0.6
+
+7.0.6rc1 was released as 7.0.6 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.0.6rc1
+
+New features:
+[ZBXNEXT-9281] added configurable item timeout support (dgoloscapov)
+
+Bug fixes:
+[ZBX-25096] updated performance counter query (akotsegubov)
+
+--------------------------------------------------------------------------------
+Changes for 7.0.5
+
+7.0.5rc1 was released as 7.0.5 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.0.5rc1
+
+New features:
+[ZBXNEXT-9281] added configurable item timeout support (dgoloscapov)
+
+--------------------------------------------------------------------------------
+Changes for 7.0.4
+
+7.0.4rc1 was released as 7.0.4 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.0.4rc1
+
+Bug fixes:
+[ZBX-24619] updated atomic variables to be more safe (esneiders)
+[ZBX-24245] fixed invalid Zabbix agent 2 and plugin protocol log message (esneiders)
+
+--------------------------------------------------------------------------------
+Changes for 7.0.3
+
+7.0.3rc1 was released as 7.0.3 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.0.3rc1
+
+7.0.2 was released as 7.0.3rc1 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 7.0.2
@@ -75,11 +122,41 @@ New features:
 [ZBXNEXT-6235] initial implementation for MSSQL loadable Zabbix agent 2 plugin (rzvejs)
 
 --------------------------------------------------------------------------------
-Changes for 6.4.18rc1
+Changes for 6.4.21rc1
 
 New features:
 
 Bug fixes:
+
+--------------------------------------------------------------------------------
+Changes for 6.4.20
+
+6.4.20rc1 was released as 6.4.20 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.4.20rc1
+
+6.4.19 was released as 6.4.20rc1 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.4.19
+
+6.4.19rc1 was released as 6.4.19 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.4.19rc1
+
+6.4.18 was released as 6.4.19rc1 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.4.18
+
+6.4.18rc1 was released as 6.4.18 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.4.18rc1
+
+6.4.17 was released as 6.4.18rc1 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 6.4.17
@@ -155,11 +232,56 @@ New features:
 [ZBXNEXT-6235] initial implementation for MSSQL loadable Zabbix agent 2 plugin (rzvejs)
 
 --------------------------------------------------------------------------------
-Changes for 6.0.33rc1
+Changes for 6.0.37rc1
 
 New features:
 
 Bug fixes:
+
+--------------------------------------------------------------------------------
+Changes for 6.0.36
+
+6.0.36rc1 was released as 6.0.36 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.0.36rc1
+
+6.0.35 was released as 6.0.36rc1 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.0.35
+
+6.0.35rc1 was released as 6.0.35 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.0.35rc1
+
+6.0.34 was released as 6.0.35rc1 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.0.34
+
+6.0.34rc2 was released as 6.0.34 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.0.34rc2
+
+6.0.34rc1 was released as 6.0.34rc2 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.0.34rc1
+
+6.0.33 was released as 6.0.34rc1 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.0.33
+
+6.0.33rc1 was released as 6.0.33 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.0.33rc1
+
+6.0.32 was released as 6.0.33rc1 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 6.0.32
