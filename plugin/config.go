@@ -15,6 +15,8 @@
 package plugin
 
 import (
+	"path/filepath"
+
 	"golang.zabbix.com/sdk/conf"
 	"golang.zabbix.com/sdk/errs"
 	"golang.zabbix.com/sdk/plugin"
@@ -47,6 +49,8 @@ type pluginConfig struct {
 	// CustomQueriesDir is absolute path directory containing user defined
 	// *.sql files with custom queries the plugin can execute.
 	CustomQueriesDir string `conf:"optional"`
+	// CustomQueriesEnabled disabled or enabled custom query functionality.
+	CustomQueriesEnabled bool `conf:"optional,default=false"`
 }
 
 // Configure implements the Configurator interface.
@@ -60,6 +64,8 @@ func (p *mssqlPlugin) Configure(global *plugin.GlobalOptions, options any) {
 
 		return
 	}
+
+	pConfig.setCustomQueriesDirDefault()
 
 	p.config = pConfig
 
@@ -76,6 +82,10 @@ func (*mssqlPlugin) Validate(options any) error {
 	err := conf.Unmarshal(options, &opts)
 	if err != nil {
 		return errs.Wrap(err, "failed to unmarshal configuration options")
+	}
+
+	if opts.CustomQueriesEnabled && opts.CustomQueriesDir != "" && !filepath.IsAbs(opts.CustomQueriesDir) {
+		return errs.Errorf("opts.CustomQueriesDir path: '%s' must be absolute", opts.CustomQueriesDir)
 	}
 
 	return nil

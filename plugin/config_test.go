@@ -142,6 +142,36 @@ func Test_mssqlPlugin_Validate(t *testing.T) {
 			false,
 		},
 		{
+			"+setCustomQueryDir",
+			args{
+				[]byte(
+					strings.Join(
+						[]string{
+							"CustomQueriesEnabled=true",
+							"CustomQueriesDir=" + validTestPath,
+						},
+						"\n",
+					),
+				),
+			},
+			false,
+		},
+		{
+			"-customQueryDirErr",
+			args{
+				[]byte(
+					strings.Join(
+						[]string{
+							"CustomQueriesEnabled=true",
+							"CustomQueriesDir=notAbsolute",
+						},
+						"\n",
+					),
+				),
+			},
+			true,
+		},
+		{
 			"-marshalErr",
 			args{[]byte(`KeepDead=300`)},
 			true,
