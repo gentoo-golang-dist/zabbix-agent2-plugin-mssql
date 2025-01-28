@@ -348,6 +348,13 @@ New features:
 [ZBXNEXT-6235] initial implementation for MSSQL loadable Zabbix agent 2 plugin (rzvejs)
 
 --------------------------------------------------------------------------------
+Changes for 6.0.39rc1
+
+New features:
+
+Bug fixes:
+
+--------------------------------------------------------------------------------
 Changes for 6.0.38
 
 6.0.38rc1 was released as 6.0.38 without any changes
