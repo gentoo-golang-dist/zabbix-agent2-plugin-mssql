@@ -12,26 +12,17 @@
 ** If not, see <https://www.gnu.org/licenses/>.
 **/
 
-package main
+package plugin
 
 import (
-	"testing"
-
-	_ "github.com/microsoft/go-mssqldb"
+	"fmt"
+	"os"
 )
 
-func Test_main(t *testing.T) {
-	t.Skip("untestable, keep file for coverage reporting")
-	t.Parallel()
-
-	tests := []struct {
-		name string
-	}{}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			main()
-		})
+func (pc *pluginConfig) setCustomQueriesDirDefault() {
+	if pc.CustomQueriesEnabled && pc.CustomQueriesDir == "" {
+		pc.CustomQueriesDir = fmt.Sprintf(
+			"%s\\Zabbix Agent 2\\Custom Queries\\Mssql", os.Getenv("ProgramFiles"),
+		)
 	}
 }

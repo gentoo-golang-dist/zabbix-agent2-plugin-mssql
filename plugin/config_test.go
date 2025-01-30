@@ -1,5 +1,5 @@
 /*
-** Copyright (C) 2001-2024 Zabbix SIA
+** Copyright (C) 2001-2025 Zabbix SIA
 **
 ** This program is free software: you can redistribute it and/or modify it under the terms of
 ** the GNU Affero General Public License as published by the Free Software Foundation, version 3.
@@ -142,12 +142,43 @@ func Test_mssqlPlugin_Validate(t *testing.T) {
 			false,
 		},
 		{
+			"+setCustomQueryDir",
+			args{
+				[]byte(
+					strings.Join(
+						[]string{
+							"CustomQueriesEnabled=true",
+							"CustomQueriesDir=" + validTestPath,
+						},
+						"\n",
+					),
+				),
+			},
+			false,
+		},
+		{
+			"-customQueryDirErr",
+			args{
+				[]byte(
+					strings.Join(
+						[]string{
+							"CustomQueriesEnabled=true",
+							"CustomQueriesDir=notAbsolute",
+						},
+						"\n",
+					),
+				),
+			},
+			true,
+		},
+		{
 			"-marshalErr",
 			args{[]byte(`KeepDead=300`)},
 			true,
 		},
 	}
 	for _, tt := range tests {
+		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 

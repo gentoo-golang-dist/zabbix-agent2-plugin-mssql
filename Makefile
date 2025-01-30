@@ -68,6 +68,7 @@ DISTFILES = \
 	main.go \
 	Makefile \
 	mssql.conf \
+	mssql.win.conf \
 	README.md
 
 DIST_SUBDIRS = \

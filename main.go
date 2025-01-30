@@ -1,5 +1,5 @@
 /*
-** Copyright (C) 2001-2024 Zabbix SIA
+** Copyright (C) 2001-2025 Zabbix SIA
 **
 ** This program is free software: you can redistribute it and/or modify it under the terms of
 ** the GNU Affero General Public License as published by the Free Software Foundation, version 3.
@@ -25,16 +25,16 @@ import (
 )
 
 const copyrightMessage = //
-`Copyright (C) 2024 Zabbix SIA
+`Copyright (C) 2025 Zabbix SIA
 License AGPLv3: GNU Affero General Public License version 3 <https://www.gnu.org/licenses/>.
 This is free software: you are free to change and redistribute it according to
 the license. There is NO WARRANTY, to the extent permitted by law.`
 
 //nolint:gochecknoglobals,revive // required ALL_CAPS by build scripts
 var (
-	PLUGIN_VERSION_RC    = "rc1"
+	PLUGIN_VERSION_RC    = "alpha1"
 	PLUGIN_VERSION_MAJOR = 7
-	PLUGIN_VERSION_MINOR = 2
+	PLUGIN_VERSION_MINOR = 4
 	PLUGIN_VERSION_PATCH = 0
 )
 

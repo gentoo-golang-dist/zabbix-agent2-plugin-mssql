@@ -1,3 +1,6 @@
+//go:build !windows
+// +build !windows
+
 /*
 ** Copyright (C) 2001-2025 Zabbix SIA
 **
@@ -12,26 +15,10 @@
 ** If not, see <https://www.gnu.org/licenses/>.
 **/
 
-package main
+package plugin
 
-import (
-	"testing"
-
-	_ "github.com/microsoft/go-mssqldb"
-)
-
-func Test_main(t *testing.T) {
-	t.Skip("untestable, keep file for coverage reporting")
-	t.Parallel()
-
-	tests := []struct {
-		name string
-	}{}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			main()
-		})
+func (pc *pluginConfig) setCustomQueriesDirDefault() {
+	if pc.CustomQueriesEnabled && pc.CustomQueriesDir == "" {
+		pc.CustomQueriesDir = "/usr/local/share/zabbix/custom-queries/mssql"
 	}
 }

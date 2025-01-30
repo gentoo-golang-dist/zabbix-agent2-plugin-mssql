@@ -1,5 +1,5 @@
 /*
-** Copyright (C) 2001-2024 Zabbix SIA
+** Copyright (C) 2001-2025 Zabbix SIA
 **
 ** This program is free software: you can redistribute it and/or modify it under the terms of
 ** the GNU Affero General Public License as published by the Free Software Foundation, version 3.
@@ -156,6 +156,10 @@ func (p *mssqlPlugin) Export(
 		return nil, errs.Wrapf(
 			zbxerr.ErrorUnsupportedMetric, "unknown metric %q", key,
 		)
+	}
+
+	if mssqlMetricKey(key) == customQuery && !p.config.CustomQueriesEnabled {
+		return nil, errs.Errorf("key %q is disabled", key)
 	}
 
 	metricParams, extraParams, hardcodedParams, err := m.metric.EvalParams(
