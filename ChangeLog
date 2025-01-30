@@ -1,8 +1,48 @@
-Changes for 7.0.7rc1
+Changes for 7.0.10rc1
 
 New features:
 
 Bug fixes:
+
+--------------------------------------------------------------------------------
+Changes for 7.0.9
+
+7.0.9rc2 was released as 7.0.9 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.0.9rc2
+
+7.0.9rc1 was released as 7.0.9rc2 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.0.9rc1
+
+7.0.8 was released as 7.0.9rc1 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.0.8
+
+7.0.8rc2 was released as 7.0.8 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.0.8rc2
+
+7.0.8rc1 was released as 7.0.8rc2 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.0.8rc1
+
+7.0.7 was released as 7.0.8rc1 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.0.7
+
+7.0.7rc1 was released as 7.0.7 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.0.7rc1
+
+7.0.6 was released as 7.0.7rc1 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 7.0.6
@@ -13,10 +53,11 @@ Changes for 7.0.6
 Changes for 7.0.6rc1
 
 New features:
+...G...... [ZBXNEXT-9292] added named instance support in URI (sjurgensons)
 [ZBXNEXT-9281] added configurable item timeout support (dgoloscapov)
 
 Bug fixes:
-[ZBX-25096] updated performance counter query (akotsegubov)
+...G...... [ZBX-25096] updated performance counter query (akotsegubov)
 
 --------------------------------------------------------------------------------
 Changes for 7.0.5
@@ -38,8 +79,8 @@ Changes for 7.0.4
 Changes for 7.0.4rc1
 
 Bug fixes:
-[ZBX-24619] updated atomic variables to be more safe (esneiders)
-[ZBX-24245] fixed invalid Zabbix agent 2 and plugin protocol log message (esneiders)
+...G...... [ZBX-24619] updated atomic variables to be more safe (esneiders)
+...G...... [ZBX-24245] fixed invalid Zabbix agent 2 and plugin protocol log message (esneiders)
 
 --------------------------------------------------------------------------------
 Changes for 7.0.3
@@ -122,11 +163,21 @@ New features:
 [ZBXNEXT-6235] initial implementation for MSSQL loadable Zabbix agent 2 plugin (rzvejs)
 
 --------------------------------------------------------------------------------
-Changes for 6.4.21rc1
+Changes for 6.4.22rc1
 
 New features:
 
 Bug fixes:
+
+--------------------------------------------------------------------------------
+Changes for 6.4.21
+
+6.4.21rc1 was released as 6.4.21 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.4.21rc1
+
+6.4.20 was released as 6.4.21rc1 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 6.4.20
@@ -232,11 +283,31 @@ New features:
 [ZBXNEXT-6235] initial implementation for MSSQL loadable Zabbix agent 2 plugin (rzvejs)
 
 --------------------------------------------------------------------------------
-Changes for 6.0.37rc1
+Changes for 6.0.39rc1
 
 New features:
 
 Bug fixes:
+
+--------------------------------------------------------------------------------
+Changes for 6.0.38
+
+6.0.38rc1 was released as 6.0.38 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.0.38rc1
+
+6.0.37 was released as 6.0.38rc1 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.0.37
+
+6.0.37rc1 was released as 6.0.37 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.0.37rc1
+
+6.0.36 was released as 6.0.37rc1 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 6.0.36
@@ -246,7 +317,11 @@ Changes for 6.0.36
 --------------------------------------------------------------------------------
 Changes for 6.0.36rc1
 
-6.0.35 was released as 6.0.36rc1 without any changes
+New features:
+...G...... [ZBXNEXT-9292] added named instance support in URI (sjurgensons)
+
+Bug fixes:
+...G...... [ZBX-25096] updated performance counter query (akotsegubov)
 
 --------------------------------------------------------------------------------
 Changes for 6.0.35
@@ -271,7 +346,9 @@ Changes for 6.0.34rc2
 --------------------------------------------------------------------------------
 Changes for 6.0.34rc1
 
-6.0.33 was released as 6.0.34rc1 without any changes
+Bug fixes:
+...G...... [ZBX-24619] updated atomic variables to be more safe (esneiders)
+...G...... [ZBX-24245] fixed invalid Zabbix agent 2 and plugin protocol log message (esneiders)
 
 --------------------------------------------------------------------------------
 Changes for 6.0.33
