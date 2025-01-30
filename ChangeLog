@@ -1,8 +1,28 @@
-Changes for 6.0.37rc1
+Changes for 6.0.39rc1
 
 New features:
 
 Bug fixes:
+
+--------------------------------------------------------------------------------
+Changes for 6.0.38
+
+6.0.38rc1 was released as 6.0.38 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.0.38rc1
+
+6.0.37 was released as 6.0.38rc1 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.0.37
+
+6.0.37rc1 was released as 6.0.37 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.0.37rc1
+
+6.0.36 was released as 6.0.37rc1 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 6.0.36
@@ -12,7 +32,11 @@ Changes for 6.0.36
 --------------------------------------------------------------------------------
 Changes for 6.0.36rc1
 
-6.0.35 was released as 6.0.36rc1 without any changes
+New features:
+...G...... [ZBXNEXT-9292] added named instance support in URI (sjurgensons)
+
+Bug fixes:
+...G...... [ZBX-25096] updated performance counter query (akotsegubov)
 
 --------------------------------------------------------------------------------
 Changes for 6.0.35
@@ -37,7 +61,9 @@ Changes for 6.0.34rc2
 --------------------------------------------------------------------------------
 Changes for 6.0.34rc1
 
-6.0.33 was released as 6.0.34rc1 without any changes
+Bug fixes:
+...G...... [ZBX-24619] updated atomic variables to be more safe (esneiders)
+...G...... [ZBX-24245] fixed invalid Zabbix agent 2 and plugin protocol log message (esneiders)
 
 --------------------------------------------------------------------------------
 Changes for 6.0.33
