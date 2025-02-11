@@ -33,6 +33,7 @@ type session struct {
 }
 
 type pluginConfig struct {
+	System plugin.SystemOptions `conf:"optional"` //nolint:staticcheck
 	// Timeout is the amount of time to wait for a server to respond when
 	// first connecting and on follow up operations in the session.
 	Timeout int `conf:"optional,range=1:30"`
