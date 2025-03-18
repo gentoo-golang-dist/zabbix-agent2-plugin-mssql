@@ -12,7 +12,8 @@ Changes for 7.2.4
 --------------------------------------------------------------------------------
 Changes for 7.2.4rc1
 
-7.2.3 was released as 7.2.4rc1 without any changes
+Bug fixes:
+...G...... [ZBX-25504] updated quorum member query (akotsegubov)
 
 --------------------------------------------------------------------------------
 Changes for 7.2.3
@@ -22,7 +23,8 @@ Changes for 7.2.3
 --------------------------------------------------------------------------------
 Changes for 7.2.3rc1
 
-7.2.2 was released as 7.2.3rc1 without any changes
+Bug fixes:
+...G...... [ZBX-25443] updated Go version requirement to 1.21 (esneiders)
 
 --------------------------------------------------------------------------------
 Changes for 7.2.2
