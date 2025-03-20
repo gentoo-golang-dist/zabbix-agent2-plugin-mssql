@@ -13,7 +13,7 @@ WHERE bs.database_name not in (
   INNER JOIN sys.availability_databases_cluster AGDatabases
     ON Groups.group_id = AGDatabases.group_id
   WHERE primary_replica != @@Servername OR primary_replica is NULL
-)
+) and db.name is not NULL
 GROUP BY bs.database_name,
   backup_finish_date,
   [type],
