@@ -84,6 +84,8 @@ func (c *ConnCollection) WithConnHandlerFunc(
 
 		conn, err := c.get(ctx, newConnConfig(metricParams))
 		if err != nil {
+			c.logr.Warningf("Failed to get connection: %s", err.Error())
+
 			return nil, errs.Wrap(err, "failed to get conn")
 		}
 
@@ -103,14 +105,14 @@ func (c *ConnCollection) PingHandler(
 
 	conn, err := c.get(ctx, newConnConfig(metricParams))
 	if err != nil {
-		c.logr.Infof("Failed go get connection for ping: %s", err.Error())
+		c.logr.Warningf("Failed to get connection for ping: %s", err.Error())
 
 		return 0, nil
 	}
 
 	err = conn.PingContext(ctx)
 	if err != nil {
-		c.logr.Infof("Failed to ping: %s", err.Error())
+		c.logr.Debugf("Failed to ping: %s", err.Error())
 
 		return 0, nil
 	}
@@ -197,7 +199,7 @@ func (c *ConnCollection) newConn(
 	ctx context.Context,
 	conf *connConfig,
 ) (*sql.DB, error) {
-	c.logr.Infof(
+	c.logr.Debugf(
 		"Creating new connection to %q, with user %q to database %q, "+
 			"with CA certificate %q, "+
 			"trust server certificate %q, host name in certificate %q "+

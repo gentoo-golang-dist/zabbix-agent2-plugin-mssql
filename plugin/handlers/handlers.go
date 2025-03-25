@@ -187,7 +187,7 @@ func (cq CustomQueries) Load(customQueriesDirFS fs.FS, logr log.Logger) error {
 			qName := strings.TrimSuffix(filepath.Base(qfp), filepath.Ext(qfp))
 			queries[qName] = string(data)
 
-			logr.Infof(
+			logr.Debugf(
 				"Loaded custom query from file %q with name %q",
 				qfp,
 				qName,
