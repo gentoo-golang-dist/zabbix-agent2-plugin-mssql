@@ -84,7 +84,7 @@ func (c *ConnCollection) WithConnHandlerFunc(
 
 		conn, err := c.get(ctx, newConnConfig(metricParams))
 		if err != nil {
-			c.logr.Warningf("Failed to get connection: %s", err.Error())
+			c.logr.Errf("Failed to get connection: %s", err.Error())
 
 			return nil, errs.Wrap(err, "failed to get conn")
 		}
@@ -105,7 +105,7 @@ func (c *ConnCollection) PingHandler(
 
 	conn, err := c.get(ctx, newConnConfig(metricParams))
 	if err != nil {
-		c.logr.Warningf("Failed to get connection for ping: %s", err.Error())
+		c.logr.Errf("Failed to get connection for ping: %s", err.Error())
 
 		return 0, nil
 	}
