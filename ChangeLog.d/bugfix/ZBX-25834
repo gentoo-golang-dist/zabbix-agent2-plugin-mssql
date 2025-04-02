@@ -1,1 +1,1 @@
-...G...... [ZBX-25834] lowered debug level when creating db connection (sjurgensons)
+...G...... [ZBX-25834] lowered debug level and corrected concurrency issue when creating db connection (sjurgensons)
