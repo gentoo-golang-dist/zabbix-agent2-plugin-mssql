@@ -972,3 +972,76 @@ func Test_newConnConfig(t *testing.T) {
 		})
 	}
 }
+
+func TestConnCollection_get_ConcurrentAccess(t *testing.T) {
+	t.Parallel()
+
+	log.DefaultLogger = stdlog.New(os.Stdout, "", stdlog.LstdFlags)
+
+	const goroutineCount = 10
+
+	conf := connConfig{
+		User:     "testuser",
+		Password: "testpass",
+		URI:      "pigeon://concurrent",
+	}
+
+	dsn := "pigeon://testuser:testpass@concurrent:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=1"
+
+	db, m, err := sqlmock.NewWithDSN(dsn, sqlmock.MonitorPingsOption(true))
+	if err != nil {
+		t.Fatalf("failed to open sqlmock: %s", err.Error())
+	}
+
+	// Ping is done only after connection is created.
+	// As connection should be opened only one, ping should be done only once.
+	m.ExpectPing()
+
+	mockDriver.driver = db.Driver()
+	defer mockDriver.reset()
+
+	c := &ConnCollection{
+		conns:      map[connConfig]*sql.DB{},
+		logr:       log.New("test"),
+		driverName: "testdriver",
+		keepAlive:  1,
+	}
+
+	log.IncreaseLogLevel()
+	log.IncreaseLogLevel()
+	log.IncreaseLogLevel()
+	log.IncreaseLogLevel()
+
+	var (
+		wg sync.WaitGroup
+		mu sync.Mutex
+	)
+
+	results := make([]*sql.DB, 0, goroutineCount)
+
+	for i := 0; i < goroutineCount; i++ {
+		wg.Add(1)
+
+		go func() {
+			defer wg.Done()
+
+			conn, err := c.get(context.Background(), conf)
+			if err != nil {
+				t.Errorf("unexpected error from get(): %v", err)
+
+				return
+			}
+
+			mu.Lock()
+			results = append(results, conn)
+			mu.Unlock()
+		}()
+	}
+
+	wg.Wait()
+
+	// Check that only one connection is stored
+	if len(c.conns) != 1 {
+		t.Errorf("expected 1 connection in map, got %d", len(c.conns))
+	}
+}
