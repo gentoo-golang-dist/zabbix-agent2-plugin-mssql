@@ -140,6 +140,9 @@ func (c *ConnCollection) get(
 	ctx context.Context,
 	conf connConfig,
 ) (*sql.DB, error) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
 	conn := c.getConn(conf)
 	if conn != nil {
 		return conn, nil
@@ -155,9 +158,6 @@ func (c *ConnCollection) get(
 
 // getConn concurrent connections cache getter.
 func (c *ConnCollection) getConn(conf connConfig) *sql.DB { //nolint:gocritic
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
 	conn, ok := c.conns[conf]
 	if !ok {
 		return nil
@@ -176,9 +176,6 @@ func (c *ConnCollection) setConn(
 	conf connConfig,
 	conn *sql.DB,
 ) *sql.DB {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-
 	existingConn, ok := c.conns[conf]
 	if ok {
 		defer conn.Close() //nolint:errcheck
