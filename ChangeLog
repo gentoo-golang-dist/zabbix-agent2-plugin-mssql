@@ -3,6 +3,7 @@ Changes for 7.0.12rc1
 New features:
 
 Bug fixes:
+...G...... [ZBX-26026] updated get last backup query (akotsegubov)
 
 --------------------------------------------------------------------------------
 Changes for 7.0.11
@@ -27,7 +28,7 @@ Changes for 7.0.10
 --------------------------------------------------------------------------------
 Changes for 7.0.10rc1
 
-7.0.9 was released as 7.0.10rc1 without any changes
+...G...... [ZBX-25504] updated quorum member query (akotsegubov)
 
 --------------------------------------------------------------------------------
 Changes for 7.0.9
@@ -42,7 +43,7 @@ Changes for 7.0.9rc2
 --------------------------------------------------------------------------------
 Changes for 7.0.9rc1
 
-7.0.8 was released as 7.0.9rc1 without any changes
+...G...... [ZBX-25443] updated Go version requirement to 1.21 (esneiders)
 
 --------------------------------------------------------------------------------
 Changes for 7.0.8
@@ -322,7 +323,8 @@ Changes for 6.0.39
 --------------------------------------------------------------------------------
 Changes for 6.0.39rc1
 
-6.0.38 was released as 6.0.39rc1 without any changes
+Bug fixes:
+...G...... [ZBX-25504] updated quorum member query (akotsegubov)
 
 --------------------------------------------------------------------------------
 Changes for 6.0.38
@@ -332,7 +334,8 @@ Changes for 6.0.38
 --------------------------------------------------------------------------------
 Changes for 6.0.38rc1
 
-6.0.37 was released as 6.0.38rc1 without any changes
+Bug fixes:
+...G...... [ZBX-25443] updated Go version requirement to 1.21 (esneiders)
 
 --------------------------------------------------------------------------------
 Changes for 6.0.37
