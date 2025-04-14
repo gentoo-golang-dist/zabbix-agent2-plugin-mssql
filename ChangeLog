@@ -1,7 +1,5 @@
 Changes for 7.0.12rc1
 
-New features:
-
 Bug fixes:
 ...G...... [ZBX-26026] updated get last backup query (akotsegubov)
 
