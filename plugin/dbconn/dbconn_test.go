@@ -138,7 +138,6 @@ func TestConnCollection_Init(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -151,7 +150,9 @@ func TestConnCollection_Init(t *testing.T) {
 			c.Init(tt.args.keepAlive, tt.args.logr)
 
 			if diff := cmp.Diff(
-				tt.want, c, cmp.AllowUnexported(ConnCollection{}, sync.Mutex{}),
+				tt.want, c,
+				cmp.AllowUnexported(ConnCollection{}, sync.Mutex{}),
+				cmpopts.IgnoreFields(ConnCollection{}, "mu"),
 			); diff != "" {
 				t.Fatalf("ConnCollection.Init() = %s", diff)
 			}
@@ -691,6 +692,7 @@ func TestConnCollection_get(t *testing.T) {
 					},
 				),
 				cmpopts.IgnoreFields(ConnCollection{}, "logr"),
+				cmpopts.IgnoreFields(ConnCollection{}, "mu"),
 			); diff != "" {
 				t.Fatalf("ConnCollection.get() = %s", diff)
 			}
@@ -960,7 +962,6 @@ func Test_newConnConfig(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
