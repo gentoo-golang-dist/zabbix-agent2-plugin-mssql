@@ -1,5 +1,4 @@
 //go:build !windows
-// +build !windows
 
 /*
 ** Copyright (C) 2001-2025 Zabbix SIA
@@ -66,7 +65,6 @@ func Test_pluginConfig_setCustomQueriesDirDefault(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
