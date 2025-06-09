@@ -67,8 +67,7 @@ It can monitor several MSSQL instances simultaneously, remote or local.
 ## Requirements
 
 - Zabbix Agent 2 version 6.0.0 or newer
-- Go programming language version 1.21 or newer (required only to build the
-  plugin from source)
+- Go version 1.23 or newer (required only for building the plugin from the source)
 
 <!-- TOC --><a name="supported-operating-systems-and-architectures"></a>
 
