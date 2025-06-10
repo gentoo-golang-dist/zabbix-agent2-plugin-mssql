@@ -2,6 +2,7 @@
 
 PACKAGE=zabbix-agent2-plugin-mssql
 TOPDIR := $(CURDIR)
+SHELL := /bin/bash
 
 ifeq ($(OS),Windows_NT)
 GOOS := windows
@@ -114,10 +115,11 @@ dist:
 ifneq ($(OS),Windows_NT)
 	cd $(TOPDIR); \
 	go mod vendor; \
-	major_verison=$(lastword $(shell grep 'PLUGIN_VERSION_MAJOR =' ./main.go)); \
-	minor_verison=$(lastword $(shell grep 'PLUGIN_VERSION_MINOR =' ./main.go)); \
-	patch_verison=$(lastword $(shell grep 'PLUGIN_VERSION_PATCH =' ./main.go)); \
-	alphatag=$(lastword $(shell grep 'PLUGIN_VERSION_RC    =' ./main.go)); \
+	[[ "$$(head -1 ChangeLog)" =~ ^Changes[[:space:]]for[[:space:]]([0-9]+)\.([0-9]+)\.([0-9]+)((alpha|beta|rc)([0-9]+))? ]]; \
+	major_verison=$${BASH_REMATCH[1]}; \
+	minor_verison=$${BASH_REMATCH[2]}; \
+	patch_verison=$${BASH_REMATCH[3]}; \
+	alphatag=$${BASH_REMATCH[4]}; \
 	lic_years=$(word 4, $(shell grep ' Copyright (C) 2001-' ./main.go)); \
 	distdir="$(PACKAGE)-$${major_verison}.$${minor_verison}.$${patch_verison}$${alphatag}"; \
 	dist_archive="$${distdir}.tar.gz"; \
