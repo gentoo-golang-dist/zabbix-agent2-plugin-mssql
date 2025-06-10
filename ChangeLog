@@ -1,20 +1,68 @@
-Changes for 7.4.0beta1
+Changes for 7.4.0rc2
 
 New features:
 
 Bug fixes:
+
+--------------------------------------------------------------------------------
+Changes for 7.4.0rc1
+
+7.4.0beta2 was released as 7.4.0rc1 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.4.0beta2
+
+7.4.0beta1 was released as 7.4.0beta2 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.4.0beta1
+
+Bug fixes:
+...G...... [ZBX-26026] updated get last backup query (akotsegubov)
 
 --------------------------------------------------------------------------------
 Changes for 7.4.0alpha1
 
-7.2.4rc1 was released as 7.4.0alpha1 without any changes
+New features:
+...G...... [ZBXNEXT-9508] added custom query enable parameter and path default (esneiders)
 
 --------------------------------------------------------------------------------
-Changes for 7.2.5rc2
+Changes for 7.2.8rc1
 
 New features:
 
 Bug fixes:
+
+--------------------------------------------------------------------------------
+Changes for 7.2.7
+
+7.2.7rc1 was released as 7.2.7 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.2.7rc1
+
+7.2.6 was released as 7.2.7rc1 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.2.6
+
+7.2.6rc1 was released as 7.2.6 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.2.6rc1
+
+Bug fixes:
+...G...... [ZBX-26026] updated get last backup query (akotsegubov)
+
+--------------------------------------------------------------------------------
+Changes for 7.2.5
+
+7.2.5rc2 was released as 7.2.5 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.2.5rc2
+
+7.2.5rc1 was released as 7.2.5rc2 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 7.2.5rc1
@@ -29,7 +77,8 @@ Changes for 7.2.4
 --------------------------------------------------------------------------------
 Changes for 7.2.4rc1
 
-7.2.3 was released as 7.2.4rc1 without any changes
+Bug fixes:
+...G...... [ZBX-25504] updated quorum member query (akotsegubov)
 
 --------------------------------------------------------------------------------
 Changes for 7.2.3
@@ -39,7 +88,8 @@ Changes for 7.2.3
 --------------------------------------------------------------------------------
 Changes for 7.2.3rc1
 
-7.2.2 was released as 7.2.3rc1 without any changes
+Bug fixes:
+...G...... [ZBX-25443] updated Go version requirement to 1.21 (esneiders)
 
 --------------------------------------------------------------------------------
 Changes for 7.2.2
@@ -64,9 +114,7 @@ Changes for 7.2.1rc2
 --------------------------------------------------------------------------------
 Changes for 7.2.1rc1
 
-New features:
-
-Bug fixes:
+7.2.0 was released as 7.2.1rc1 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 7.2.0
@@ -105,11 +153,42 @@ New features:
 [ZBXNEXT-9281] added configurable item timeout support (dgoloscapov)
 
 --------------------------------------------------------------------------------
-Changes for 7.0.11rc2
+Changes for 7.0.14rc1
 
 New features:
 
 Bug fixes:
+
+--------------------------------------------------------------------------------
+Changes for 7.0.13
+
+7.0.13rc1 was released as 7.0.13 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.0.13rc1
+
+7.0.12 was released as 7.0.13rc1 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.0.12
+
+7.0.12rc1 was released as 7.0.12 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.0.12rc1
+
+Bug fixes:
+...G...... [ZBX-26026] updated get last backup query (akotsegubov)
+
+--------------------------------------------------------------------------------
+Changes for 7.0.11
+
+7.0.11rc2 was released as 7.0.11 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.0.11rc2
+
+7.0.11rc1 was released as 7.0.11rc2 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 7.0.11rc1
@@ -124,7 +203,8 @@ Changes for 7.0.10
 --------------------------------------------------------------------------------
 Changes for 7.0.10rc1
 
-7.0.9 was released as 7.0.10rc1 without any changes
+Bug fixes:
+...G...... [ZBX-25504] updated quorum member query (akotsegubov)
 
 --------------------------------------------------------------------------------
 Changes for 7.0.9
@@ -139,7 +219,8 @@ Changes for 7.0.9rc2
 --------------------------------------------------------------------------------
 Changes for 7.0.9rc1
 
-7.0.8 was released as 7.0.9rc1 without any changes
+Bug fixes:
+...G...... [ZBX-25443] updated Go version requirement to 1.21 (esneiders)
 
 --------------------------------------------------------------------------------
 Changes for 7.0.8
@@ -189,7 +270,8 @@ Changes for 7.0.5
 --------------------------------------------------------------------------------
 Changes for 7.0.5rc1
 
-7.0.4 was released as 7.0.5rc1 without any changes
+New features:
+[ZBXNEXT-9281] added configurable item timeout support (dgoloscapov)
 
 --------------------------------------------------------------------------------
 Changes for 7.0.4
@@ -404,11 +486,21 @@ New features:
 [ZBXNEXT-6235] initial implementation for MSSQL loadable Zabbix agent 2 plugin (rzvejs)
 
 --------------------------------------------------------------------------------
-Changes for 6.0.40rc1
+Changes for 6.0.41rc1
 
 New features:
 
 Bug fixes:
+
+--------------------------------------------------------------------------------
+Changes for 6.0.40
+
+6.0.40rc1 was released as 6.0.40 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 6.0.40rc1
+
+6.0.39 was released as 6.0.40rc1 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 6.0.39
@@ -418,7 +510,8 @@ Changes for 6.0.39
 --------------------------------------------------------------------------------
 Changes for 6.0.39rc1
 
-6.0.38 was released as 6.0.39rc1 without any changes
+Bug fixes:
+...G...... [ZBX-25504] updated quorum member query (akotsegubov)
 
 --------------------------------------------------------------------------------
 Changes for 6.0.38
@@ -428,7 +521,8 @@ Changes for 6.0.38
 --------------------------------------------------------------------------------
 Changes for 6.0.38rc1
 
-6.0.37 was released as 6.0.38rc1 without any changes
+Bug fixes:
+...G...... [ZBX-25443] updated Go version requirement to 1.21 (esneiders)
 
 --------------------------------------------------------------------------------
 Changes for 6.0.37
@@ -560,4 +654,3 @@ New features:
 [ZBXNEXT-6235] initial implementation for MSSQL loadable Zabbix agent 2 plugin (rzvejs)
 
 --------------------------------------------------------------------------------
-

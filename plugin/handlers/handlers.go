@@ -97,7 +97,7 @@ func (nuid *nullUniqueIdentifier) Scan(value any) error {
 }
 
 // Value implements the driver Valuer interface.
-func (nuid nullUniqueIdentifier) Value() (driver.Value, error) {
+func (nuid *nullUniqueIdentifier) Value() (driver.Value, error) {
 	if !nuid.valid {
 		// here nil is a valid return representing NULL value from DB
 		return nil, nil //nolint:nilnil
