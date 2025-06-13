@@ -107,7 +107,7 @@ func Test_mssqlPlugin_Configure(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			p := &mssqlPlugin{
+			p := &MssqlPlugin{
 				config: tt.fields.config,
 				Base:   plugin.Base{Logger: log.New("test")},
 			}
@@ -116,7 +116,7 @@ func Test_mssqlPlugin_Configure(t *testing.T) {
 
 			if diff := cmp.Diff(tt.wantConfig, p.config); diff != "" {
 				t.Errorf(
-					"mssqlPlugin.Configure() mismatch (-want +got):\n%s",
+					"MssqlPlugin.Configure() mismatch (-want +got):\n%s",
 					diff,
 				)
 			}
@@ -181,10 +181,10 @@ func Test_mssqlPlugin_Validate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			err := (&mssqlPlugin{}).Validate(tt.args.options)
+			err := (&MssqlPlugin{}).Validate(tt.args.options)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
-					"mssqlPlugin.Validate() error = %v, wantErr %v",
+					"MssqlPlugin.Validate() error = %v, wantErr %v",
 					err, tt.wantErr,
 				)
 			}

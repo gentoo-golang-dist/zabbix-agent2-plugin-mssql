@@ -48,7 +48,7 @@ func Test_mssqlPlugin_Start(t *testing.T) {
 	log.DefaultLogger = stdlog.New(os.Stdout, "", stdlog.LstdFlags)
 
 	sampleConnCollection := &dbconn.ConnCollection{}
-	sampleConnCollection.Init(30, &mssqlPlugin{})
+	sampleConnCollection.Init(30, &MssqlPlugin{})
 
 	type fields struct {
 		Base          plugin.Base
@@ -85,7 +85,7 @@ func Test_mssqlPlugin_Start(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			p := &mssqlPlugin{
+			p := &MssqlPlugin{
 				Base:          tt.fields.Base,
 				conns:         tt.fields.conns,
 				config:        tt.fields.config,
@@ -96,17 +96,17 @@ func Test_mssqlPlugin_Start(t *testing.T) {
 
 			if diff := cmp.Diff(
 				tt.wantCons, p.conns,
-				cmp.AllowUnexported(dbconn.ConnCollection{}, sync.Mutex{}, mssqlPlugin{}),
+				cmp.AllowUnexported(dbconn.ConnCollection{}, sync.Mutex{}, MssqlPlugin{}),
 				cmpopts.IgnoreFields(dbconn.ConnCollection{}, "mu"),
-				cmpopts.IgnoreTypes(mssqlPlugin{}),
+				cmpopts.IgnoreTypes(MssqlPlugin{}),
 			); diff != "" {
-				t.Fatalf("mssqlPlugin.Start() = %s", diff)
+				t.Fatalf("MssqlPlugin.Start() = %s", diff)
 			}
 
 			if diff := cmp.Diff(
 				tt.wantCustomQueries, p.customQueries,
 			); diff != "" {
-				t.Fatalf("mssqlPlugin.Start() = %s", diff)
+				t.Fatalf("MssqlPlugin.Start() = %s", diff)
 			}
 		})
 	}
@@ -129,7 +129,7 @@ func Test_mssqlPlugin_Stop(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			p := &mssqlPlugin{conns: tt.fields.conns}
+			p := &MssqlPlugin{conns: tt.fields.conns}
 
 			p.Stop()
 		})
@@ -369,7 +369,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			p := &mssqlPlugin{
+			p := &MssqlPlugin{
 				Base:          tt.fields.Base,
 				conns:         tt.fields.conns,
 				config:        tt.fields.config,
@@ -384,14 +384,14 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 			)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
-					"mssqlPlugin.Export() error = %v, wantErr %v",
+					"MssqlPlugin.Export() error = %v, wantErr %v",
 					err,
 					tt.wantErr,
 				)
 			}
 
 			if diff := cmp.Diff(tt.want, got); diff != "" {
-				t.Fatalf("mssqlPlugin.Export() = %s", diff)
+				t.Fatalf("MssqlPlugin.Export() = %s", diff)
 			}
 		})
 	}
@@ -413,10 +413,10 @@ func Test_mssqlPlugin_registerMetrics(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			err := (&mssqlPlugin{}).registerMetrics()
+			err := (&MssqlPlugin{}).registerMetrics()
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
-					"mssqlPlugin.registerMetrics() error = %v, wantErr %v",
+					"MssqlPlugin.registerMetrics() error = %v, wantErr %v",
 					err, tt.wantErr,
 				)
 			}
