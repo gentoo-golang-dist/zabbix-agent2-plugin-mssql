@@ -166,7 +166,7 @@ func (cq CustomQueries) Load(customQueriesDirFS fs.FS, logr log.Logger) error {
 	queries := make(map[string]string)
 
 	for _, qfp := range queryFilePaths {
-		// nameless clojure to trigger defers on end of each iteration.
+		// nameless closure to trigger defer on end of each iteration.
 		err := func() error {
 			f, err := customQueriesDirFS.Open(qfp)
 			if err != nil {
@@ -187,7 +187,7 @@ func (cq CustomQueries) Load(customQueriesDirFS fs.FS, logr log.Logger) error {
 			qName := strings.TrimSuffix(filepath.Base(qfp), filepath.Ext(qfp))
 			queries[qName] = string(data)
 
-			logr.Infof(
+			logr.Debugf(
 				"Loaded custom query from file %q with name %q",
 				qfp,
 				qName,

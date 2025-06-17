@@ -90,7 +90,7 @@ type mssqlMetric struct {
 
 type MssqlPlugin struct {
 	plugin.Base
-	conns         *dbconn.ConnCollection
+	conns         *dbconn.ConnManager
 	config        *pluginConfig
 	metrics       map[mssqlMetricKey]*mssqlMetric
 	customQueries handlers.CustomQueries
@@ -105,7 +105,8 @@ func New() (*MssqlPlugin, error) {
 	// follow this after a month.
 	p := &MssqlPlugin{
 		customQueries: make(handlers.CustomQueries),
-		conns:         &dbconn.ConnCollection{}}
+		conns:         &dbconn.ConnManager{},
+	}
 
 	err := log.Open(log.Console, log.Info, "", 0)
 	if err != nil {

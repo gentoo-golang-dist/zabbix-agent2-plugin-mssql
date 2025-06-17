@@ -91,30 +91,29 @@ func TestConnCollection_Init(t *testing.T) {
 	sampleLogr := &struct{ log.Logger }{}
 
 	type fields struct {
-		conns      map[connConfig]*sql.DB
 		keepAlive  int
 		logr       log.Logger
 		driverName string
 	}
 
 	type args struct {
-		keepAlive     int
-		queryTimetout int
-		logr          log.Logger
+		keepAlive    int
+		queryTimeout int
+		logr         log.Logger
 	}
 
 	tests := []struct {
 		name   string
 		fields fields
 		args   args
-		want   *ConnCollection
+		want   *ConnManager
 	}{
 		{
 			"+valid",
 			fields{},
 			args{10, 11, sampleLogr},
-			&ConnCollection{
-				conns:      make(map[connConfig]*sql.DB),
+			&ConnManager{
+				conns:      &SyncMap[ConnConfig, *ConnItem]{},
 				keepAlive:  10,
 				logr:       sampleLogr,
 				driverName: "sqlserver",
@@ -123,26 +122,25 @@ func TestConnCollection_Init(t *testing.T) {
 		{
 			"-overwrite",
 			fields{
-				conns:      map[connConfig]*sql.DB{{}: nil},
 				keepAlive:  3,
 				logr:       log.New("aaa"),
 				driverName: "lol",
 			},
 			args{10, 11, sampleLogr},
-			&ConnCollection{
-				conns:      make(map[connConfig]*sql.DB),
+			&ConnManager{
+				conns:      &SyncMap[ConnConfig, *ConnItem]{},
 				keepAlive:  10,
 				logr:       sampleLogr,
 				driverName: "sqlserver",
 			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			c := &ConnCollection{
-				conns:      tt.fields.conns,
+			c := &ConnManager{
 				keepAlive:  tt.fields.keepAlive,
 				logr:       tt.fields.logr,
 				driverName: tt.fields.driverName,
@@ -151,10 +149,10 @@ func TestConnCollection_Init(t *testing.T) {
 
 			if diff := cmp.Diff(
 				tt.want, c,
-				cmp.AllowUnexported(ConnCollection{}, sync.Mutex{}),
-				cmpopts.IgnoreFields(ConnCollection{}, "mu"),
+				cmp.AllowUnexported(ConnManager{}, ConnConfig{}, ConnItem{}),
+				cmpopts.IgnoreUnexported(SyncMap[ConnConfig, *ConnItem]{}),
 			); diff != "" {
-				t.Fatalf("ConnCollection.Init() = %s", diff)
+				t.Fatalf("ConnManager.Init() = %s", diff)
 			}
 		})
 	}
@@ -253,8 +251,8 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) { //nolint:paralleltest
-			c := &ConnCollection{
-				conns:      map[connConfig]*sql.DB{},
+			c := &ConnManager{
+				conns:      &SyncMap[ConnConfig, *ConnItem]{},
 				driverName: "testdriver",
 				logr:       log.New("aaa"),
 			}
@@ -283,14 +281,14 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 					deadline, deadlineSet := ctx.Deadline()
 					if !deadlineSet {
 						t.Fatal(
-							"ConnCollection.WithConnHandlerFunc() context deadline is not set",
+							"ConnManager.WithConnHandlerFunc() context deadline is not set",
 						)
 					}
 
 					ctxTimeout := time.Until(deadline).Round(time.Second)
 					if ctxTimeout != tt.args.timeout {
 						t.Fatalf(
-							"ConnCollection.WithConnHandlerFunc() "+
+							"ConnManager.WithConnHandlerFunc() "+
 								"context timeout is not correctly set: "+
 								"got %v, expected %v", ctxTimeout, tt.args.timeout,
 						)
@@ -298,7 +296,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 
 					if db == nil {
 						t.Fatal(
-							"ConnCollection.WithConnHandlerFunc() db is nil",
+							"ConnManager.WithConnHandlerFunc() db is nil",
 						)
 					}
 
@@ -306,7 +304,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 						tt.wantMetricParams, metricParams,
 					); diff != "" {
 						t.Fatalf(
-							"ConnCollection.WithConnHandlerFunc() = %s", diff,
+							"ConnManager.WithConnHandlerFunc() = %s", diff,
 						)
 					}
 
@@ -314,7 +312,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 						tt.wantExtraParams, extraParams,
 					); diff != "" {
 						t.Fatalf(
-							"ConnCollection.WithConnHandlerFunc() = %s", diff,
+							"ConnManager.WithConnHandlerFunc() = %s", diff,
 						)
 					}
 
@@ -323,14 +321,14 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 			)(tt.args.timeout, tt.args.metricParams, tt.args.extraParams...)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
-					"ConnCollection.WithConnHandlerFunc() "+
+					"ConnManager.WithConnHandlerFunc() "+
 						"error = %v, wantErr %v",
 					err, tt.wantErr,
 				)
 			}
 
 			if diff := cmp.Diff(tt.want, got); diff != "" {
-				t.Fatalf("ConnCollection.WithConnHandlerFunc() = %s", diff)
+				t.Fatalf("ConnManager.WithConnHandlerFunc() = %s", diff)
 			}
 		})
 	}
@@ -419,8 +417,8 @@ func TestConnCollection_PingHandler(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) { //nolint:paralleltest
-			c := &ConnCollection{
-				conns:      map[connConfig]*sql.DB{},
+			c := &ConnManager{
+				conns:      &SyncMap[ConnConfig, *ConnItem]{},
 				logr:       log.New("test"),
 				driverName: "testdriver",
 			}
@@ -446,18 +444,18 @@ func TestConnCollection_PingHandler(t *testing.T) {
 			got, err := c.PingHandler(tt.args.timeout, tt.args.metricParams)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
-					"ConnCollection.PingHandler() error = %v, wantErr %v",
+					"ConnManager.PingHandler() error = %v, wantErr %v",
 					err, tt.wantErr,
 				)
 			}
 
 			if diff := cmp.Diff(tt.want, got); diff != "" {
-				t.Fatalf("ConnCollection.PingHandler() = %s", diff)
+				t.Fatalf("ConnManager.PingHandler() = %s", diff)
 			}
 
 			if err := m.ExpectationsWereMet(); err != nil {
 				t.Fatalf(
-					"ConnCollection.PingHandler() "+
+					"ConnManager.PingHandler() "+
 						"expectations where not met: %s",
 					err.Error(),
 				)
@@ -492,14 +490,23 @@ func TestConnCollection_Close(t *testing.T) {
 
 			m.ExpectClose().WillReturnError(tt.fields.closeErr)
 
-			c := &ConnCollection{
-				conns: map[connConfig]*sql.DB{{}: db},
-				logr:  log.New("test"),
+			conf := ConnConfig{URI: "uri"}
+			logr := log.New("test")
+
+			item := newConnItem(0, logr, "")
+			item.db = db
+
+			conns := &SyncMap[ConnConfig, *ConnItem]{}
+			conns.Store(conf, item)
+
+			c := &ConnManager{
+				conns: conns,
+				logr:  logr,
 			}
 			c.Close()
 
 			if err := m.ExpectationsWereMet(); err != nil {
-				t.Fatalf("ConnCollection.Close() = %s", err.Error())
+				t.Fatalf("ConnManager.Close() = %s", err.Error())
 			}
 		})
 	}
@@ -514,14 +521,14 @@ func TestConnCollection_get(t *testing.T) {
 	}
 
 	type fields struct {
-		conns      map[connConfig]*sql.DB
+		conns      *SyncMap[ConnConfig, *ConnItem]
 		dsn        string
 		newConnErr error
 		driverName string
 	}
 
 	type args struct {
-		conf connConfig
+		conf ConnConfig
 	}
 
 	tests := []struct {
@@ -529,7 +536,7 @@ func TestConnCollection_get(t *testing.T) {
 		expect       expect
 		fields       fields
 		args         args
-		wantReceiver *ConnCollection
+		wantReceiver *ConnManager
 		wantNil      bool
 		wantErr      bool
 	}{
@@ -537,22 +544,30 @@ func TestConnCollection_get(t *testing.T) {
 			"+validExisting",
 			expect{false},
 			fields{
-				conns: map[connConfig]*sql.DB{
-					{URI: "pigeon://uri", User: "aaaa", Password: "bbbb"}: {},
-				},
+				conns: func() *SyncMap[ConnConfig, *ConnItem] {
+					conf := ConnConfig{URI: "pigeon://uri", User: "aaaa", Password: "bbbb"}
+					m := &SyncMap[ConnConfig, *ConnItem]{}
+					m.Store(conf, &ConnItem{db: &sql.DB{}})
+
+					return m
+				}(),
 				driverName: "testdriver",
 			},
 			args{
-				conf: connConfig{
+				conf: ConnConfig{
 					URI:      "pigeon://uri",
 					User:     "aaaa",
 					Password: "bbbb",
 				},
 			},
-			&ConnCollection{
-				conns: map[connConfig]*sql.DB{
-					{URI: "pigeon://uri", User: "aaaa", Password: "bbbb"}: {},
-				},
+			&ConnManager{
+				conns: func() *SyncMap[ConnConfig, *ConnItem] {
+					conf := ConnConfig{}
+					m := &SyncMap[ConnConfig, *ConnItem]{}
+					m.Store(conf, &ConnItem{db: &sql.DB{}})
+
+					return m
+				}(),
 				driverName: "testdriver",
 			},
 			false,
@@ -562,21 +577,29 @@ func TestConnCollection_get(t *testing.T) {
 			"+validNew",
 			expect{true},
 			fields{
-				conns:      map[connConfig]*sql.DB{},
+				conns:      &SyncMap[ConnConfig, *ConnItem]{},
 				dsn:        "pigeon://rrrr:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
 				driverName: "testdriver",
 			},
 			args{
-				conf: connConfig{
+				conf: ConnConfig{
 					User:     "rrrr",
 					Password: "tttt",
 					URI:      "pigeon://uri",
 				},
 			},
-			&ConnCollection{
-				conns: map[connConfig]*sql.DB{
-					{User: "rrrr", Password: "tttt", URI: "pigeon://uri"}: {},
-				},
+			&ConnManager{
+				conns: func() *SyncMap[ConnConfig, *ConnItem] {
+					conf := ConnConfig{
+						User:     "rrrr",
+						Password: "tttt",
+						URI:      "pigeon://uri",
+					}
+					m := &SyncMap[ConnConfig, *ConnItem]{}
+					m.Store(conf, &ConnItem{db: &sql.DB{}})
+
+					return m
+				}(),
 				driverName: "testdriver",
 			},
 			false,
@@ -586,24 +609,32 @@ func TestConnCollection_get(t *testing.T) {
 			"+prevCons",
 			expect{true},
 			fields{
-				conns: map[connConfig]*sql.DB{
-					{}: {},
-				},
+				conns: func() *SyncMap[ConnConfig, *ConnItem] {
+					m := &SyncMap[ConnConfig, *ConnItem]{}
+					m.Store(ConnConfig{}, &ConnItem{})
+
+					return m
+				}(),
 				dsn:        "pigeon://jjjj:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
 				driverName: "testdriver",
 			},
 			args{
-				conf: connConfig{
+				conf: ConnConfig{
 					User:     "jjjj",
 					Password: "tttt",
 					URI:      "pigeon://uri",
 				},
 			},
-			&ConnCollection{
-				conns: map[connConfig]*sql.DB{
-					{}: {},
-					{User: "jjjj", Password: "tttt", URI: "pigeon://uri"}: {},
-				},
+			&ConnManager{
+				conns: func() *SyncMap[ConnConfig, *ConnItem] {
+					m := &SyncMap[ConnConfig, *ConnItem]{}
+					m.Store(ConnConfig{}, &ConnItem{})
+					m.Store(
+						ConnConfig{User: "rrrr", Password: "tttt", URI: "pigeon://uri"},
+						&ConnItem{db: &sql.DB{}})
+
+					return m
+				}(),
 				driverName: "testdriver",
 			},
 			false,
@@ -613,20 +644,20 @@ func TestConnCollection_get(t *testing.T) {
 			"-newConnErr",
 			expect{true},
 			fields{
-				conns:      map[connConfig]*sql.DB{},
+				conns:      &SyncMap[ConnConfig, *ConnItem]{},
 				dsn:        "pigeon://kkkk:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
 				newConnErr: errors.New("fail"),
 				driverName: "testdriver",
 			},
 			args{
-				conf: connConfig{
+				conf: ConnConfig{
 					User:     "kkkk",
 					Password: "tttt",
 					URI:      "pigeon://uri",
 				},
 			},
-			&ConnCollection{
-				conns:      map[connConfig]*sql.DB{},
+			&ConnManager{
+				conns:      &SyncMap[ConnConfig, *ConnItem]{},
 				driverName: "testdriver",
 			},
 			true,
@@ -651,13 +682,12 @@ func TestConnCollection_get(t *testing.T) {
 				}
 
 				mockDriver.driver = db.Driver()
-
 				defer mockDriver.reset()
 
 				m.ExpectPing().WillReturnError(tt.fields.newConnErr)
 			}
 
-			c := &ConnCollection{
+			c := &ConnManager{
 				conns:      tt.fields.conns,
 				driverName: tt.fields.driverName,
 				logr:       log.New("test"),
@@ -666,40 +696,40 @@ func TestConnCollection_get(t *testing.T) {
 			got, err := c.get(context.Background(), tt.args.conf)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
-					"ConnCollection.get() error = %v, wantErr %v",
+					"ConnManager.get() error = %v, wantErr %v",
 					err, tt.wantErr,
 				)
 			}
 
 			if (got == nil) != tt.wantNil {
 				t.Fatalf(
-					"ConnCollection.get() got = %v, wantNil %v",
+					"ConnManager.get() got = %v, wantNil %v",
 					got, tt.wantNil,
 				)
 			}
 
 			if diff := cmp.Diff(
 				tt.wantReceiver, c,
-				cmp.AllowUnexported(ConnCollection{}, sync.Mutex{}),
+				cmp.AllowUnexported(ConnManager{}, ConnConfig{}, ConnItem{}),
+				cmpopts.IgnoreUnexported(SyncMap[ConnConfig, *ConnItem]{}),
 				cmp.Comparer(
 					func(x, y *sql.DB) bool {
 						return (x == nil) == (y == nil)
 					},
 				),
 				cmpopts.SortMaps(
-					func(x, y connConfig) bool {
+					func(x, y ConnConfig) bool {
 						return x.User < y.User
 					},
 				),
-				cmpopts.IgnoreFields(ConnCollection{}, "logr"),
-				cmpopts.IgnoreFields(ConnCollection{}, "mu"),
+				cmpopts.IgnoreFields(ConnManager{}, "logr"),
 			); diff != "" {
-				t.Fatalf("ConnCollection.get() = %s", diff)
+				t.Fatalf("ConnManager.get() = %s", diff)
 			}
 
 			if m != nil {
 				if err := m.ExpectationsWereMet(); err != nil {
-					t.Fatalf("ConnCollection.get() = %s", err.Error())
+					t.Fatalf("ConnManager.get() = %s", err.Error())
 				}
 			}
 		},
@@ -708,267 +738,65 @@ func TestConnCollection_get(t *testing.T) {
 }
 
 //nolint:paralleltest
-func TestConnCollection_newConn(t *testing.T) {
+func TestConnCollection_get_ConcurrentAccess(t *testing.T) {
+	const goroutineCount = 10
+
 	log.DefaultLogger = stdlog.New(os.Stdout, "", stdlog.LstdFlags)
+	log.IncreaseLogLevel()
+	log.IncreaseLogLevel()
+	log.IncreaseLogLevel()
+	log.IncreaseLogLevel()
 
-	type expect struct {
-		open bool
-		ping bool
+	db, m, err := sqlmock.NewWithDSN(
+		"pigeon://rrrr:tttt@concurrent:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
+		sqlmock.MonitorPingsOption(true),
+	)
+	if err != nil {
+		t.Fatalf("failed to open sqlmock: %s", err.Error())
 	}
 
-	type fields struct {
-		keepAlive     int
-		openErr       error
-		pingErr       error
-		dsn           string
-		driverName    string
-		defaultScheme string
+	mockDriver.driver = db.Driver()
+	defer mockDriver.reset()
+
+	// Ping is done only after a connection is created.
+	// As only a single connection should be opened, ping should be done only once.
+	m.ExpectPing()
+
+	ccol := &ConnManager{}
+	ccol.Init(0, log.New("test"))
+	ccol.driverName = "testdriver"
+
+	var (
+		wg sync.WaitGroup
+	)
+
+	//results := make([]*sql.DB, 0, goroutineCount)
+	conf := ConnConfig{
+		URI:      "pigeon://concurrent",
+		User:     "rrrr",
+		Password: "tttt",
 	}
 
-	type args struct {
-		conf *connConfig
-	}
+	for i := 0; i < goroutineCount; i++ { //nolint:intrange
+		wg.Add(1)
 
-	tests := []struct {
-		name    string
-		expect  expect
-		fields  fields
-		args    args
-		wantNil bool
-		wantErr bool
-	}{
-		{
-			"+valid",
-			expect{true, true},
-			fields{
-				keepAlive:  4,
-				dsn:        "pigeon://aaaa:bbbb@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4",
-				driverName: "testdriver",
-			},
-			args{&connConfig{
-				User:     "aaaa",
-				Password: "bbbb",
-				URI:      "pigeon://uri",
-			}},
-			false,
-			false,
-		},
-		{
-			"+named",
-			expect{true, true},
-			fields{
-				keepAlive:  4,
-				dsn:        "pigeon://aaaa:bbbb@uri/InstanceName?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4",
-				driverName: "testdriver",
-			},
-			args{&connConfig{
-				User:     "aaaa",
-				Password: "bbbb",
-				URI:      "pigeon://uri/InstanceName",
-			}},
-			false,
-			false,
-		},
-		{
-			"+namedWithPort",
-			expect{true, true},
-			fields{
-				keepAlive:  4,
-				dsn:        "pigeon://aaaa:bbbb@uri:1435/InstanceName?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4",
-				driverName: "testdriver",
-			},
-			args{&connConfig{
-				User:     "aaaa",
-				Password: "bbbb",
-				URI:      "pigeon://uri:1435/InstanceName",
-			}},
-			false,
-			false,
-		},
-		{
-			"+validWithTLS",
-			expect{true, true},
-			fields{
-				keepAlive: 4,
-				dsn: "pigeon://aaaa:bbbb@uri:1433?" +
-					"TrustServerCertificate=false&" +
-					"app+name=Zabbix+agent+2+MSSQL+plugin&" +
-					"certificate=abc&" +
-					"encrypt=true&" +
-					"hostNameInCertificate=server&" +
-					"keepAlive=4&" +
-					"tlsMinVersion=1.3",
-				driverName: "testdriver",
-			},
-			args{&connConfig{
-				User:                   "aaaa",
-				Password:               "bbbb",
-				URI:                    "pigeon://uri",
-				CACertPath:             "abc",
-				TrustServerCertificate: "false",
-				HostNameInCertificate:  "server",
-				Encrypt:                "true",
-				TLSMinVersion:          "1.3",
-			}},
-			false,
-			false,
-		},
-		{
-			"-newConnURIErr",
-			expect{false, false},
-			fields{
-				keepAlive:  4,
-				openErr:    nil,
-				driverName: "testdriver",
-			},
-			args{&connConfig{
-				User:     "aaaa",
-				Password: "bbbb",
-				URI:      "://",
-			}},
-			true,
-			true,
-		},
-		{
-			"-openErr",
-			expect{true, false},
-			fields{
-				keepAlive:  4,
-				openErr:    errors.New("fail"),
-				dsn:        "pigeon://cccc:bbbb@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4",
-				driverName: "testdriver",
-			},
-			args{&connConfig{
-				User:     "cccc",
-				Password: "bbbb",
-				URI:      "pigeon://uri",
-			}},
-			true,
-			true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(
-			tt.name,
-			func(t *testing.T) { //nolint:paralleltest
-				if tt.fields.defaultScheme != "" {
-					prevScheme := params.URIDefaults.Scheme
+		go func() {
+			defer wg.Done()
 
-					defer func() {
-						params.URIDefaults.Scheme = prevScheme
-					}()
+			conn, err := ccol.get(context.Background(), conf)
+			if conn == nil {
+				t.Errorf("unexpected error from get(): %v", err)
 
-					params.URIDefaults.Scheme = tt.fields.defaultScheme
-				}
-
-				var (
-					db  *sql.DB
-					m   sqlmock.Sqlmock
-					err error
-				)
-
-				if tt.expect.open {
-					db, m, err = sqlmock.NewWithDSN(
-						tt.fields.dsn,
-						sqlmock.MonitorPingsOption(true),
-					)
-					if err != nil {
-						t.Fatalf("failed to open sqlmock: %s", err.Error())
-					}
-
-					mockDriver.openErr = tt.fields.openErr
-					mockDriver.driver = db.Driver()
-
-					defer mockDriver.reset()
-
-					if tt.expect.ping {
-						m.ExpectPing().WillReturnError(tt.fields.pingErr)
-					}
-				}
-
-				c := &ConnCollection{
-					keepAlive:  tt.fields.keepAlive,
-					driverName: tt.fields.driverName,
-					logr:       log.New("test"),
-				}
-
-				got, err := c.newConn(context.Background(), tt.args.conf)
-				if (err != nil) != tt.wantErr {
-					t.Fatalf(
-						"ConnCollection.newConn() error = %v, wantErr %v",
-						err, tt.wantErr,
-					)
-				}
-
-				if (got == nil) != tt.wantNil {
-					t.Fatalf(
-						"ConnCollection.newConn() got = %v, wantNil %v",
-						got, tt.wantNil,
-					)
-				}
-
-				if m != nil {
-					if err := m.ExpectationsWereMet(); err != nil {
-						t.Fatalf(
-							"ConnCollection.newConn() "+
-								"expectations where not met: %s",
-							err.Error(),
-						)
-					}
-				}
-			},
-		)
-	}
-}
-
-func Test_newConnConfig(t *testing.T) {
-	t.Parallel()
-
-	type args struct {
-		metricParams map[string]string
-	}
-
-	tests := []struct {
-		name string
-		args args
-		want connConfig
-	}{
-		{
-			"+valid",
-			args{
-				map[string]string{
-					"URI":                    "pigeon://uri",
-					"User":                   "aaaa",
-					"Password":               "bbbb",
-					"CACertPath":             "/a/b/c",
-					"TrustServerCertificate": "false",
-					"HostNameInCertificate":  "true",
-					"Encrypt":                "false",
-					"TLSMinVersion":          "1.2",
-					"Database":               "testdb",
-				},
-			},
-			connConfig{
-				URI:                    "pigeon://uri",
-				User:                   "aaaa",
-				Password:               "bbbb",
-				CACertPath:             "/a/b/c",
-				TrustServerCertificate: "false",
-				HostNameInCertificate:  "true",
-				Encrypt:                "false",
-				TLSMinVersion:          "1.2",
-				Database:               "testdb",
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			got := newConnConfig(tt.args.metricParams)
-			if diff := cmp.Diff(tt.want, got); diff != "" {
-				t.Fatalf("newConnConfig() = %s", diff)
+				return
 			}
-		})
+		}()
+	}
+
+	wg.Wait()
+
+	// Check that only one connection is stored
+	connCnt := ccol.conns.Len()
+	if connCnt != 1 {
+		t.Errorf("expected 1 connection in map, got %d", connCnt)
 	}
 }
