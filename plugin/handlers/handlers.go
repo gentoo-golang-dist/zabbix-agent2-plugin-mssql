@@ -166,7 +166,7 @@ func (cq CustomQueries) Load(customQueriesDirFS fs.FS, logr log.Logger) error {
 	queries := make(map[string]string)
 
 	for _, qfp := range queryFilePaths {
-		// nameless closure to trigger defer on end of each iteration.
+		// nameless closure to trigger the statement defer on end of each iteration.
 		err := func() error {
 			f, err := customQueriesDirFS.Open(qfp)
 			if err != nil {
@@ -300,10 +300,10 @@ func rowsToJSON(rows *sql.Rows) ([]map[string]any, error) {
 		return nil, errs.Wrap(err, "failed to get column types")
 	}
 
-	results := []map[string]any{}
+	var results []map[string]any
 
 	for rows.Next() {
-		// make new dest for each row, cause it's all pointer.
+		// make new dest for each row, because it's all pointer.
 		dest := make([]any, 0, len(cols))
 
 		for _, col := range cols {

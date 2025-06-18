@@ -65,7 +65,7 @@ func newConnItem(keepAlive int, logr log.Logger, driverName string) *ConnItem {
 	return &s
 }
 
-// initDb function initializes a pre-allocated database handle. First it must be created with newConnItem function.
+// initDb function initializes a pre-allocated database handle. First, it must be created with newConnItem function.
 func (s *ConnItem) initDb(ctx context.Context, conf *ConnConfig) error {
 	s.logr.Debugf(
 		"Creating new connection to %q, with user %q to database %q, "+
