@@ -148,7 +148,6 @@ func Test_nullUniqueIdentifier_Scan(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -215,7 +214,6 @@ func Test_nullUniqueIdentifier_Value(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -273,7 +271,6 @@ func Test_nullBool_Value(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -298,6 +295,8 @@ func Test_nullBool_Value(t *testing.T) {
 }
 
 func TestWithJSONResponse(t *testing.T) {
+	t.Parallel()
+
 	newHandlerFunc := func(handlerErr error, invalidJSON bool) HandlerFunc {
 		return func(
 			metricParams map[string]string, extraParams ...string,
@@ -330,8 +329,6 @@ func TestWithJSONResponse(t *testing.T) {
 			return map[string]any{"a": 1, "b": 2, "c": "3"}, nil
 		}
 	}
-
-	t.Parallel()
 
 	type args struct {
 		handler     HandlerFunc
@@ -386,7 +383,6 @@ func TestWithJSONResponse(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -641,7 +637,6 @@ func TestCustomQueries_HandlerFunc(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -746,7 +741,6 @@ func TestQueryHandlerFunc(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -836,7 +830,6 @@ func TestVersionHandler(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
@@ -961,7 +954,6 @@ func Test_rowsToJSON(t *testing.T) {
 		},
 	}
 	for _, tt := range tests {
-		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
