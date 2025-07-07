@@ -43,7 +43,7 @@ var (
 func main() {
 	args, err := flag.HandleFlags()
 	if err != nil {
-		panic("failed to handle flags" + err.Error())
+		exitWithError(errs.Wrap(err, "failed to handle flags: "))
 	}
 
 	pluginInfo := &sdkplugin.Info{
@@ -58,22 +58,30 @@ func main() {
 
 	p, err := plugin.New()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to initialize plugin: %s\n", err.Error())
-		os.Exit(1)
+		exitWithError(errs.Wrap(err, "failed to initialize plugin: "))
 	}
 
 	err = flag.DecideActionFromFlags(args, p, pluginInfo, nil)
 	if err != nil {
-		if !errors.Is(err, errs.ErrExitGracefully) {
-			fmt.Fprintf(os.Stderr, "%s\n", err.Error())
-			os.Exit(1)
+		if errors.Is(err, errs.ErrExitGracefully) {
+			// exit gracefully if parameter supposed to exit after execution
+			exitGracefully()
 		}
-		// exit gracefully if parameter supposed to exit after execution
-		os.Exit(0)
+
+		exitWithError(errs.Wrap(err, "failed to execute plugin functions: "))
 	}
 
 	err = p.Run()
 	if err != nil {
-		panic(err)
+		exitWithError(errs.Wrap(err, "failed to run plugin: "))
 	}
+}
+
+func exitWithError(err error) {
+	fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+	os.Exit(1)
+}
+
+func exitGracefully() {
+	os.Exit(0)
 }
