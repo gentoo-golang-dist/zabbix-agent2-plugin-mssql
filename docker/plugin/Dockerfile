@@ -1,4 +1,4 @@
-FROM golang:1.20 as plugin-builder
+FROM golang:1.23.0 as plugin-builder
 
 WORKDIR /usr/src/app
 
