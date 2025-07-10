@@ -31,6 +31,7 @@ import (
 	"golang.zabbix.com/sdk/log"
 	"golang.zabbix.com/sdk/metric"
 	"golang.zabbix.com/sdk/plugin"
+	"golang.zabbix.com/sdk/zbxsync"
 )
 
 type mockCtx struct {
@@ -96,7 +97,7 @@ func Test_mssqlPlugin_Start(t *testing.T) {
 			if diff := cmp.Diff(
 				tt.wantCons, p.conns,
 				cmp.AllowUnexported(dbconn.ConnManager{}, MssqlPlugin{}),
-				cmpopts.IgnoreUnexported(dbconn.SyncMap[dbconn.ConnConfig, *dbconn.ConnItem]{}),
+				cmpopts.IgnoreUnexported(zbxsync.SyncMap[dbconn.ConnConfig, *dbconn.ConnItem]{}),
 				cmpopts.IgnoreFields(dbconn.ConnManager{}, "logr"),
 			); diff != "" {
 				t.Fatalf("MssqlPlugin.Start() = %s", diff)

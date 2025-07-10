@@ -30,6 +30,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"golang.zabbix.com/plugin/mssql/plugin/params"
 	"golang.zabbix.com/sdk/log"
+	"golang.zabbix.com/sdk/zbxsync"
 )
 
 var (
@@ -113,7 +114,7 @@ func TestConnCollection_Init(t *testing.T) {
 			fields{},
 			args{10, 11, sampleLogr},
 			&ConnManager{
-				conns:      &SyncMap[ConnConfig, *ConnItem]{},
+				conns:      &zbxsync.SyncMap[ConnConfig, *ConnItem]{},
 				keepAlive:  10,
 				logr:       sampleLogr,
 				driverName: "sqlserver",
@@ -128,7 +129,7 @@ func TestConnCollection_Init(t *testing.T) {
 			},
 			args{10, 11, sampleLogr},
 			&ConnManager{
-				conns:      &SyncMap[ConnConfig, *ConnItem]{},
+				conns:      &zbxsync.SyncMap[ConnConfig, *ConnItem]{},
 				keepAlive:  10,
 				logr:       sampleLogr,
 				driverName: "sqlserver",
@@ -150,7 +151,7 @@ func TestConnCollection_Init(t *testing.T) {
 			if diff := cmp.Diff(
 				tt.want, c,
 				cmp.AllowUnexported(ConnManager{}, ConnConfig{}, ConnItem{}),
-				cmpopts.IgnoreUnexported(SyncMap[ConnConfig, *ConnItem]{}),
+				cmpopts.IgnoreUnexported(zbxsync.SyncMap[ConnConfig, *ConnItem]{}),
 			); diff != "" {
 				t.Fatalf("ConnManager.Init() = %s", diff)
 			}
@@ -252,7 +253,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) { //nolint:paralleltest
 			c := &ConnManager{
-				conns:      &SyncMap[ConnConfig, *ConnItem]{},
+				conns:      &zbxsync.SyncMap[ConnConfig, *ConnItem]{},
 				driverName: "testdriver",
 				logr:       log.New("aaa"),
 			}
@@ -418,7 +419,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) { //nolint:paralleltest
 			c := &ConnManager{
-				conns:      &SyncMap[ConnConfig, *ConnItem]{},
+				conns:      &zbxsync.SyncMap[ConnConfig, *ConnItem]{},
 				logr:       log.New("test"),
 				driverName: "testdriver",
 			}
@@ -496,7 +497,7 @@ func TestConnCollection_Close(t *testing.T) {
 			item := newConnItem(0, logr, "")
 			item.db = db
 
-			conns := &SyncMap[ConnConfig, *ConnItem]{}
+			conns := &zbxsync.SyncMap[ConnConfig, *ConnItem]{}
 			conns.Store(conf, item)
 
 			c := &ConnManager{
@@ -521,7 +522,7 @@ func TestConnCollection_get(t *testing.T) {
 	}
 
 	type fields struct {
-		conns      *SyncMap[ConnConfig, *ConnItem]
+		conns      *zbxsync.SyncMap[ConnConfig, *ConnItem]
 		dsn        string
 		newConnErr error
 		driverName string
@@ -544,9 +545,9 @@ func TestConnCollection_get(t *testing.T) {
 			"+validExisting",
 			expect{false},
 			fields{
-				conns: func() *SyncMap[ConnConfig, *ConnItem] {
+				conns: func() *zbxsync.SyncMap[ConnConfig, *ConnItem] {
 					conf := ConnConfig{URI: "pigeon://uri", User: "aaaa", Password: "bbbb"}
-					m := &SyncMap[ConnConfig, *ConnItem]{}
+					m := &zbxsync.SyncMap[ConnConfig, *ConnItem]{}
 					m.Store(conf, &ConnItem{db: &sql.DB{}})
 
 					return m
@@ -561,9 +562,9 @@ func TestConnCollection_get(t *testing.T) {
 				},
 			},
 			&ConnManager{
-				conns: func() *SyncMap[ConnConfig, *ConnItem] {
+				conns: func() *zbxsync.SyncMap[ConnConfig, *ConnItem] {
 					conf := ConnConfig{}
-					m := &SyncMap[ConnConfig, *ConnItem]{}
+					m := &zbxsync.SyncMap[ConnConfig, *ConnItem]{}
 					m.Store(conf, &ConnItem{db: &sql.DB{}})
 
 					return m
@@ -577,7 +578,7 @@ func TestConnCollection_get(t *testing.T) {
 			"+validNew",
 			expect{true},
 			fields{
-				conns:      &SyncMap[ConnConfig, *ConnItem]{},
+				conns:      &zbxsync.SyncMap[ConnConfig, *ConnItem]{},
 				dsn:        "pigeon://rrrr:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
 				driverName: "testdriver",
 			},
@@ -589,13 +590,13 @@ func TestConnCollection_get(t *testing.T) {
 				},
 			},
 			&ConnManager{
-				conns: func() *SyncMap[ConnConfig, *ConnItem] {
+				conns: func() *zbxsync.SyncMap[ConnConfig, *ConnItem] {
 					conf := ConnConfig{
 						User:     "rrrr",
 						Password: "tttt",
 						URI:      "pigeon://uri",
 					}
-					m := &SyncMap[ConnConfig, *ConnItem]{}
+					m := &zbxsync.SyncMap[ConnConfig, *ConnItem]{}
 					m.Store(conf, &ConnItem{db: &sql.DB{}})
 
 					return m
@@ -609,8 +610,8 @@ func TestConnCollection_get(t *testing.T) {
 			"+prevCons",
 			expect{true},
 			fields{
-				conns: func() *SyncMap[ConnConfig, *ConnItem] {
-					m := &SyncMap[ConnConfig, *ConnItem]{}
+				conns: func() *zbxsync.SyncMap[ConnConfig, *ConnItem] {
+					m := &zbxsync.SyncMap[ConnConfig, *ConnItem]{}
 					m.Store(ConnConfig{}, &ConnItem{})
 
 					return m
@@ -626,8 +627,8 @@ func TestConnCollection_get(t *testing.T) {
 				},
 			},
 			&ConnManager{
-				conns: func() *SyncMap[ConnConfig, *ConnItem] {
-					m := &SyncMap[ConnConfig, *ConnItem]{}
+				conns: func() *zbxsync.SyncMap[ConnConfig, *ConnItem] {
+					m := &zbxsync.SyncMap[ConnConfig, *ConnItem]{}
 					m.Store(ConnConfig{}, &ConnItem{})
 					m.Store(
 						ConnConfig{User: "rrrr", Password: "tttt", URI: "pigeon://uri"},
@@ -644,7 +645,7 @@ func TestConnCollection_get(t *testing.T) {
 			"-newConnErr",
 			expect{true},
 			fields{
-				conns:      &SyncMap[ConnConfig, *ConnItem]{},
+				conns:      &zbxsync.SyncMap[ConnConfig, *ConnItem]{},
 				dsn:        "pigeon://kkkk:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
 				newConnErr: errors.New("fail"),
 				driverName: "testdriver",
@@ -657,7 +658,7 @@ func TestConnCollection_get(t *testing.T) {
 				},
 			},
 			&ConnManager{
-				conns:      &SyncMap[ConnConfig, *ConnItem]{},
+				conns:      &zbxsync.SyncMap[ConnConfig, *ConnItem]{},
 				driverName: "testdriver",
 			},
 			true,
@@ -711,7 +712,7 @@ func TestConnCollection_get(t *testing.T) {
 			if diff := cmp.Diff(
 				tt.wantReceiver, c,
 				cmp.AllowUnexported(ConnManager{}, ConnConfig{}, ConnItem{}),
-				cmpopts.IgnoreUnexported(SyncMap[ConnConfig, *ConnItem]{}),
+				cmpopts.IgnoreUnexported(zbxsync.SyncMap[ConnConfig, *ConnItem]{}),
 				cmp.Comparer(
 					func(x, y *sql.DB) bool {
 						return (x == nil) == (y == nil)

@@ -21,6 +21,7 @@ import (
 	"golang.zabbix.com/plugin/mssql/plugin/handlers"
 	"golang.zabbix.com/sdk/errs"
 	"golang.zabbix.com/sdk/log"
+	"golang.zabbix.com/sdk/zbxsync"
 )
 
 var (
@@ -31,7 +32,7 @@ var (
 // ConnManager is a collection of connections to the database.
 // Allows managing multiple connections.
 type ConnManager struct {
-	conns *SyncMap[ConnConfig, *ConnItem]
+	conns *zbxsync.SyncMap[ConnConfig, *ConnItem]
 
 	keepAlive  int
 	logr       log.Logger
@@ -40,7 +41,7 @@ type ConnManager struct {
 
 // Init initializes a pre-allocated connection collection.
 func (c *ConnManager) Init(keepAlive int, logr log.Logger) {
-	c.conns = &SyncMap[ConnConfig, *ConnItem]{}
+	c.conns = &zbxsync.SyncMap[ConnConfig, *ConnItem]{}
 	c.keepAlive = keepAlive
 	c.logr = logr
 	c.driverName = "sqlserver"
