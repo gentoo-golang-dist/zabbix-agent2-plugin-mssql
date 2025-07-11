@@ -189,7 +189,7 @@ services:
       test:
         [
           "CMD",
-          "/opt/mssql-tools18/bin/sqlcmd",
+          "/opt/mssql-tools/bin/sqlcmd",
           "-C",
           "-U",
           "sa",

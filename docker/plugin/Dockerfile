@@ -1,4 +1,4 @@
-FROM golang:1.23.0 as plugin-builder
+FROM golang:1.23.0 AS plugin-builder
 
 WORKDIR /usr/src/app
 
@@ -18,3 +18,5 @@ COPY --from=plugin-builder /usr/src/app/mssql-plugin /var/lib/zabbix/mssql-plugi
 COPY docker/plugin/setup-files /var/lib/zabbix/setup-files
 
 COPY docker/plugin/mssql.conf /etc/zabbix/zabbix_agentd.d/mssql.conf
+
+ENV GODEBUG="x509negativeserial=1"
