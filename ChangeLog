@@ -42,6 +42,13 @@ New features:
 ...G...... [ZBXNEXT-9508] added custom query enable parameter and path default (esneiders)
 
 --------------------------------------------------------------------------------
+Changes for 7.2.12rc1
+
+New features:
+
+Bug fixes:
+
+--------------------------------------------------------------------------------
 Changes for 7.2.11
 
 7.2.11rc1 was released as 7.2.11 without any changes
