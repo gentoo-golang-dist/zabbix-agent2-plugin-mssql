@@ -16,12 +16,14 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	_ "github.com/microsoft/go-mssqldb"
 	"golang.zabbix.com/plugin/mssql/plugin"
+	"golang.zabbix.com/sdk/errs"
+	sdkplugin "golang.zabbix.com/sdk/plugin"
 	"golang.zabbix.com/sdk/plugin/flag"
-	"golang.zabbix.com/sdk/zbxerr"
 )
 
 const copyrightMessage = //
@@ -39,25 +41,47 @@ var (
 )
 
 func main() {
-	err := flag.HandleFlags(
-		plugin.Name,
-		os.Args[0],
-		copyrightMessage,
-		PLUGIN_VERSION_RC,
-		PLUGIN_VERSION_MAJOR,
-		PLUGIN_VERSION_MINOR,
-		PLUGIN_VERSION_PATCH,
-	)
+	args, err := flag.HandleFlags()
 	if err != nil {
-		if errors.Is(err, zbxerr.ErrorOSExitZero) {
-			return
+		exitWithError(errs.Wrap(err, "failed to handle flags: "))
+	}
+
+	pluginInfo := &sdkplugin.Info{
+		Name:             plugin.Name,
+		BinName:          os.Args[0],
+		CopyrightMessage: copyrightMessage,
+		MajorVersion:     PLUGIN_VERSION_MAJOR,
+		MinorVersion:     PLUGIN_VERSION_MINOR,
+		PatchVersion:     PLUGIN_VERSION_PATCH,
+		Alphatag:         PLUGIN_VERSION_RC,
+	}
+
+	p, err := plugin.New()
+	if err != nil {
+		exitWithError(errs.Wrap(err, "failed to initialize plugin: "))
+	}
+
+	err = flag.DecideActionFromFlags(args, p, pluginInfo, nil)
+	if err != nil {
+		if errors.Is(err, errs.ErrExitGracefully) {
+			// exit gracefully if parameter supposed to exit after execution
+			exitGracefully()
 		}
 
-		panic(err)
+		exitWithError(errs.Wrap(err, "failed to execute plugin functions: "))
 	}
 
-	err = plugin.Launch()
+	err = p.Run()
 	if err != nil {
-		panic(err)
+		exitWithError(errs.Wrap(err, "failed to run plugin: "))
 	}
+}
+
+func exitWithError(err error) {
+	fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+	os.Exit(1)
+}
+
+func exitGracefully() {
+	os.Exit(0)
 }

@@ -55,7 +55,7 @@ type pluginConfig struct {
 
 // Configure implements the Configurator interface.
 // Initializes configuration structures.
-func (p *mssqlPlugin) Configure(global *plugin.GlobalOptions, options any) {
+func (p *MssqlPlugin) Configure(global *plugin.GlobalOptions, options any) {
 	pConfig := &pluginConfig{}
 
 	err := conf.UnmarshalStrict(options, pConfig)
@@ -76,7 +76,7 @@ func (p *mssqlPlugin) Configure(global *plugin.GlobalOptions, options any) {
 
 // Validate implements the Configurator interface.
 // Returns an error if validation of a plugin's configuration is failed.
-func (*mssqlPlugin) Validate(options any) error {
+func (*MssqlPlugin) Validate(options any) error {
 	var opts pluginConfig
 
 	err := conf.UnmarshalStrict(options, &opts)

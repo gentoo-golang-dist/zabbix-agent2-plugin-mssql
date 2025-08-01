@@ -23,6 +23,7 @@ import (
 	"golang.zabbix.com/plugin/mssql/plugin/handlers"
 	"golang.zabbix.com/plugin/mssql/plugin/params"
 	"golang.zabbix.com/sdk/errs"
+	"golang.zabbix.com/sdk/log"
 	"golang.zabbix.com/sdk/metric"
 	"golang.zabbix.com/sdk/plugin"
 	"golang.zabbix.com/sdk/plugin/container"
@@ -75,9 +76,9 @@ var (
 )
 
 var (
-	_ plugin.Configurator = (*mssqlPlugin)(nil)
-	_ plugin.Exporter     = (*mssqlPlugin)(nil)
-	_ plugin.Runner       = (*mssqlPlugin)(nil)
+	_ plugin.Configurator = (*MssqlPlugin)(nil)
+	_ plugin.Exporter     = (*MssqlPlugin)(nil)
+	_ plugin.Runner       = (*MssqlPlugin)(nil)
 )
 
 type mssqlMetricKey string
@@ -87,7 +88,7 @@ type mssqlMetric struct {
 	handler handlers.HandlerFunc
 }
 
-type mssqlPlugin struct {
+type MssqlPlugin struct {
 	plugin.Base
 	conns         *dbconn.ConnCollection
 	config        *pluginConfig
@@ -95,25 +96,33 @@ type mssqlPlugin struct {
 	customQueries handlers.CustomQueries
 }
 
-// Launch launches the MSSQL plugin. Blocks until plugin execution has
-// finished.
-func Launch() error {
+func New() (*MssqlPlugin, error) {
 	// because of suboptimal setup flow in plugin-support lib
 	// we are forced to allocate custom queries and conns first
 	// (without initializing them) to allow registering metrics before receiving
-	// config or starting plugin. only then in mssqlPlugin.Start these fields
+	// config or starting plugin. only then in MssqlPlugin.Start these fields
 	// can be properly initialized. may baby Yoda be with u when trying to
 	// follow this after a month.
-	p := &mssqlPlugin{
+	p := &MssqlPlugin{
 		customQueries: make(handlers.CustomQueries),
-		conns:         &dbconn.ConnCollection{},
-	}
+		conns:         &dbconn.ConnCollection{}}
 
-	err := p.registerMetrics()
+	err := log.Open(log.Console, log.Info, "", 0)
 	if err != nil {
-		return err
+		return nil, errs.Wrap(err, "failed to open log")
 	}
 
+	p.Logger = log.New(Name)
+
+	err = p.registerMetrics()
+	if err != nil {
+		return nil, errs.Wrap(err, "failed to register metrics")
+	}
+	return p, nil
+}
+
+// Run starts the plugin.
+func (p *MssqlPlugin) Run() error {
 	h, err := container.NewHandler(Name)
 	if err != nil {
 		return errs.Wrap(err, "failed to create new handler")
@@ -132,7 +141,7 @@ func Launch() error {
 // Start starts the mssql plugin, setting up the internal connection management.
 // initialized in Start, to ensure that config has been loaded before.
 // (Start is called after Configure).
-func (p *mssqlPlugin) Start() {
+func (p *MssqlPlugin) Start() {
 	p.conns.Init(p.config.KeepAlive, p)
 
 	err := p.customQueries.Load(os.DirFS(p.config.CustomQueriesDir), p)
@@ -143,12 +152,12 @@ func (p *mssqlPlugin) Start() {
 }
 
 // Stop stops the mssql plugin, closing all the connections.
-func (p *mssqlPlugin) Stop() {
+func (p *MssqlPlugin) Stop() {
 	p.conns.Close()
 }
 
 // Export collects all the metrics.
-func (p *mssqlPlugin) Export(
+func (p *MssqlPlugin) Export(
 	key string, rawParams []string, pluginCtx plugin.ContextProvider,
 ) (any, error) {
 	m, ok := p.metrics[mssqlMetricKey(key)]
@@ -175,7 +184,7 @@ func (p *mssqlPlugin) Export(
 	}
 
 	timeout := time.Second * time.Duration(p.config.Timeout)
-	if timeout < time.Second*time.Duration(pluginCtx.Timeout()) {
+	if pluginCtx != nil && timeout < time.Second*time.Duration(pluginCtx.Timeout()) {
 		timeout = time.Second * time.Duration(pluginCtx.Timeout())
 	}
 
@@ -187,7 +196,7 @@ func (p *mssqlPlugin) Export(
 	return res, nil
 }
 
-func (p *mssqlPlugin) registerMetrics() error {
+func (p *MssqlPlugin) registerMetrics() error {
 	p.metrics = map[mssqlMetricKey]*mssqlMetric{
 		availabilityGroupGet: {
 			metric: metric.New(
