@@ -1,5 +1,3 @@
-version: "3.1"
-
 services:
   # zabbix agent2 with mssql plugin
   mssql-plugin:
@@ -132,7 +130,7 @@ services:
   # mssql database instances
   mssql-2022:
     container_name: mssql-2022
-    image: mcr.microsoft.com/mssql/server:2022-CU10-ubuntu-22.04
+    image: mcr.microsoft.com/mssql/server:2022-CU18-ubuntu-22.04
     environment:
       ACCEPT_EULA: Y
       # mssql requires legit password
@@ -141,7 +139,8 @@ services:
       test:
         [
           "CMD",
-          "/opt/mssql-tools/bin/sqlcmd",
+          "/opt/mssql-tools18/bin/sqlcmd",
+          "-C",
           "-U",
           "sa",
           "-P",
@@ -155,7 +154,7 @@ services:
 
   mssql-2019:
     container_name: mssql-2019
-    image: mcr.microsoft.com/mssql/server:2019-CU24-ubuntu-20.04
+    image: mcr.microsoft.com/mssql/server:2019-CU32-ubuntu-20.04
     environment:
       ACCEPT_EULA: Y
       # mssql requires legit password
@@ -164,7 +163,8 @@ services:
       test:
         [
           "CMD",
-          "/opt/mssql-tools/bin/sqlcmd",
+          "/opt/mssql-tools18/bin/sqlcmd",
+          "-C",
           "-U",
           "sa",
           "-P",
@@ -188,6 +188,7 @@ services:
         [
           "CMD",
           "/opt/mssql-tools/bin/sqlcmd",
+          "-C",
           "-U",
           "sa",
           "-P",
@@ -198,4 +199,4 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-# /opt/mssql-tools/bin/sqlcmd -U sa -P haej7vaefa7Aicee -Q 'select 1'
+# /opt/mssql-tools18/bin/sqlcmd -U sa -P haej7vaefa7Aicee -Q 'select 1'
