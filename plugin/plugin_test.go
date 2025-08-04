@@ -20,7 +20,6 @@ import (
 	"fmt"
 	stdlog "log"
 	"os"
-	"sync"
 	"testing"
 	"time"
 
@@ -32,6 +31,7 @@ import (
 	"golang.zabbix.com/sdk/log"
 	"golang.zabbix.com/sdk/metric"
 	"golang.zabbix.com/sdk/plugin"
+	"golang.zabbix.com/sdk/zbxsync"
 )
 
 type mockCtx struct {
@@ -47,12 +47,12 @@ func (m *mockCtx) Timeout() int {
 func Test_mssqlPlugin_Start(t *testing.T) {
 	log.DefaultLogger = stdlog.New(os.Stdout, "", stdlog.LstdFlags)
 
-	sampleConnCollection := &dbconn.ConnCollection{}
+	sampleConnCollection := &dbconn.ConnManager{}
 	sampleConnCollection.Init(30, &MssqlPlugin{})
 
 	type fields struct {
 		Base          plugin.Base
-		conns         *dbconn.ConnCollection
+		mgr           *dbconn.ConnManager
 		config        *pluginConfig
 		customQueries handlers.CustomQueries
 	}
@@ -60,7 +60,7 @@ func Test_mssqlPlugin_Start(t *testing.T) {
 	tests := []struct {
 		name              string
 		fields            fields
-		wantCons          *dbconn.ConnCollection
+		wantCons          *dbconn.ConnManager
 		wantCustomQueries handlers.CustomQueries
 	}{
 		{
@@ -69,7 +69,7 @@ func Test_mssqlPlugin_Start(t *testing.T) {
 				Base: plugin.Base{
 					Logger: log.New("test"),
 				},
-				conns: &dbconn.ConnCollection{},
+				mgr: &dbconn.ConnManager{},
 				config: &pluginConfig{
 					KeepAlive:        30,
 					Timeout:          29,
@@ -87,7 +87,7 @@ func Test_mssqlPlugin_Start(t *testing.T) {
 
 			p := &MssqlPlugin{
 				Base:          tt.fields.Base,
-				conns:         tt.fields.conns,
+				conns:         tt.fields.mgr,
 				config:        tt.fields.config,
 				customQueries: tt.fields.customQueries,
 			}
@@ -96,9 +96,9 @@ func Test_mssqlPlugin_Start(t *testing.T) {
 
 			if diff := cmp.Diff(
 				tt.wantCons, p.conns,
-				cmp.AllowUnexported(dbconn.ConnCollection{}, sync.Mutex{}, MssqlPlugin{}),
-				cmpopts.IgnoreFields(dbconn.ConnCollection{}, "mu"),
-				cmpopts.IgnoreTypes(MssqlPlugin{}),
+				cmp.AllowUnexported(dbconn.ConnManager{}, MssqlPlugin{}),
+				cmpopts.IgnoreUnexported(zbxsync.SyncMap[dbconn.ConnConfig, *dbconn.ConnItem]{}),
+				cmpopts.IgnoreFields(dbconn.ConnManager{}, "logr"),
 			); diff != "" {
 				t.Fatalf("MssqlPlugin.Start() = %s", diff)
 			}
@@ -116,20 +116,21 @@ func Test_mssqlPlugin_Stop(t *testing.T) {
 	t.Parallel()
 
 	type fields struct {
-		conns *dbconn.ConnCollection
+		mgr *dbconn.ConnManager
 	}
 
 	tests := []struct {
 		name   string
 		fields fields
 	}{
-		{"+valid", fields{conns: &dbconn.ConnCollection{}}},
+		{"+valid", fields{mgr: &dbconn.ConnManager{}}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			p := &MssqlPlugin{conns: tt.fields.conns}
+			tt.fields.mgr.Init(0, nil)
+			p := &MssqlPlugin{conns: tt.fields.mgr}
 
 			p.Stop()
 		})
@@ -181,7 +182,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 
 	type fields struct {
 		Base          plugin.Base
-		conns         *dbconn.ConnCollection
+		conns         *dbconn.ConnManager
 		config        *pluginConfig
 		metrics       map[mssqlMetricKey]*mssqlMetric
 		customQueries handlers.CustomQueries
@@ -215,7 +216,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 						handler: newHandler(nil, false),
 					},
 				},
-				conns:  &dbconn.ConnCollection{},
+				conns:  &dbconn.ConnManager{},
 				config: &pluginConfig{},
 			},
 			args{
@@ -243,7 +244,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 						handler: newHandler(nil, false),
 					},
 				},
-				conns:  &dbconn.ConnCollection{},
+				conns:  &dbconn.ConnManager{},
 				config: &pluginConfig{},
 			},
 			args{
@@ -271,7 +272,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 						handler: newHandler(nil, false),
 					},
 				},
-				conns:  &dbconn.ConnCollection{},
+				conns:  &dbconn.ConnManager{},
 				config: &pluginConfig{},
 			},
 			args{
@@ -299,7 +300,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 						handler: newHandler(errors.New("fail"), false),
 					},
 				},
-				conns:  &dbconn.ConnCollection{},
+				conns:  &dbconn.ConnManager{},
 				config: &pluginConfig{},
 			},
 			args{
@@ -325,7 +326,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 						handler: newTimeoutHandler(),
 					},
 				},
-				conns: &dbconn.ConnCollection{},
+				conns: &dbconn.ConnManager{},
 				config: &pluginConfig{
 					Timeout: 3,
 				},
@@ -351,7 +352,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 						handler: newTimeoutHandler(),
 					},
 				},
-				conns: &dbconn.ConnCollection{},
+				conns: &dbconn.ConnManager{},
 				config: &pluginConfig{
 					Timeout: 8,
 				},

@@ -90,22 +90,23 @@ type mssqlMetric struct {
 
 type MssqlPlugin struct {
 	plugin.Base
-	conns         *dbconn.ConnCollection
+	conns         *dbconn.ConnManager
 	config        *pluginConfig
 	metrics       map[mssqlMetricKey]*mssqlMetric
 	customQueries handlers.CustomQueries
 }
 
 func New() (*MssqlPlugin, error) {
-	// because of suboptimal setup flow in plugin-support lib
-	// we are forced to allocate custom queries and conns first
+	// Because of suboptimal setup flow in plugin-support lib,
+	// we are forced to allocate custom queries and mgr first
 	// (without initializing them) to allow registering metrics before receiving
-	// config or starting plugin. only then in MssqlPlugin.Start these fields
-	// can be properly initialized. may baby Yoda be with u when trying to
+	// config or starting plugin. Only then in MssqlPlugin.Start these fields
+	// can be properly initialized. May baby Yoda be with u when trying to
 	// follow this after a month.
 	p := &MssqlPlugin{
 		customQueries: make(handlers.CustomQueries),
-		conns:         &dbconn.ConnCollection{}}
+		conns:         &dbconn.ConnManager{},
+	}
 
 	err := log.Open(log.Console, log.Info, "", 0)
 	if err != nil {
@@ -139,7 +140,7 @@ func (p *MssqlPlugin) Run() error {
 }
 
 // Start starts the mssql plugin, setting up the internal connection management.
-// initialized in Start, to ensure that config has been loaded before.
+// Initialized in Start, to ensure that config has been loaded before.
 // (Start is called after Configure).
 func (p *MssqlPlugin) Start() {
 	p.conns.Init(p.config.KeepAlive, p)
@@ -205,9 +206,9 @@ func (p *MssqlPlugin) registerMetrics() error {
 					params.BaseParams,
 					params.TLSParams,
 					// AzureParams are added to all item keys (not only the ones
-					// that actually need it e.g. ping, version and
-					// custom query) because EvalParams from plugin-support
-					// can't handle session config struct that is super set
+					// that actually need it e.g., ping, version and
+					// custom query). This is because EvalParams from plugin-support
+					// can't handle session config struct that is superset
 					// of params needed by a particular metric. It panics in
 					// such a case. 😩🔫
 					params.AzureParams,
