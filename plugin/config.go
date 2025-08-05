@@ -37,16 +37,16 @@ type session struct {
 type pluginConfig struct {
 	System plugin.SystemOptions `conf:"optional"` //nolint:staticcheck
 	// Timeout is the amount of time to wait for a server to respond when
-	// first connecting and on follow up operations in the session.
+	// first connecting and on follow-up operations in the session.
 	Timeout int `conf:"optional,range=1:30"`
 	// KeepAlive is a time to wait before unused connections will be closed.
 	KeepAlive int `conf:"optional,range=60:900,default=300"`
-	// Sessions stores pre-defined named sets of connections settings.
+	// Sessions stores pre-defined named sets of connection's settings.
 	Sessions map[string]session `conf:"optional"`
 	// Default stores default connection parameter values from configuration
 	// file.
 	Default session `conf:"optional"`
-	// CustomQueriesDir is absolute path directory containing user defined
+	// CustomQueriesDir is an absolute path directory containing user defined
 	// *.sql files with custom queries the plugin can execute.
 	CustomQueriesDir string `conf:"optional"`
 	// CustomQueriesEnabled disabled or enabled custom query functionality.

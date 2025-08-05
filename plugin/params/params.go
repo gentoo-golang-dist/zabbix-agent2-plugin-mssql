@@ -49,7 +49,7 @@ var (
 	// switching databases in a query, hence the only way to gather any data
 	// from Azure DB is to specify DB name at connection. This is as an extra
 	// bit of functionality to allow users that really want to monitor something
-	// on Azure to be able to do that in their very custom own way.
+	// on Azure to be able to do that in their very custom way.
 	AzureParams = []*metric.Param{
 		Database,
 	}
@@ -67,7 +67,7 @@ var (
 			},
 		)
 
-		// URIDefaults defines the default values for a DB connection URI.
+	// URIDefaults defines the default values for a DB connection URI.
 	URIDefaults = &uri.Defaults{
 		Scheme: "sqlserver",
 		Port:   "1433",
@@ -83,7 +83,7 @@ var (
 		"Password", "MSSQL database users password.",
 	)
 
-	// QueryName is a metric param that specifies name of a custom query.
+	// QueryName is a metric param that specifies the name of a custom query.
 	QueryName = metric.NewParam(
 		"QueryName",
 		"Name of a custom query "+

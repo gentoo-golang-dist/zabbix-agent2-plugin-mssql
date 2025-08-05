@@ -6,7 +6,7 @@ WORKDIR /var/lib/zabbix
 
 RUN apt-get update && apt-get install -y curl
 
-COPY test-keys.sh get-jq.sh .
+COPY test-keys.sh get-jq.sh ./
 
 RUN bash -c ./get-jq.sh
 

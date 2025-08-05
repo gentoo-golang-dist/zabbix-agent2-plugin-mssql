@@ -1,8 +1,9 @@
-FROM mcr.microsoft.com/mssql/server:2022-CU10-ubuntu-22.04
+FROM mcr.microsoft.com/mssql/server:2022-CU18-ubuntu-22.04
 
 USER root
 WORKDIR /root
 
 COPY setup.sh setup-2022.sql setup-2019-and-below.sql ./
+RUN chmod +x /root/setup.sh
 
 ENTRYPOINT ["bash", "-c", "/root/setup.sh"]
