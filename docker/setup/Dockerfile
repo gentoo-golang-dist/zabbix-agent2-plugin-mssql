@@ -4,5 +4,6 @@ USER root
 WORKDIR /root
 
 COPY setup.sh setup-2022.sql setup-2019-and-below.sql ./
+RUN chmod +x /root/setup.sh
 
 ENTRYPOINT ["bash", "-c", "/root/setup.sh"]

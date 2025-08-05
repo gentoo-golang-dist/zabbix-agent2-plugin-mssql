@@ -1,5 +1,3 @@
-version: "3.1"
-
 services:
   # zabbix agent2 with mssql plugin
   mssql-plugin:
