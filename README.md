@@ -132,6 +132,7 @@ server:
   ```sql
   CREATE LOGIN zabbix WITH PASSWORD = 'password'
   GRANT VIEW SERVER PERFORMANCE STATE TO zabbix
+  GRANT VIEW ANY DEFINITION TO zabbix
   USE msdb
   CREATE USER zabbix FOR LOGIN zabbix
   GRANT EXECUTE ON msdb.dbo.agent_datetime TO zabbix
@@ -144,6 +145,7 @@ server:
   ```sql
   CREATE LOGIN zabbix WITH PASSWORD = 'password'
   GRANT VIEW SERVER STATE TO zabbix
+  GRANT VIEW ANY DEFINITION TO zabbix
   USE msdb
   CREATE USER zabbix FOR LOGIN zabbix
   GRANT EXECUTE ON msdb.dbo.agent_datetime TO zabbix
