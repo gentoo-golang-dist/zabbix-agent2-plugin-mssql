@@ -6,6 +6,11 @@ Bug fixes:
 ...G...... [ZBX-25834] lowered debug level and added db configuration dependent connection list (lsurvilo)
 
 --------------------------------------------------------------------------------
+Changes for 7.4.4
+
+7.4.4rc1 was released as 7.4.4 without any changes
+
+--------------------------------------------------------------------------------
 Changes for 7.4.4rc1
 
 7.4.3 was released as 7.4.4rc1 without any changes
