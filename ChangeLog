@@ -1,8 +1,6 @@
-Changes for 7.4.5rc1
+Changes for 7.4.5
 
-New features:
-
-Bug fixes:
+7.4.4 was released as 7.4.5 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 7.4.4
@@ -269,11 +267,9 @@ New features:
 [ZBXNEXT-9281] added configurable item timeout support (dgoloscapov)
 
 --------------------------------------------------------------------------------
-Changes for 7.0.21rc1
+Changes for 7.0.21
 
-New features:
-
-Bug fixes:
+7.0.20 was released as 7.0.21 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 7.0.20
