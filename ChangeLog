@@ -3,6 +3,7 @@ Changes for 7.0.22rc1
 New features:
 
 Bug fixes:
+.D........ [ZBX-26626] added additional GRANT statement for setup (smansurovs)
 
 --------------------------------------------------------------------------------
 Changes for 7.0.21
