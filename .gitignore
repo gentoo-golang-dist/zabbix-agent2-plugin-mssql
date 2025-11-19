@@ -102,3 +102,7 @@ $RECYCLE.BIN/
 
 # go build binary
 mssql
+zabbix-agent2-plugin-mssql
+
+# Goland
+.idea/
