@@ -206,7 +206,7 @@ func TestConnItem_initDB(t *testing.T) {
 				driverName: "testdriver",
 			},
 			args{
-				context.Background(),
+				t.Context(),
 				newConnConfig(map[string]string{
 					"User":     "aaaa",
 					"Password": "bbbb",
@@ -224,7 +224,7 @@ func TestConnItem_initDB(t *testing.T) {
 				driverName: "testdriver",
 			},
 			args{
-				context.Background(),
+				t.Context(),
 				newConnConfig(map[string]string{
 					"User":     "aaaa",
 					"Password": "bbbb",
@@ -242,7 +242,7 @@ func TestConnItem_initDB(t *testing.T) {
 				driverName: "testdriver",
 			},
 			args{
-				context.Background(),
+				t.Context(),
 				newConnConfig(map[string]string{
 					"User":     "aaaa",
 					"Password": "bbbb",
@@ -260,7 +260,7 @@ func TestConnItem_initDB(t *testing.T) {
 				driverName: "testdriver",
 			},
 			args{
-				context.Background(),
+				t.Context(),
 				newConnConfig(map[string]string{
 					"User":     "aaaa",
 					"Password": "bbbb",
@@ -279,7 +279,7 @@ func TestConnItem_initDB(t *testing.T) {
 				driverName: "testdriver",
 			},
 			args{
-				context.Background(),
+				t.Context(),
 				newConnConfig(map[string]string{
 					"User":     "cccc",
 					"Password": "bbbb",
@@ -333,7 +333,7 @@ func TestConnItem_initDB(t *testing.T) {
 				tt.fields.driverName,
 			)
 
-			err = item.initDb(context.Background(), &tt.args.conf)
+			err = item.initDb(t.Context(), &tt.args.conf)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"ConnItem.initDb() error = %v, wantErr %v",
