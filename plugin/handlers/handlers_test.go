@@ -15,7 +15,6 @@
 package handlers
 
 import (
-	"context"
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
@@ -667,7 +666,7 @@ func TestCustomQueries_HandlerFunc(t *testing.T) {
 			}
 
 			got, err := tt.cq.HandlerFunc(
-				context.Background(),
+				t.Context(),
 				db,
 				tt.args.metricParams,
 				tt.args.extraParams...)
@@ -770,7 +769,7 @@ func TestQueryHandlerFunc(t *testing.T) {
 				WillReturnError(tt.fields.queryErr)
 
 			resp, err := QueryHandlerFunc(tt.args.query)(
-				context.Background(),
+				t.Context(),
 				db,
 				nil,
 				tt.args.extraParams...,
@@ -863,7 +862,7 @@ func TestVersionHandler(t *testing.T) {
 				).
 				WillReturnError(tt.fields.queryErr)
 
-			got, err := VersionHandler(context.Background(), db, nil)
+			got, err := VersionHandler(t.Context(), db, nil)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"VersionHandler() error = %v, wantErr %v",
