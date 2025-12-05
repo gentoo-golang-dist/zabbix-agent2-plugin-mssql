@@ -81,13 +81,7 @@ var (
 	_ plugin.Runner       = (*MssqlPlugin)(nil)
 )
 
-type mssqlMetricKey string
-
-type mssqlMetric struct {
-	metric  *metric.Metric
-	handler handlers.HandlerFunc
-}
-
+// MssqlPlugin hold mssql plugin parameters.
 type MssqlPlugin struct {
 	plugin.Base
 	conns         *dbconn.ConnManager
@@ -96,6 +90,14 @@ type MssqlPlugin struct {
 	customQueries handlers.CustomQueries
 }
 
+type mssqlMetricKey string
+
+type mssqlMetric struct {
+	metric  *metric.Metric
+	handler handlers.HandlerFunc
+}
+
+// New returns a new implementation of mssql plugin.
 func New() (*MssqlPlugin, error) {
 	// Because of suboptimal setup flow in plugin-support lib,
 	// we are forced to allocate custom queries and mgr first
@@ -119,6 +121,7 @@ func New() (*MssqlPlugin, error) {
 	if err != nil {
 		return nil, errs.Wrap(err, "failed to register metrics")
 	}
+
 	return p, nil
 }
 
