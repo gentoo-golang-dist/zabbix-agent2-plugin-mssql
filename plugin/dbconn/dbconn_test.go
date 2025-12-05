@@ -694,7 +694,7 @@ func TestConnCollection_get(t *testing.T) {
 				logr:       log.New("test"),
 			}
 
-			got, err := c.get(context.Background(), tt.args.conf)
+			got, err := c.get(t.Context(), tt.args.conf)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"ConnManager.get() error = %v, wantErr %v",
@@ -784,7 +784,7 @@ func TestConnCollection_get_ConcurrentAccess(t *testing.T) {
 		go func() {
 			defer wg.Done()
 
-			conn, err := ccol.get(context.Background(), conf)
+			conn, err := ccol.get(t.Context(), conf)
 			if conn == nil {
 				t.Errorf("unexpected error from get(): %v", err)
 
