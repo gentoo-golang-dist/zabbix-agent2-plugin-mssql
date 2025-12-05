@@ -648,7 +648,7 @@ func TestConnCollection_get(t *testing.T) {
 				logr:       log.New("test"),
 			}
 
-			got, err := c.get(context.Background(), tt.args.conf)
+			got, err := c.get(t.Context(), tt.args.conf)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"ConnCollection.get() error = %v, wantErr %v",
@@ -877,7 +877,7 @@ func TestConnCollection_newConn(t *testing.T) {
 					logr:       log.New("test"),
 				}
 
-				got, err := c.newConn(context.Background(), tt.args.conf)
+				got, err := c.newConn(t.Context(), tt.args.conf)
 				if (err != nil) != tt.wantErr {
 					t.Fatalf(
 						"ConnCollection.newConn() error = %v, wantErr %v",

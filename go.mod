@@ -1,12 +1,12 @@
 module golang.zabbix.com/plugin/mssql
 
-go 1.23.0
+go 1.24.10
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/google/go-cmp v0.6.0
 	github.com/microsoft/go-mssqldb v1.6.0
-	golang.zabbix.com/sdk v1.2.2-0.20251113134231-795d3126e111
+	golang.zabbix.com/sdk v1.2.2-0.20251205122203-eb823db2c4bf
 )
 
 require (
