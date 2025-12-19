@@ -32,10 +32,10 @@ the license. There is NO WARRANTY, to the extent permitted by law.`
 
 //nolint:gochecknoglobals,revive // required ALL_CAPS by build scripts
 var (
-	PLUGIN_VERSION_RC    = ""
+	PLUGIN_VERSION_RC    = "rc1"
 	PLUGIN_VERSION_MAJOR = 7
 	PLUGIN_VERSION_MINOR = 4
-	PLUGIN_VERSION_PATCH = 6
+	PLUGIN_VERSION_PATCH = 7
 )
 
 func main() {
