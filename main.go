@@ -1,6 +1,6 @@
 /*
 ** Zabbix
-** Copyright (C) 2001-2025 Zabbix SIA
+** Copyright (C) 2001-2026 Zabbix SIA
 **
 ** Licensed under the Apache License, Version 2.0 (the "License");
 ** you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ var (
 	PLUGIN_VERSION_MAJOR = 6
 	PLUGIN_VERSION_MINOR = 0
 	PLUGIN_VERSION_PATCH = 44
-	PLUGIN_LICENSE_YEAR  = 2025
+	PLUGIN_LICENSE_YEAR  = 2026
 )
 
 func main() {
