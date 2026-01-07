@@ -54,8 +54,8 @@ type ConnItem struct {
 }
 
 // newConnConfig function creates connection config instance.
-func newConnConfig(metricParams map[string]string) ConnConfig {
-	return ConnConfig{
+func newConnConfig(metricParams map[string]string) *ConnConfig {
+	return &ConnConfig{
 		URI:                    metricParams[params.URI.Name()],
 		User:                   metricParams[params.User.Name()],
 		Password:               metricParams[params.Password.Name()],
@@ -79,8 +79,8 @@ func newConnItem(keepAlive int, logr log.Logger, driverName string) *ConnItem {
 	return &s
 }
 
-// initDb function initializes a pre-allocated database handle. First, it must be created with newConnItem function.
-func (s *ConnItem) initDb(ctx context.Context, conf *ConnConfig) error {
+// getDbConn function initializes a pre-allocated database handle. First, it must be created with newConnItem function.
+func (s *ConnItem) getDbConn(ctx context.Context, conf *ConnConfig) (*sql.DB, error) {
 	s.logr.Debugf(
 		"Creating new connection to %q, with user %q to database %q, "+
 			"with CA certificate %q, "+
@@ -100,12 +100,12 @@ func (s *ConnItem) initDb(ctx context.Context, conf *ConnConfig) error {
 		conf.URI, conf.User, conf.Password, &uri.Defaults{Scheme: params.URIDefaults.Scheme},
 	)
 	if err != nil {
-		return errs.Wrap(err, "failed to set URI defaults")
+		return nil, errs.Wrap(err, "failed to set URI defaults")
 	}
 
 	u, err := url.Parse(connURI.String())
 	if err != nil {
-		return errs.Wrap(err, "failed to parse URI")
+		return nil, errs.Wrap(err, "failed to parse URI")
 	}
 
 	if connURI.Port() == "" && connURI.Path() == "" {
@@ -121,19 +121,17 @@ func (s *ConnItem) initDb(ctx context.Context, conf *ConnConfig) error {
 
 	db, err := sql.Open(s.driverName, u.String())
 	if err != nil {
-		return errs.Wrap(err, "failed to open DB connection")
+		return nil, errs.Wrap(err, "failed to open DB connection")
 	}
 
 	db.SetConnMaxIdleTime(time.Duration(s.keepAlive) * time.Second)
 
 	err = db.PingContext(ctx)
 	if err != nil {
-		return errs.Wrap(err, "failed to ping")
+		return nil, errs.Wrap(err, "failed to ping")
 	}
 
-	s.db = db
-
-	return nil
+	return db, nil
 }
 
 func (s *ConnItem) composeQueryParams(queryParams url.Values, conf *ConnConfig) {

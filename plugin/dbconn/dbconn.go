@@ -110,22 +110,22 @@ func (c *ConnManager) Close() {
 	})
 }
 
-//nolint:gocritic // need conf by value.
 func (c *ConnManager) get(
 	ctx context.Context,
-	conf ConnConfig,
+	conf *ConnConfig,
 ) (*ConnItem, error) {
-	conn, _ := c.conns.LoadOrStore(conf, newConnItem(c.keepAlive, c.logr, c.driverName))
+	conn, _ := c.conns.LoadOrStore(*conf, newConnItem(c.keepAlive, c.logr, c.driverName))
 
 	conn.mu.Lock() // to implement singleflight pattern on db connection creation.
 	defer conn.mu.Unlock()
 
 	if conn.db == nil {
-		if err := conn.initDb(ctx, &conf); err != nil {
-			err = errs.Wrap(err, "failed to create conn")
-
-			return nil, err
+		dbConn, err := conn.getDbConn(ctx, conf)
+		if err != nil {
+			return nil, errs.Wrap(err, "failed to create conn")
 		}
+
+		conn.db = dbConn
 	}
 
 	return conn, nil

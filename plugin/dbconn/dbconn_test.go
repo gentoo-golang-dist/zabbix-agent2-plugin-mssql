@@ -529,7 +529,7 @@ func TestConnCollection_get(t *testing.T) {
 	}
 
 	type args struct {
-		conf ConnConfig
+		conf *ConnConfig
 	}
 
 	tests := []struct {
@@ -555,7 +555,7 @@ func TestConnCollection_get(t *testing.T) {
 				driverName: "testdriver",
 			},
 			args{
-				conf: ConnConfig{
+				conf: &ConnConfig{
 					URI:      "pigeon://uri",
 					User:     "aaaa",
 					Password: "bbbb",
@@ -583,7 +583,7 @@ func TestConnCollection_get(t *testing.T) {
 				driverName: "testdriver",
 			},
 			args{
-				conf: ConnConfig{
+				conf: &ConnConfig{
 					User:     "rrrr",
 					Password: "tttt",
 					URI:      "pigeon://uri",
@@ -620,7 +620,7 @@ func TestConnCollection_get(t *testing.T) {
 				driverName: "testdriver",
 			},
 			args{
-				conf: ConnConfig{
+				conf: &ConnConfig{
 					User:     "jjjj",
 					Password: "tttt",
 					URI:      "pigeon://uri",
@@ -651,7 +651,7 @@ func TestConnCollection_get(t *testing.T) {
 				driverName: "testdriver",
 			},
 			args{
-				conf: ConnConfig{
+				conf: &ConnConfig{
 					User:     "kkkk",
 					Password: "tttt",
 					URI:      "pigeon://uri",
@@ -772,7 +772,7 @@ func TestConnCollection_get_ConcurrentAccess(t *testing.T) {
 	)
 
 	//results := make([]*sql.DB, 0, goroutineCount)
-	conf := ConnConfig{
+	conf := &ConnConfig{
 		URI:      "pigeon://concurrent",
 		User:     "rrrr",
 		Password: "tttt",
