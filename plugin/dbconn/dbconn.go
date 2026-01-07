@@ -115,12 +115,12 @@ func (c *ConnManager) get(
 	ctx context.Context,
 	conf ConnConfig,
 ) (*ConnItem, error) {
-	conn, loaded := c.conns.LoadOrStore(conf, newConnItem(c.keepAlive, c.logr, c.driverName))
+	conn, _ := c.conns.LoadOrStore(conf, newConnItem(c.keepAlive, c.logr, c.driverName))
 
-	conn.mu.Lock()
+	conn.mu.Lock() // to implement singleflight pattern on db connection creation.
 	defer conn.mu.Unlock()
 
-	if !loaded {
+	if conn.db == nil {
 		if err := conn.initDb(ctx, &conf); err != nil {
 			err = errs.Wrap(err, "failed to create conn")
 
