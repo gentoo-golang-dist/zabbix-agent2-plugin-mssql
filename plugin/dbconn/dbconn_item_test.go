@@ -161,7 +161,7 @@ func TestConnItem_newConnConfig(t *testing.T) {
 			t.Parallel()
 
 			got := newConnConfig(tt.args.metricParams)
-			if diff := cmp.Diff(tt.want, got); diff != "" {
+			if diff := cmp.Diff(tt.want, *got); diff != "" {
 				t.Fatalf("newConnConfig() = %s", diff)
 			}
 		})
@@ -183,7 +183,7 @@ func TestConnItem_initDB(t *testing.T) {
 
 	type args struct {
 		ctx  context.Context //nolint:containedctx
-		conf ConnConfig
+		conf *ConnConfig
 	}
 
 	type expect struct {
@@ -333,10 +333,10 @@ func TestConnItem_initDB(t *testing.T) {
 				tt.fields.driverName,
 			)
 
-			err = item.initDb(t.Context(), &tt.args.conf)
+			_, err = item.getDbConn(t.Context(), tt.args.conf)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
-					"ConnItem.initDb() error = %v, wantErr %v",
+					"ConnItem.getDbConn() error = %v, wantErr %v",
 					err, tt.wantErr,
 				)
 			}
@@ -344,7 +344,7 @@ func TestConnItem_initDB(t *testing.T) {
 			if m != nil {
 				if err := m.ExpectationsWereMet(); err != nil {
 					t.Fatalf(
-						"ConnItem.initDb() expectations where not met: %s",
+						"ConnItem.getDbConn() expectations where not met: %s",
 						err.Error(),
 					)
 				}
@@ -362,7 +362,7 @@ func TestConnItem_composeQueryParams(t *testing.T) {
 	}
 
 	type args struct {
-		conf ConnConfig
+		conf *ConnConfig
 	}
 
 	type expect struct {
@@ -482,7 +482,7 @@ func TestConnItem_composeQueryParams(t *testing.T) {
 				gotQueryParams.Add(k, v)
 			}
 
-			item.composeQueryParams(gotQueryParams, &tt.args.conf)
+			item.composeQueryParams(gotQueryParams, tt.args.conf)
 
 			wantQueryParams := url.Values{}
 			for k, v := range tt.expect.queryParams {
