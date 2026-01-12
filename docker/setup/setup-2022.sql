@@ -6,3 +6,4 @@ GRANT EXECUTE ON msdb.dbo.agent_datetime TO zabbix;
 GRANT SELECT ON msdb.dbo.sysjobactivity TO zabbix;
 GRANT SELECT ON msdb.dbo.sysjobservers TO zabbix;
 GRANT SELECT ON msdb.dbo.sysjobs TO zabbix;
+GRANT VIEW ANY DEFINITION TO zabbix;
