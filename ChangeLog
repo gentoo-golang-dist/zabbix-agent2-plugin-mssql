@@ -1,7 +1,5 @@
 Changes for 7.4.7rc1
 
-New features:
-
 Bug fixes:
 ...G...... [ZBX-27289] resolved issue with Zabbix agent 2 failing if wrong credentials provided to mssql plugin (opucka)
 
