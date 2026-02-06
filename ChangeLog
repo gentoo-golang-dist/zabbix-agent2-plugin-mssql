@@ -13,6 +13,13 @@ Bug fixes:
 ...G...... [ZBX-25834] lowered debug level and added db configuration dependent connection list (lsurvilo)
 
 --------------------------------------------------------------------------------
+Changes for 7.4.7rc2
+
+New features:
+
+Bug fixes:
+
+--------------------------------------------------------------------------------
 Changes for 7.4.7rc1
 
 Bug fixes:
