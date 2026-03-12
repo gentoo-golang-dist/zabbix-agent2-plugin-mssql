@@ -16,7 +16,6 @@ package dbconn
 
 import (
 	"context"
-	"time"
 
 	"golang.zabbix.com/plugin/mssql/plugin/handlers"
 	"golang.zabbix.com/sdk/errs"
@@ -54,14 +53,11 @@ func (c *ConnManager) WithConnHandlerFunc(
 	handler handlers.ConnHandlerFunc,
 ) handlers.HandlerFunc {
 	return func(
-		timeout time.Duration, metricParams map[string]string, extraParams ...string,
+		ctx context.Context,
+		connectionTimeout int,
+		metricParams map[string]string,
+		extraParams ...string,
 	) (any, error) {
-		ctx, cancel := context.WithTimeout(
-			context.Background(),
-			timeout,
-		)
-		defer cancel()
-
 		conn, err := c.get(ctx, newConnConfig(metricParams))
 		if err != nil {
 			c.logr.Errf("Failed to get connection: %s", err.Error())
@@ -75,14 +71,11 @@ func (c *ConnManager) WithConnHandlerFunc(
 
 // PingHandler tries to ping the database, returning 1 on success 0 on failure.
 func (c *ConnManager) PingHandler(
-	timeout time.Duration, metricParams map[string]string, _ ...string,
+	ctx context.Context,
+	connectionTimeout int,
+	metricParams map[string]string,
+	_ ...string,
 ) (any, error) {
-	ctx, cancel := context.WithTimeout(
-		context.Background(),
-		timeout,
-	)
-	defer cancel()
-
 	conn, err := c.get(ctx, newConnConfig(metricParams))
 	if err != nil {
 		c.logr.Errf("Failed to get connection for ping: %s", err.Error())

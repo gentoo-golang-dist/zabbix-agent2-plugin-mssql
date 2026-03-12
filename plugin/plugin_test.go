@@ -15,6 +15,7 @@
 package plugin
 
 import (
+	"context"
 	_ "embed"
 	"errors"
 	"fmt"
@@ -72,7 +73,7 @@ func Test_mssqlPlugin_Start(t *testing.T) {
 				mgr: &dbconn.ConnManager{},
 				config: &pluginConfig{
 					KeepAlive:        30,
-					Timeout:          29,
+					LegacyTimeout:    29,
 					CustomQueriesDir: "",
 				},
 				customQueries: handlers.CustomQueries{},
@@ -142,7 +143,10 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 
 	newHandler := func(err error, failMarshal bool) handlers.HandlerFunc {
 		return func(
-			timeout time.Duration, metricParams map[string]string, extraParams ...string,
+			ctx context.Context,
+			connectionTimeout int,
+			metricParams map[string]string,
+			extraParams ...string,
 		) (any, error) {
 			if err != nil {
 				return nil, err
@@ -152,6 +156,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 				params.URI.Name():      "sqlserver://uri",
 				params.User.Name():     "dddd",
 				params.Password.Name(): "8888",
+				"ConnectionTimeout":    "0",
 			}
 
 			wantExtraParams := []string{"extra", "param"}
@@ -169,14 +174,6 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 			}
 
 			return "handler called", nil
-		}
-	}
-
-	newTimeoutHandler := func() handlers.HandlerFunc {
-		return func(
-			timeout time.Duration, _ map[string]string, _ ...string,
-		) (any, error) {
-			return timeout, nil
 		}
 	}
 
@@ -312,58 +309,6 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 			},
 			nil,
 			true,
-		},
-		{
-			"+itemTimeoutLargerThanConfigTimeout",
-			fields{
-				metrics: map[mssqlMetricKey]*mssqlMetric{
-					dbGet: {
-						metric: metric.New(
-							"Test.",
-							nil,
-							false,
-						),
-						handler: newTimeoutHandler(),
-					},
-				},
-				conns: &dbconn.ConnManager{},
-				config: &pluginConfig{
-					Timeout: 3,
-				},
-			},
-			args{
-				key:       string(dbGet),
-				rawParams: []string{},
-				pluginCtx: &mockCtx{timeout: 10},
-			},
-			time.Second * 10,
-			false,
-		},
-		{
-			"+itemTimeoutSmallerThanConfigTimeout",
-			fields{
-				metrics: map[mssqlMetricKey]*mssqlMetric{
-					dbGet: {
-						metric: metric.New(
-							"Test.",
-							nil,
-							false,
-						),
-						handler: newTimeoutHandler(),
-					},
-				},
-				conns: &dbconn.ConnManager{},
-				config: &pluginConfig{
-					Timeout: 8,
-				},
-			},
-			args{
-				key:       string(dbGet),
-				rawParams: []string{},
-				pluginCtx: &mockCtx{timeout: 3},
-			},
-			time.Second * 8,
-			false,
 		},
 	}
 	for _, tt := range tests {

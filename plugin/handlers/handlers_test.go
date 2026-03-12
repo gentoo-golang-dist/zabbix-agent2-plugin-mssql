@@ -15,6 +15,7 @@
 package handlers
 
 import (
+	"context"
 	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
@@ -295,7 +296,10 @@ func TestWithJSONResponse(t *testing.T) {
 
 	newHandlerFunc := func(handlerErr error, invalidJSON bool) HandlerFunc {
 		return func(
-			timeout time.Duration, metricParams map[string]string, extraParams ...string,
+			ctx context.Context,
+			connectionTimeout int,
+			metricParams map[string]string,
+			extraParams ...string,
 		) (any, error) {
 			if handlerErr != nil {
 				return nil, handlerErr
@@ -318,11 +322,11 @@ func TestWithJSONResponse(t *testing.T) {
 				t.Fatalf("extraParams mismatch (+want -got):\n%s", diff)
 			}
 
-			if timeout != time.Second {
+			if connectionTimeout != 1 {
 				t.Fatalf(
-					"timeout mismatch want: %s, got: %s)",
-					time.Second.String(),
-					timeout.String(),
+					"timeout mismatch want: %d, got: %d)",
+					1,
+					connectionTimeout,
 				)
 			}
 
@@ -336,7 +340,7 @@ func TestWithJSONResponse(t *testing.T) {
 
 	type args struct {
 		handler     HandlerFunc
-		timeout     time.Duration
+		timeout     int
 		params      map[string]string
 		extraParams []string
 	}
@@ -351,7 +355,7 @@ func TestWithJSONResponse(t *testing.T) {
 			"+valid",
 			args{
 				handler: newHandlerFunc(nil, false),
-				timeout: time.Second,
+				timeout: 1,
 				params: map[string]string{
 					"param1": "value1",
 					"param2": "value2",
@@ -365,7 +369,7 @@ func TestWithJSONResponse(t *testing.T) {
 			"-handlerErr",
 			args{
 				handler: newHandlerFunc(errors.New("fail"), false),
-				timeout: time.Second,
+				timeout: 1,
 				params: map[string]string{
 					"param1": "value1",
 					"param2": "value2",
@@ -379,7 +383,7 @@ func TestWithJSONResponse(t *testing.T) {
 			"-marshalErr",
 			args{
 				handler: newHandlerFunc(nil, true),
-				timeout: time.Second,
+				timeout: 1,
 				params: map[string]string{
 					"param1": "value1",
 					"param2": "value2",
@@ -397,6 +401,7 @@ func TestWithJSONResponse(t *testing.T) {
 			got, err := WithJSONResponse(
 				tt.args.handler,
 			)(
+				context.Background(),
 				tt.args.timeout,
 				tt.args.params,
 				tt.args.extraParams...,

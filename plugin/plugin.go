@@ -17,7 +17,7 @@ package plugin
 import (
 	_ "embed"
 	"os"
-	"time"
+	"strconv"
 
 	"golang.zabbix.com/plugin/mssql/plugin/dbconn"
 	"golang.zabbix.com/plugin/mssql/plugin/handlers"
@@ -162,7 +162,7 @@ func (p *MssqlPlugin) Stop() {
 
 // Export collects all the metrics.
 func (p *MssqlPlugin) Export(
-	key string, rawParams []string, pluginCtx plugin.ContextProvider,
+	key string, rawParams []string, ctx plugin.ContextProvider,
 ) (any, error) {
 	m, ok := p.metrics[mssqlMetricKey(key)]
 	if !ok {
@@ -187,12 +187,12 @@ func (p *MssqlPlugin) Export(
 		return nil, errs.Wrap(err, "failed to set default params")
 	}
 
-	timeout := time.Second * time.Duration(p.config.Timeout)
-	if pluginCtx != nil && timeout < time.Second*time.Duration(pluginCtx.Timeout()) {
-		timeout = time.Second * time.Duration(pluginCtx.Timeout())
+	connectionTimeout, err := strconv.Atoi(metricParams["ConnectionTimeout"])
+	if err != nil {
+		connectionTimeout = p.config.Default.ConnectionTimeout // shouldn't happen anyway
 	}
 
-	res, err := m.handler(timeout, metricParams, extraParams...)
+	res, err := m.handler(ctx, connectionTimeout, metricParams, extraParams...)
 	if err != nil {
 		return nil, errs.Wrap(err, "failed to execute handler")
 	}

@@ -52,8 +52,9 @@ func Test_mssqlPlugin_Configure(t *testing.T) {
 				[]byte(`KeepAlive=300`),
 			},
 			&pluginConfig{
-				KeepAlive: 300,
-				Timeout:   3,
+				KeepAlive:     300,
+				LegacyTimeout: 3,
+				Default:       session{ConnectionTimeout: 3},
 			},
 		},
 		{
@@ -66,15 +67,16 @@ func Test_mssqlPlugin_Configure(t *testing.T) {
 				),
 			},
 			&pluginConfig{
-				KeepAlive: 300,
-				Timeout:   2,
+				KeepAlive:     300,
+				LegacyTimeout: 2,
+				Default:       session{ConnectionTimeout: 2},
 			},
 		},
 		{
 			"+prevConfig",
 			fields{
 				&pluginConfig{
-					Timeout:          44,
+					LegacyTimeout:    44,
 					KeepAlive:        22,
 					CustomQueriesDir: "aaa",
 				},
@@ -84,8 +86,9 @@ func Test_mssqlPlugin_Configure(t *testing.T) {
 				[]byte(`KeepAlive=300`),
 			},
 			&pluginConfig{
-				KeepAlive: 300,
-				Timeout:   3,
+				KeepAlive:     300,
+				LegacyTimeout: 3,
+				Default:       session{ConnectionTimeout: 3},
 			},
 		},
 		{

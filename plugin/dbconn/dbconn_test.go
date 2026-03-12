@@ -23,7 +23,6 @@ import (
 	"os"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/go-cmp/cmp"
@@ -169,7 +168,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 	}
 
 	type args struct {
-		timeout      time.Duration
+		timeout      int
 		metricParams map[string]string
 		extraParams  []string
 	}
@@ -189,7 +188,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 				dsn: "pigeon://8888:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
 			},
 			args{
-				timeout: time.Second * 10,
+				timeout: 10,
 				metricParams: map[string]string{
 					params.URI.Name():      "pigeon://uri",
 					params.User.Name():     "8888",
@@ -211,7 +210,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 				dsn: "pigeon://7777:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
 			},
 			args{
-				timeout: time.Second * 10,
+				timeout: 10,
 				metricParams: map[string]string{
 					params.URI.Name():      "pigeon://uri",
 					params.User.Name():     "7777",
@@ -237,7 +236,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 				getErr: errors.New("fail"),
 			},
 			args{
-				timeout: time.Second * 10,
+				timeout: 10,
 				metricParams: map[string]string{
 					params.URI.Name():      "pigeon://uri",
 					params.User.Name():     "6666",
@@ -279,22 +278,6 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 					metricParams map[string]string,
 					extraParams ...string,
 				) (any, error) {
-					deadline, deadlineSet := ctx.Deadline()
-					if !deadlineSet {
-						t.Fatal(
-							"ConnManager.WithConnHandlerFunc() context deadline is not set",
-						)
-					}
-
-					ctxTimeout := time.Until(deadline).Round(time.Second)
-					if ctxTimeout != tt.args.timeout {
-						t.Fatalf(
-							"ConnManager.WithConnHandlerFunc() "+
-								"context timeout is not correctly set: "+
-								"got %v, expected %v", ctxTimeout, tt.args.timeout,
-						)
-					}
-
 					if db == nil {
 						t.Fatal(
 							"ConnManager.WithConnHandlerFunc() db is nil",
@@ -319,7 +302,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 
 					return "handler called", nil
 				},
-			)(tt.args.timeout, tt.args.metricParams, tt.args.extraParams...)
+			)(context.Background(), tt.args.timeout, tt.args.metricParams, tt.args.extraParams...)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"ConnManager.WithConnHandlerFunc() "+
@@ -350,7 +333,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 	}
 
 	type args struct {
-		timeout      time.Duration
+		timeout      int
 		metricParams map[string]string
 	}
 
@@ -374,7 +357,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 					params.User.Name():     "aaaa",
 					params.Password.Name(): "dddd",
 				},
-				timeout: time.Second * 10,
+				timeout: 10,
 			},
 			1,
 			false,
@@ -392,7 +375,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 					params.User.Name():     "aaaa",
 					params.Password.Name(): "bbbb",
 				},
-				timeout: time.Second * 10,
+				timeout: 10,
 			},
 			0,
 			false,
@@ -410,7 +393,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 					params.User.Name():     "aaaa",
 					params.Password.Name(): "cccc",
 				},
-				timeout: time.Second * 10,
+				timeout: 10,
 			},
 			0,
 			false,
@@ -442,7 +425,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 				m.ExpectPing().WillReturnError(tt.fields.pingErr)
 			}
 
-			got, err := c.PingHandler(tt.args.timeout, tt.args.metricParams)
+			got, err := c.PingHandler(context.Background(), tt.args.timeout, tt.args.metricParams)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"ConnManager.PingHandler() error = %v, wantErr %v",
