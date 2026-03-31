@@ -401,7 +401,7 @@ func TestWithJSONResponse(t *testing.T) {
 			got, err := WithJSONResponse(
 				tt.args.handler,
 			)(
-				context.Background(),
+				t.Context(),
 				tt.args.timeout,
 				tt.args.params,
 				tt.args.extraParams...,

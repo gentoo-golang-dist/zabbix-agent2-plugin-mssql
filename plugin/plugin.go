@@ -187,6 +187,7 @@ func (p *MssqlPlugin) Export(
 		return nil, errs.Wrap(err, "failed to set default params")
 	}
 
+	// temporary workaround until metric.SetDefaults() supports integers
 	connectionTimeout, err := strconv.Atoi(metricParams["ConnectionTimeout"])
 	if err != nil {
 		connectionTimeout = p.config.Default.ConnectionTimeout // shouldn't happen anyway

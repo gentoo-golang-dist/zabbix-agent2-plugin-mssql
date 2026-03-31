@@ -333,7 +333,7 @@ func TestConnItem_initDB(t *testing.T) {
 				tt.fields.driverName,
 			)
 
-			_, err = item.getDbConn(t.Context(), tt.args.conf)
+			_, err = item.getDbConn(t.Context(), 0, tt.args.conf)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"ConnItem.getDbConn() error = %v, wantErr %v",

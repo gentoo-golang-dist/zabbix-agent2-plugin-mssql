@@ -58,7 +58,7 @@ func (c *ConnManager) WithConnHandlerFunc(
 		metricParams map[string]string,
 		extraParams ...string,
 	) (any, error) {
-		conn, err := c.get(ctx, newConnConfig(metricParams))
+		conn, err := c.get(ctx, connectionTimeout, newConnConfig(metricParams))
 		if err != nil {
 			c.logr.Errf("Failed to get connection: %s", err.Error())
 
@@ -76,7 +76,7 @@ func (c *ConnManager) PingHandler(
 	metricParams map[string]string,
 	_ ...string,
 ) (any, error) {
-	conn, err := c.get(ctx, newConnConfig(metricParams))
+	conn, err := c.get(ctx, connectionTimeout, newConnConfig(metricParams))
 	if err != nil {
 		c.logr.Errf("Failed to get connection for ping: %s", err.Error())
 
@@ -105,6 +105,7 @@ func (c *ConnManager) Close() {
 
 func (c *ConnManager) get(
 	ctx context.Context,
+	connectionTimeout int,
 	conf *ConnConfig,
 ) (*ConnItem, error) {
 	conn, _ := c.conns.LoadOrStore(*conf, newConnItem(c.keepAlive, c.logr, c.driverName))
@@ -113,7 +114,7 @@ func (c *ConnManager) get(
 	defer conn.mu.Unlock()
 
 	if conn.db == nil {
-		dbConn, err := conn.getDbConn(ctx, conf)
+		dbConn, err := conn.getDbConn(ctx, connectionTimeout, conf)
 		if err != nil {
 			return nil, errs.Wrap(err, "failed to create conn")
 		}

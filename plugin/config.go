@@ -33,7 +33,9 @@ type session struct {
 	Encrypt                string `conf:"optional"`
 	TLSMinVersion          string `conf:"optional"`
 	Database               string `conf:"optional"`
-	ConnectionTimeout      int    `conf:"optional,range=1:30" json:"ConnectionTimeout,string"`
+
+	// json tag is a temporary workaround until metric.SetDefaults() supports integers
+	ConnectionTimeout int `conf:"optional,range=1:30" json:"ConnectionTimeout,string"` //nolint:tagalign,tagliatelle
 }
 
 type pluginConfig struct {
@@ -71,7 +73,8 @@ func (p *MssqlPlugin) Configure(global *plugin.GlobalOptions, options any) {
 	p.config = pConfig
 
 	if p.config.LegacyTimeout != 0 {
-		log.Debugf("[MSSQL] Config value 'Plugins.MSSQL.Timeout' is deprecated. Use 'Plugins.MSSQL.Default.ConnectionTimeout' instead.")
+		log.Debugf("[MSSQL] Config value 'Plugins.MSSQL.Timeout' is deprecated." +
+			"Use 'Plugins.MSSQL.Default.ConnectionTimeout' instead.")
 
 		if p.config.Default.ConnectionTimeout == 0 {
 			p.config.Default.ConnectionTimeout = p.config.LegacyTimeout

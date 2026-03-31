@@ -23,6 +23,7 @@ import (
 	"os"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/go-cmp/cmp"
@@ -271,6 +272,9 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 
 			m.ExpectPing().WillReturnError(tt.fields.getErr)
 
+			ctx, cancel := context.WithTimeout(t.Context(), time.Duration(tt.args.timeout)*time.Second)
+			defer cancel()
+
 			got, err := c.WithConnHandlerFunc(
 				func(
 					ctx context.Context,
@@ -302,7 +306,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 
 					return "handler called", nil
 				},
-			)(context.Background(), tt.args.timeout, tt.args.metricParams, tt.args.extraParams...)
+			)(ctx, 0, tt.args.metricParams, tt.args.extraParams...)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"ConnManager.WithConnHandlerFunc() "+
@@ -425,7 +429,10 @@ func TestConnCollection_PingHandler(t *testing.T) {
 				m.ExpectPing().WillReturnError(tt.fields.pingErr)
 			}
 
-			got, err := c.PingHandler(context.Background(), tt.args.timeout, tt.args.metricParams)
+			ctx, cancel := context.WithTimeout(t.Context(), time.Duration(tt.args.timeout)*time.Second)
+			defer cancel()
+
+			got, err := c.PingHandler(ctx, 0, tt.args.metricParams)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"ConnManager.PingHandler() error = %v, wantErr %v",
@@ -677,7 +684,7 @@ func TestConnCollection_get(t *testing.T) {
 				logr:       log.New("test"),
 			}
 
-			got, err := c.get(t.Context(), tt.args.conf)
+			got, err := c.get(t.Context(), 0, tt.args.conf)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"ConnManager.get() error = %v, wantErr %v",
@@ -767,7 +774,7 @@ func TestConnCollection_get_ConcurrentAccess(t *testing.T) {
 		go func() {
 			defer wg.Done()
 
-			conn, err := ccol.get(t.Context(), conf)
+			conn, err := ccol.get(t.Context(), 0, conf)
 			if conn == nil {
 				t.Errorf("unexpected error from get(): %v", err)
 

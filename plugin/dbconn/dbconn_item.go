@@ -80,7 +80,7 @@ func newConnItem(keepAlive int, logr log.Logger, driverName string) *ConnItem {
 }
 
 // getDbConn function initializes a pre-allocated database handle. First, it must be created with newConnItem function.
-func (s *ConnItem) getDbConn(ctx context.Context, conf *ConnConfig) (*sql.DB, error) {
+func (s *ConnItem) getDbConn(ctx context.Context, connectionTimeout int, conf *ConnConfig) (*sql.DB, error) {
 	s.logr.Debugf(
 		"Creating new connection to %q, with user %q to database %q, "+
 			"with CA certificate %q, "+
@@ -116,6 +116,13 @@ func (s *ConnItem) getDbConn(ctx context.Context, conf *ConnConfig) (*sql.DB, er
 
 	queryParams := u.Query()
 	s.composeQueryParams(queryParams, conf)
+
+	// other database libraries accept the connection timeout as a separate value,
+	// but MSSQL wants it to be a part of the connection string.
+	// to maintain consistency with other integrations, we attach it here.
+	if connectionTimeout != 0 {
+		queryParams.Add("connection timeout", strconv.Itoa(connectionTimeout))
+	}
 
 	u.RawQuery = queryParams.Encode()
 
