@@ -54,5 +54,7 @@ golang.zabbix.com/sdk v1.2.2-0.20260213090410-71a6e158f066 h1:sXiuTD35IpdaSv1TJB
 golang.zabbix.com/sdk v1.2.2-0.20260213090410-71a6e158f066/go.mod h1:ugXIGbO7PRPVducHITbVWZnPM7bsvjljbWufPPk5ZFA=
 golang.zabbix.com/sdk v1.2.2-0.20260313124139-577196b013c9 h1:sEZt1B9JTuva6KIKVDko24DwTiKMw0I9In0NE60Z6/E=
 golang.zabbix.com/sdk v1.2.2-0.20260313124139-577196b013c9/go.mod h1:ugXIGbO7PRPVducHITbVWZnPM7bsvjljbWufPPk5ZFA=
+golang.zabbix.com/sdk v1.2.2-0.20260401093211-d537e72c2fae h1:sLK36FxTwbL/i3VXszI4aYdyifLnEoMJfykhakXqa7g=
+golang.zabbix.com/sdk v1.2.2-0.20260401093211-d537e72c2fae/go.mod h1:ugXIGbO7PRPVducHITbVWZnPM7bsvjljbWufPPk5ZFA=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
