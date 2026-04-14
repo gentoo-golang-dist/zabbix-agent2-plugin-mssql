@@ -40,7 +40,9 @@ type session struct {
 
 type pluginConfig struct {
 	System plugin.SystemOptions `conf:"optional"` //nolint:staticcheck
-	// Deprecated old timeout value kept for compatibility.
+	// LegacyTimeout timeout used for connections.
+	//
+	// Deprecated: old timeout value kept for compatibility.
 	LegacyTimeout int `conf:"name=Timeout,optional,range=1:30"`
 	// KeepAlive is a time to wait before unused connections will be closed.
 	KeepAlive int `conf:"optional,range=60:900,default=300"`
@@ -73,8 +75,8 @@ func (p *MssqlPlugin) Configure(global *plugin.GlobalOptions, options any) {
 	p.config = pConfig
 
 	if p.config.LegacyTimeout != 0 {
-		log.Debugf("[MSSQL] Config value 'Plugins.MSSQL.Timeout' is deprecated." +
-			"Use 'Plugins.MSSQL.Default.ConnectionTimeout' instead.")
+		log.Debugf("config value 'Plugins.MSSQL.Timeout' is deprecated." +
+			"Use 'Plugins.MSSQL.Default.ConnectionTimeout' instead")
 
 		if p.config.Default.ConnectionTimeout == 0 {
 			p.config.Default.ConnectionTimeout = p.config.LegacyTimeout

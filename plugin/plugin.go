@@ -18,6 +18,7 @@ import (
 	_ "embed"
 	"os"
 	"strconv"
+	"time"
 
 	"golang.zabbix.com/plugin/mssql/plugin/dbconn"
 	"golang.zabbix.com/plugin/mssql/plugin/handlers"
@@ -192,6 +193,15 @@ func (p *MssqlPlugin) Export(
 	if err != nil {
 		connectionTimeout = p.config.Default.ConnectionTimeout // shouldn't happen anyway
 	}
+
+	if ctx.LegacyTimeout() {
+		p.Debugf("using legacy timeout")
+
+		ctx = plugin.OverrideTimeout(ctx, time.Now(), p.config.LegacyTimeout)
+	}
+
+	p.Tracef("query timeout set to: %d", ctx.Timeout())
+	p.Tracef("connectionTimeout timeout set to: %d", connectionTimeout)
 
 	res, err := m.handler(ctx, connectionTimeout, metricParams, extraParams...)
 	if err != nil {
