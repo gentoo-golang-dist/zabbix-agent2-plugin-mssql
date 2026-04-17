@@ -37,12 +37,25 @@ import (
 
 type mockCtx struct {
 	plugin.ContextProvider
-	timeout int
+	timeout       int
+	legacyTimeout bool
 }
 
 func (m *mockCtx) Timeout() int {
 	return m.timeout
 }
+
+func (m *mockCtx) LegacyTimeout() bool {
+	return m.legacyTimeout
+}
+
+type mockLogger struct {
+	log.Logger
+}
+
+func (m mockLogger) Tracef(format string, args ...any) {}
+
+func (m mockLogger) Debugf(format string, args ...any) {}
 
 //nolint:paralleltest,tparallel
 func Test_mssqlPlugin_Start(t *testing.T) {
@@ -215,6 +228,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 				},
 				conns:  &dbconn.ConnManager{},
 				config: &pluginConfig{},
+				Base:   plugin.Base{Logger: mockLogger{}},
 			},
 			args{
 				key: string(dbGet),
@@ -243,6 +257,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 				},
 				conns:  &dbconn.ConnManager{},
 				config: &pluginConfig{},
+				Base:   plugin.Base{Logger: mockLogger{}},
 			},
 			args{
 				key: "unknown",
@@ -271,6 +286,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 				},
 				conns:  &dbconn.ConnManager{},
 				config: &pluginConfig{},
+				Base:   plugin.Base{Logger: mockLogger{}},
 			},
 			args{
 				key: string(dbGet),
@@ -299,6 +315,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 				},
 				conns:  &dbconn.ConnManager{},
 				config: &pluginConfig{},
+				Base:   plugin.Base{Logger: mockLogger{}},
 			},
 			args{
 				key: string(dbGet),
@@ -322,6 +339,8 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 				metrics:       tt.fields.metrics,
 				customQueries: tt.fields.customQueries,
 			}
+
+			p.Base.Logger = mockLogger{}
 
 			got, err := p.Export(
 				tt.args.key,
