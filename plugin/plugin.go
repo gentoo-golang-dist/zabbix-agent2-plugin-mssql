@@ -89,6 +89,7 @@ type mssqlMetric struct {
 
 type mssqlPlugin struct {
 	plugin.Base
+
 	conns         *dbconn.ConnCollection
 	config        *pluginConfig
 	metrics       map[mssqlMetricKey]*mssqlMetric
