@@ -47,6 +47,7 @@ type mockFS struct {
 
 type mockFile struct {
 	fs.File
+
 	err error
 }
 
@@ -973,6 +974,7 @@ func Test_rowsToJSON(t *testing.T) {
 
 			m.ExpectQuery(".*").WillReturnRows(tt.args.rows)
 
+			//nolint:noctx // needs to be refactored.
 			rows, err := db.Query("SELECT")
 			if err != nil {
 				t.Fatalf("failed to query mock DB: %s", err)

@@ -128,6 +128,11 @@ func (s *ConnItem) getDbConn(ctx context.Context, conf *ConnConfig) (*sql.DB, er
 
 	err = db.PingContext(ctx)
 	if err != nil {
+		cerr := db.Close()
+		if cerr != nil {
+			s.logr.Debugf("failed to close connection")
+		}
+
 		return nil, errs.Wrap(err, "failed to ping")
 	}
 
