@@ -30,7 +30,7 @@ License AGPLv3: GNU Affero General Public License version 3 <https://www.gnu.org
 This is free software: you are free to change and redistribute it according to
 the license. There is NO WARRANTY, to the extent permitted by law.`
 
-//nolint:gochecknoglobals,revive // required ALL_CAPS by build scripts
+//nolint:gochecknoglobals,revive,nolintlint // required ALL_CAPS by build scripts
 var (
 	PLUGIN_VERSION_RC    = "rc1"
 	PLUGIN_VERSION_MAJOR = 7
