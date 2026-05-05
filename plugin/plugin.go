@@ -89,6 +89,7 @@ type mssqlMetric struct {
 
 type mssqlPlugin struct {
 	plugin.Base
+
 	conns         *dbconn.ConnCollection
 	config        *pluginConfig
 	metrics       map[mssqlMetricKey]*mssqlMetric
@@ -170,10 +171,7 @@ func (p *mssqlPlugin) Export(
 		return nil, errs.Wrap(err, "failed to set default params")
 	}
 
-	timeout := time.Second * time.Duration(p.config.Timeout)
-	if timeout < time.Second*time.Duration(pluginCtx.Timeout()) {
-		timeout = time.Second * time.Duration(pluginCtx.Timeout())
-	}
+	timeout := max(time.Second*time.Duration(p.config.Timeout), time.Second*time.Duration(pluginCtx.Timeout()))
 
 	res, err := m.handler(timeout, metricParams, extraParams...)
 	if err != nil {
