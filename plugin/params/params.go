@@ -26,6 +26,7 @@ var (
 		URI,
 		User,
 		Password,
+		ConnTimeout,
 	}
 
 	// CustomQueryParams groups all parameters unique for a custom query metric.
@@ -137,6 +138,12 @@ var (
 		"Database", "Database name that the connection will be established to.",
 	).
 		WithDefault("")
+
+	// ConnTimeout is a metric param tha specifies the time in which the database
+	// connection needs to be established .
+	ConnTimeout = metric.NewSessionOnlyParam(
+		"ConnectionTimeout", "Timeout in which to establish connection.",
+	)
 )
 
 // Join combines multiple parameter groups into one.
