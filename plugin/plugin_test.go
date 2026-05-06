@@ -37,6 +37,7 @@ import (
 
 type mockCtx struct {
 	plugin.ContextProvider
+
 	timeout       int
 	legacyTimeout bool
 }
@@ -340,7 +341,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 				customQueries: tt.fields.customQueries,
 			}
 
-			p.Base.Logger = mockLogger{}
+			p.Logger = mockLogger{}
 
 			got, err := p.Export(
 				tt.args.key,

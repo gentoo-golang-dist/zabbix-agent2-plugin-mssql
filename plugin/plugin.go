@@ -85,6 +85,7 @@ var (
 // MssqlPlugin hold mssql plugin parameters.
 type MssqlPlugin struct {
 	plugin.Base
+
 	conns         *dbconn.ConnManager
 	config        *pluginConfig
 	metrics       map[mssqlMetricKey]*mssqlMetric
