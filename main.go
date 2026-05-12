@@ -44,10 +44,10 @@ limitations under the License.`
 
 //nolint:gochecknoglobals,revive // required ALL_CAPS by build scripts
 var (
-	PLUGIN_VERSION_RC    = ""
+	PLUGIN_VERSION_RC    = "rc1"
 	PLUGIN_VERSION_MAJOR = 6
 	PLUGIN_VERSION_MINOR = 0
-	PLUGIN_VERSION_PATCH = 46
+	PLUGIN_VERSION_PATCH = 47
 	PLUGIN_LICENSE_YEAR  = 2026
 )
 
