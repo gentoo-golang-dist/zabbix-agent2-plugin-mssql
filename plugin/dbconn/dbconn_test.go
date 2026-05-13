@@ -743,6 +743,7 @@ func TestConnCollection_get_ConcurrentAccess(t *testing.T) {
 	const goroutineCount = 10
 
 	log.DefaultLogger = stdlog.New(os.Stdout, "", stdlog.LstdFlags)
+
 	log.IncreaseLogLevel()
 	log.IncreaseLogLevel()
 	log.IncreaseLogLevel()
@@ -778,19 +779,15 @@ func TestConnCollection_get_ConcurrentAccess(t *testing.T) {
 		Password: "tttt",
 	}
 
-	for i := 0; i < goroutineCount; i++ { //nolint:intrange
-		wg.Add(1)
-
-		go func() {
-			defer wg.Done()
-
+	for range goroutineCount {
+		wg.Go(func() {
 			conn, err := ccol.get(t.Context(), conf)
 			if conn == nil {
 				t.Errorf("unexpected error from get(): %v", err)
 
 				return
 			}
-		}()
+		})
 	}
 
 	wg.Wait()
