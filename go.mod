@@ -6,7 +6,7 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/google/go-cmp v0.6.0
 	github.com/microsoft/go-mssqldb v1.6.0
-	golang.zabbix.com/sdk v1.2.2-0.20260105091128-40ec4ead749c
+	golang.zabbix.com/sdk v1.2.2-0.20260513105710-1363da625389
 )
 
 require (
