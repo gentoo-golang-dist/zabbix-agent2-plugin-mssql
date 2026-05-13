@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"io"
 	"io/fs"
+	"maps"
 	"path/filepath"
 	"strings"
 
@@ -201,9 +202,7 @@ func (cq CustomQueries) Load(customQueriesDirFS fs.FS, logr log.Logger) error {
 		}
 	}
 
-	for k, v := range queries {
-		cq[k] = v
-	}
+	maps.Copy(cq, queries)
 
 	return nil
 }
@@ -314,6 +313,7 @@ func rowsToJSON(rows *sql.Rows) ([]map[string]any, error) {
 				val = &nullBool{}
 			default:
 				var v any
+
 				val = &v
 			}
 
