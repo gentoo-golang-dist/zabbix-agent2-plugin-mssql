@@ -33,6 +33,7 @@ It can monitor several MSSQL instances simultaneously, remote or local.
     - [`Plugins.MSSQL.Sessions.*.Encrypt`](#pluginsmssqlsessionsencrypt)
     - [`Plugins.MSSQL.Sessions.*.TLSMinVersion`](#pluginsmssqlsessionstlsminversion)
     - [`Plugins.MSSQL.Sessions.*.Database`](#pluginsmssqlsessionsdatabase)
+    - [`Plugins.MSSQL.Sessions.*.ConnectionTimeout`](#pluginsmssqlsessionsconnectiontimeout)
   - [Default settings](#default-settings)
     - [`Plugins.MSSQL.Default.Uri`](#pluginsmssqldefaulturi)
     - [`Plugins.MSSQL.Default.User`](#pluginsmssqldefaultuser)
@@ -43,6 +44,7 @@ It can monitor several MSSQL instances simultaneously, remote or local.
     - [`Plugins.MSSQL.Default.Encrypt`](#pluginsmssqldefaultencrypt)
     - [`Plugins.MSSQL.Default.TLSMinVersion`](#pluginsmssqldefaulttlsminversion)
     - [`Plugins.MSSQL.Default.Database`](#pluginsmssqldefaultdatabase)
+    - [`Plugins.MSSQL.Default.ConnectionTimeout`](#pluginsmssqldefaultconnectiontimeout)
 - [Metric keys](#metric-keys)
   - [`mssql.availability.group.get[<commonParameters>]`](#mssqlavailabilitygroupgetcommonparameters)
   - [`mssql.custom.query[<commonParameters>,<customQueryName>,<customQueryParameters>...]`](#mssqlcustomquerycommonparameterscustomquerynamecustomqueryparameters)
@@ -242,6 +244,8 @@ Global item-type timeout (or individual item timeout) will override this value i
 If not specified, the value defaults to global timeout value defined in Zabbix agent 2
 configuration file.
 
+The value is now *deprecated*, and used only for requests coming from Zabbix servers old than 7.0 version.
+
 Example usage:
 
 ```conf
@@ -430,6 +434,18 @@ Example usage:
 Plugins.MSSQL.Sessions.exampleSession.Database=customers
 ```
 
+<!-- TOC --><a name="pluginsmssqlsessionsconnectiontimeout"></a>
+
+#### `Plugins.MSSQL.Sessions.*.ConnectionTimeout`
+
+Specifies the connection timeout for session `*`.
+
+Example usage:
+
+```conf
+Plugins.MSSQL.Sessions.exampleSession.ConnectionTimeout=10
+```
+
 <!-- TOC --><a name="default-settings"></a>
 
 ### Default settings
@@ -558,6 +574,18 @@ Example usage:
 
 ```conf
 Plugins.MSSQL.Default.Database=prod
+```
+
+<!-- TOC --><a name="pluginsmssqldefaultconnectiontimeout"></a>
+
+#### `Plugins.MSSQL.Default.ConnectionTimeout`
+
+Specifies the default connection timeout for session `*`.
+
+Example usage:
+
+```conf
+Plugins.MSSQL.Default.ConnectionTimeout=10
 ```
 
 <!-- TOC --><a name="metric-keys"></a>
