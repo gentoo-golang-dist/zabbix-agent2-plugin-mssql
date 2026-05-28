@@ -19,7 +19,6 @@ import (
 
 	"golang.zabbix.com/sdk/conf"
 	"golang.zabbix.com/sdk/errs"
-	"golang.zabbix.com/sdk/log"
 	"golang.zabbix.com/sdk/plugin"
 )
 
@@ -75,8 +74,7 @@ func (p *MssqlPlugin) Configure(global *plugin.GlobalOptions, options any) {
 	p.config = pConfig
 
 	if p.config.LegacyTimeout != 0 {
-		log.Debugf("config value 'Plugins.MSSQL.Timeout' is deprecated." +
-			"Use 'Plugins.MSSQL.Default.ConnectionTimeout' instead")
+		p.Debugf("config value 'Plugins.MSSQL.Timeout' is deprecated")
 
 		if p.config.Default.ConnectionTimeout == 0 {
 			p.config.Default.ConnectionTimeout = p.config.LegacyTimeout
