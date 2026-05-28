@@ -1,3 +1,13 @@
+Changes for 7.0.27rc1
+
+7.0.26 was released as 7.0.27rc1 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.0.26
+
+7.0.26rc1 was released as 7.0.26 without any changes
+
+--------------------------------------------------------------------------------
 Changes for 7.0.26rc1
 
 7.0.25 was released as 7.0.26rc1 without any changes
@@ -468,6 +478,18 @@ New features:
 [ZBXNEXT-8674] implement TLS connection configuration (rzvejs)
 [ZBXNEXT-8672] implement metric handlers (rzvejs)
 [ZBXNEXT-6235] initial implementation for MSSQL loadable Zabbix agent 2 plugin (rzvejs)
+
+--------------------------------------------------------------------------------
+Changes for 6.0.47rc1
+
+New features:
+
+Bug fixes:
+
+--------------------------------------------------------------------------------
+Changes for 6.0.46
+
+6.0.46rc1 was released as 6.0.46 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 6.0.46rc1
