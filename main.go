@@ -34,7 +34,7 @@ the license. There is NO WARRANTY, to the extent permitted by law.`
 
 //nolint:gochecknoglobals,revive,nolintlint // required ALL_CAPS by build scripts
 var (
-	PLUGIN_VERSION_RC    = "beta1"
+	PLUGIN_VERSION_RC    = "beta2"
 	PLUGIN_VERSION_MAJOR = 8
 	PLUGIN_VERSION_MINOR = 0
 	PLUGIN_VERSION_PATCH = 0

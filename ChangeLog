@@ -1,8 +1,13 @@
-Changes for 8.0.0beta1
+Changes for 8.0.0beta2
 
 New features:
 
 Bug fixes:
+
+--------------------------------------------------------------------------------
+Changes for 8.0.0beta1
+
+8.0.0alpha2 was released as 8.0.0beta1 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 8.0.0alpha2
@@ -16,6 +21,16 @@ Changes for 8.0.0alpha1
 
 Bug fixes:
 ...G...... [ZBX-25834] lowered debug level and added db configuration dependent connection list (lsurvilo)
+
+--------------------------------------------------------------------------------
+Changes for 7.4.11rc1
+
+7.4.10 was released as 7.4.11rc1 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.4.10
+
+7.4.10rc1 was released as 7.4.10 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 7.4.10rc1
@@ -365,6 +380,16 @@ Changes for 7.2.0alpha1
 
 New features:
 [ZBXNEXT-9281] added configurable item timeout support (dgoloscapov)
+
+--------------------------------------------------------------------------------
+Changes for 7.0.27rc1
+
+7.0.26 was released as 7.0.27rc1 without any changes
+
+--------------------------------------------------------------------------------
+Changes for 7.0.26
+
+7.0.26rc1 was released as 7.0.26 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 7.0.26rc1
@@ -837,6 +862,18 @@ New features:
 [ZBXNEXT-8674] implement TLS connection configuration (rzvejs)
 [ZBXNEXT-8672] implement metric handlers (rzvejs)
 [ZBXNEXT-6235] initial implementation for MSSQL loadable Zabbix agent 2 plugin (rzvejs)
+
+--------------------------------------------------------------------------------
+Changes for 6.0.47rc1
+
+New features:
+
+Bug fixes:
+
+--------------------------------------------------------------------------------
+Changes for 6.0.46
+
+6.0.46rc1 was released as 6.0.46 without any changes
 
 --------------------------------------------------------------------------------
 Changes for 6.0.46rc1
