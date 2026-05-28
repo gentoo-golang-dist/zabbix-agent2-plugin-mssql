@@ -780,18 +780,14 @@ func TestConnCollection_get_ConcurrentAccess(t *testing.T) {
 	}
 
 	for range goroutineCount {
-		wg.Add(1)
-
-		go func() {
-			defer wg.Done()
-
+		wg.Go(func() {
 			conn, err := ccol.get(t.Context(), conf)
 			if conn == nil {
 				t.Errorf("unexpected error from get(): %v", err)
 
 				return
 			}
-		}()
+		})
 	}
 
 	wg.Wait()

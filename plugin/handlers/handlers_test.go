@@ -974,7 +974,7 @@ func Test_rowsToJSON(t *testing.T) {
 
 			m.ExpectQuery(".*").WillReturnRows(tt.args.rows)
 
-			//nolint:noctx // needs to be refactored.
+			//nolint:noctx // refactor to use (*database/sql.DB).QueryContext
 			rows, err := db.Query("SELECT")
 			if err != nil {
 				t.Fatalf("failed to query mock DB: %s", err)
