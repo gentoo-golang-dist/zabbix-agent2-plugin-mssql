@@ -244,7 +244,7 @@ Global item-type timeout (or individual item timeout) will override this value i
 If not specified, the value defaults to global timeout value defined in Zabbix agent 2
 configuration file.
 
-The value is now *deprecated*, and used only for requests coming from Zabbix servers old than 7.0 version.
+> The value is now *deprecated*, and used only for requests coming from Zabbix servers older than 7.0 version.
 
 Example usage:
 
