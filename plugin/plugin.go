@@ -189,10 +189,9 @@ func (p *MssqlPlugin) Export(
 		return nil, errs.Wrap(err, "failed to set default params")
 	}
 
-	// temporary workaround until metric.SetDefaults() supports integers
-	connectionTimeout, err := strconv.Atoi(metricParams["ConnectionTimeout"])
+	connectionTimeout, err := p.getConnectionTimeout(metricParams)
 	if err != nil {
-		connectionTimeout = p.config.Default.ConnectionTimeout // shouldn't happen anyway
+		return nil, err
 	}
 
 	if ctx.LegacyTimeout() {
@@ -210,6 +209,25 @@ func (p *MssqlPlugin) Export(
 	}
 
 	return res, nil
+}
+
+func (p *MssqlPlugin) getConnectionTimeout(metricParams map[string]string) (int, error) {
+	var connectionTimeout int
+	var err error
+
+	connectionTimeout, err = strconv.Atoi(metricParams["ConnectionTimeout"])
+	if err != nil {
+		// shouldn't happen anyway
+		p.Tracef("failed to convert parameter connection timeout %s", err.Error())
+		connectionTimeout, err = strconv.Atoi(p.config.Default.ConnectionTimeout)
+		if err != nil {
+			p.Tracef("failed to convert default connection timeout %s", err.Error())
+		}
+
+		return 0, errs.New("failed to get connection timeout")
+	}
+
+	return connectionTimeout, nil
 }
 
 func (p *MssqlPlugin) registerMetrics() error {

@@ -54,7 +54,7 @@ func Test_mssqlPlugin_Configure(t *testing.T) {
 			&pluginConfig{
 				KeepAlive:     300,
 				LegacyTimeout: 3,
-				Default:       session{ConnectionTimeout: 3},
+				Default:       session{ConnectionTimeout: "3"},
 			},
 		},
 		{
@@ -69,7 +69,7 @@ func Test_mssqlPlugin_Configure(t *testing.T) {
 			&pluginConfig{
 				KeepAlive:     300,
 				LegacyTimeout: 2,
-				Default:       session{ConnectionTimeout: 2},
+				Default:       session{ConnectionTimeout: "2"},
 			},
 		},
 		{
@@ -88,7 +88,7 @@ func Test_mssqlPlugin_Configure(t *testing.T) {
 			&pluginConfig{
 				KeepAlive:     300,
 				LegacyTimeout: 3,
-				Default:       session{ConnectionTimeout: 3},
+				Default:       session{ConnectionTimeout: "3"},
 			},
 		},
 		{
