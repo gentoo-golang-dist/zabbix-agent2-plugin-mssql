@@ -228,7 +228,7 @@ func Test_mssqlPlugin_Export(t *testing.T) {
 					},
 				},
 				conns:  &dbconn.ConnManager{},
-				config: &pluginConfig{Default: session{ConnectionTimeout: "3"}},
+				config: &pluginConfig{Default: session{ConnectionTimeout: "0"}},
 				Base:   plugin.Base{Logger: mockLogger{}},
 			},
 			args{
