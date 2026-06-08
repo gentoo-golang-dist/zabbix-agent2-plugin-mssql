@@ -92,6 +92,8 @@ func (p *MssqlPlugin) Configure(global *plugin.GlobalOptions, options any) {
 
 // Validate implements the Configurator interface.
 // Returns an error if validation of a plugin's configuration is failed.
+//
+//nolint:gocyclo,cyclop // will be removed once set defaults can handle ints
 func (*MssqlPlugin) Validate(options any) error {
 	var opts pluginConfig
 
@@ -100,13 +102,13 @@ func (*MssqlPlugin) Validate(options any) error {
 		return errs.Wrap(err, "failed to unmarshal configuration options")
 	}
 
-	for k, s := range opts.Sessions {
-		if s.ConnectionTimeout != "" {
-			ct, err := strconv.Atoi(s.ConnectionTimeout)
+	for k := range opts.Sessions {
+		if opts.Sessions[k].ConnectionTimeout != "" {
+			ct, err := strconv.Atoi(opts.Sessions[k].ConnectionTimeout)
 			if err != nil {
 				return errs.Errorf(
 					"connection timeout '%v' must be an integer for session %s",
-					s.ConnectionTimeout,
+					opts.Sessions[k].ConnectionTimeout,
 					k,
 				)
 			}
@@ -114,7 +116,7 @@ func (*MssqlPlugin) Validate(options any) error {
 			if ct < 1 || ct > 30 {
 				return errs.Errorf(
 					"connection timeout '%v' for session %s must be between 1 and 30",
-					s.ConnectionTimeout,
+					opts.Sessions[k].ConnectionTimeout,
 					k,
 				)
 			}
