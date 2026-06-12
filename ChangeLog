@@ -3,6 +3,7 @@ Changes for 7.4.12rc1
 New features:
 
 Bug fixes:
+...G...... [ZBX-27430] fixed memory leak on failed connection (esneiders)
 
 --------------------------------------------------------------------------------
 Changes for 7.4.11
@@ -379,6 +380,7 @@ Changes for 7.0.28rc1
 New features:
 
 Bug fixes:
+...G...... [ZBX-27430] fixed memory leak on failed connection (esneiders)
 
 --------------------------------------------------------------------------------
 Changes for 7.0.27
