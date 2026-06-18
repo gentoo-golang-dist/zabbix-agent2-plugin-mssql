@@ -58,6 +58,7 @@ func (c *ConnManager) WithConnHandlerFunc(
 		metricParams map[string]string,
 		extraParams ...string,
 	) (any, error) {
+		//nolint:contextcheck // connection get does not need ctx.
 		conn, err := c.get(connectionTimeout, newConnConfig(metricParams))
 		if err != nil {
 			c.logr.Errf("Failed to get connection: %s", err.Error())
@@ -76,6 +77,7 @@ func (c *ConnManager) PingHandler(
 	metricParams map[string]string,
 	_ ...string,
 ) (any, error) {
+	//nolint:contextcheck // connection get does not need ctx.
 	conn, err := c.get(connectionTimeout, newConnConfig(metricParams))
 	if err != nil {
 		c.logr.Errf("Failed to get connection for ping: %s", err.Error())

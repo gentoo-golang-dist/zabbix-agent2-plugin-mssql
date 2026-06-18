@@ -171,6 +171,7 @@ linters:
           - noinlineerr
           - gosec
           - decorder
+          - lll
         path: _test\.go
     paths:
       - third_party$
