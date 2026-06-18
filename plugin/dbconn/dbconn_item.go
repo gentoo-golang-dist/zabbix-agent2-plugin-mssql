@@ -80,7 +80,7 @@ func newConnItem(keepAlive int, logr log.Logger, driverName string) *ConnItem {
 }
 
 // getDbConn function initializes a pre-allocated database handle. First, it must be created with newConnItem function.
-func (s *ConnItem) getDbConn(ctx context.Context, connectionTimeout int, conf *ConnConfig) (*sql.DB, error) {
+func (s *ConnItem) getDbConn(connectionTimeout int, conf *ConnConfig) (*sql.DB, error) {
 	s.logr.Debugf(
 		"Creating new connection to %q, with user %q to database %q, "+
 			"with CA certificate %q, "+
@@ -132,6 +132,10 @@ func (s *ConnItem) getDbConn(ctx context.Context, connectionTimeout int, conf *C
 	}
 
 	db.SetConnMaxIdleTime(time.Duration(s.keepAlive) * time.Second)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(connectionTimeout)*time.Second)
+
+	defer cancel()
 
 	err = db.PingContext(ctx)
 	if err != nil {

@@ -15,7 +15,6 @@
 package dbconn
 
 import (
-	"context"
 	"database/sql"
 	"errors"
 	stdlog "log"
@@ -182,8 +181,8 @@ func TestConnItem_initDB(t *testing.T) {
 	}
 
 	type args struct {
-		ctx  context.Context //nolint:containedctx
-		conf *ConnConfig
+		connTimeout int
+		conf        *ConnConfig
 	}
 
 	type expect struct {
@@ -202,11 +201,11 @@ func TestConnItem_initDB(t *testing.T) {
 			"+valid",
 			fields{
 				keepAlive:  4,
-				dsn:        "pigeon://aaaa:bbbb@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4",
+				dsn:        "pigeon://aaaa:bbbb@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&connection+timeout=1&keepAlive=4",
 				driverName: "testdriver",
 			},
 			args{
-				t.Context(),
+				1,
 				newConnConfig(map[string]string{
 					"User":     "aaaa",
 					"Password": "bbbb",
@@ -220,11 +219,11 @@ func TestConnItem_initDB(t *testing.T) {
 			"+named",
 			fields{
 				keepAlive:  4,
-				dsn:        "pigeon://aaaa:bbbb@uri/InstanceName?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4",
+				dsn:        "pigeon://aaaa:bbbb@uri/InstanceName?app+name=Zabbix+agent+2+MSSQL+plugin&connection+timeout=1&keepAlive=4",
 				driverName: "testdriver",
 			},
 			args{
-				t.Context(),
+				1,
 				newConnConfig(map[string]string{
 					"User":     "aaaa",
 					"Password": "bbbb",
@@ -238,11 +237,11 @@ func TestConnItem_initDB(t *testing.T) {
 			"+namedWithPort",
 			fields{
 				keepAlive:  4,
-				dsn:        "pigeon://aaaa:bbbb@uri:1435/InstanceName?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=4",
+				dsn:        "pigeon://aaaa:bbbb@uri:1435/InstanceName?app+name=Zabbix+agent+2+MSSQL+plugin&connection+timeout=1&keepAlive=4",
 				driverName: "testdriver",
 			},
 			args{
-				t.Context(),
+				1,
 				newConnConfig(map[string]string{
 					"User":     "aaaa",
 					"Password": "bbbb",
@@ -260,7 +259,7 @@ func TestConnItem_initDB(t *testing.T) {
 				driverName: "testdriver",
 			},
 			args{
-				t.Context(),
+				1,
 				newConnConfig(map[string]string{
 					"User":     "aaaa",
 					"Password": "bbbb",
@@ -279,7 +278,7 @@ func TestConnItem_initDB(t *testing.T) {
 				driverName: "testdriver",
 			},
 			args{
-				t.Context(),
+				1,
 				newConnConfig(map[string]string{
 					"User":     "cccc",
 					"Password": "bbbb",
@@ -333,7 +332,7 @@ func TestConnItem_initDB(t *testing.T) {
 				tt.fields.driverName,
 			)
 
-			_, err = item.getDbConn(t.Context(), 0, tt.args.conf)
+			_, err = item.getDbConn(tt.args.connTimeout, tt.args.conf)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"ConnItem.getDbConn() error = %v, wantErr %v",

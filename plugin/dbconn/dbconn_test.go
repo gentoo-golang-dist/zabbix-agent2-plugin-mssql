@@ -186,7 +186,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 		{
 			"+valid",
 			fields{
-				dsn: "pigeon://8888:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
+				dsn: "pigeon://8888:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&connection+timeout=10&keepAlive=0",
 			},
 			args{
 				timeout: 10,
@@ -208,7 +208,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 		{
 			"+extraParams",
 			fields{
-				dsn: "pigeon://7777:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
+				dsn: "pigeon://7777:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&connection+timeout=10&keepAlive=0",
 			},
 			args{
 				timeout: 10,
@@ -233,7 +233,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 		{
 			"-getErr",
 			fields{
-				dsn:    "pigeon://6666:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
+				dsn:    "pigeon://6666:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&connection+timeout=10&keepAlive=0",
 				getErr: errors.New("fail"),
 			},
 			args{
@@ -306,7 +306,7 @@ func TestConnCollection_WithConnHandlerFunc(t *testing.T) {
 
 					return "handler called", nil
 				},
-			)(ctx, 0, tt.args.metricParams, tt.args.extraParams...)
+			)(ctx, tt.args.timeout, tt.args.metricParams, tt.args.extraParams...)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"ConnManager.WithConnHandlerFunc() "+
@@ -353,7 +353,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 			"+valid",
 			expect{true},
 			fields{
-				dsn: "pigeon://aaaa:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
+				dsn: "pigeon://aaaa:dddd@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&connection+timeout=10&keepAlive=0",
 			},
 			args{
 				metricParams: map[string]string{
@@ -371,7 +371,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 			expect{false},
 			fields{
 				getErr: errors.New("fail"),
-				dsn:    "pigeon://aaaa:bbbb@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
+				dsn:    "pigeon://aaaa:bbbb@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&connection+timeout=10&keepAlive=0",
 			},
 			args{
 				metricParams: map[string]string{
@@ -389,7 +389,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 			expect{true},
 			fields{
 				pingErr: errors.New("fail"),
-				dsn:     "pigeon://aaaa:cccc@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
+				dsn:     "pigeon://aaaa:cccc@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&connection+timeout=10&keepAlive=0",
 			},
 			args{
 				metricParams: map[string]string{
@@ -432,7 +432,7 @@ func TestConnCollection_PingHandler(t *testing.T) {
 			ctx, cancel := context.WithTimeout(t.Context(), time.Duration(tt.args.timeout)*time.Second)
 			defer cancel()
 
-			got, err := c.PingHandler(ctx, 0, tt.args.metricParams)
+			got, err := c.PingHandler(ctx, tt.args.timeout, tt.args.metricParams)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"ConnManager.PingHandler() error = %v, wantErr %v",
@@ -569,7 +569,7 @@ func TestConnCollection_get(t *testing.T) {
 			expect{true},
 			fields{
 				conns:      &zbxsync.SyncMap[ConnConfig, *ConnItem]{},
-				dsn:        "pigeon://rrrr:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
+				dsn:        "pigeon://rrrr:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&connection+timeout=1&keepAlive=0",
 				driverName: "testdriver",
 			},
 			args{
@@ -606,7 +606,7 @@ func TestConnCollection_get(t *testing.T) {
 
 					return m
 				}(),
-				dsn:        "pigeon://jjjj:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
+				dsn:        "pigeon://jjjj:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&connection+timeout=1&keepAlive=0",
 				driverName: "testdriver",
 			},
 			args{
@@ -636,7 +636,7 @@ func TestConnCollection_get(t *testing.T) {
 			expect{true},
 			fields{
 				conns:      &zbxsync.SyncMap[ConnConfig, *ConnItem]{},
-				dsn:        "pigeon://kkkk:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
+				dsn:        "pigeon://kkkk:tttt@uri:1433?app+name=Zabbix+agent+2+MSSQL+plugin&connection+timeout=1&keepAlive=0",
 				newConnErr: errors.New("fail"),
 				driverName: "testdriver",
 			},
@@ -684,7 +684,7 @@ func TestConnCollection_get(t *testing.T) {
 				logr:       log.New("test"),
 			}
 
-			got, err := c.get(t.Context(), 0, tt.args.conf)
+			got, err := c.get(1, tt.args.conf)
 			if (err != nil) != tt.wantErr {
 				t.Fatalf(
 					"ConnManager.get() error = %v, wantErr %v",
@@ -740,7 +740,7 @@ func TestConnCollection_get_ConcurrentAccess(t *testing.T) {
 	log.IncreaseLogLevel()
 
 	db, m, err := sqlmock.NewWithDSN(
-		"pigeon://rrrr:tttt@concurrent:1433?app+name=Zabbix+agent+2+MSSQL+plugin&keepAlive=0",
+		"pigeon://rrrr:tttt@concurrent:1433?app+name=Zabbix+agent+2+MSSQL+plugin&connection+timeout=1&keepAlive=0",
 		sqlmock.MonitorPingsOption(true),
 	)
 	if err != nil {
@@ -771,7 +771,7 @@ func TestConnCollection_get_ConcurrentAccess(t *testing.T) {
 
 	for range goroutineCount {
 		wg.Go(func() {
-			conn, err := ccol.get(t.Context(), 0, conf)
+			conn, err := ccol.get(1, conf)
 			if conn == nil {
 				t.Errorf("unexpected error from get(): %v", err)
 
