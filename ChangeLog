@@ -377,8 +377,6 @@ New features:
 --------------------------------------------------------------------------------
 Changes for 7.0.28rc1
 
-New features:
-
 Bug fixes:
 ...G...... [ZBX-27430] fixed memory leak on failed connection (esneiders)
 
