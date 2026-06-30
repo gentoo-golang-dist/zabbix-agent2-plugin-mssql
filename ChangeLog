@@ -1,7 +1,5 @@
 Changes for 7.4.12rc1
 
-New features:
-
 Bug fixes:
 ...G...... [ZBX-27430] fixed memory leak on failed connection (esneiders)
 
