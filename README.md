@@ -240,7 +240,6 @@ Plugins.MSSQL.System.Path=/usr/libexec/zabbix/zabbix-agent2-plugin-mssql
 
 Specifies the amount of time to wait for a server to respond when first
 connecting and on follow-up operations in the session. Range: 1-30 in seconds.
-Global item-type timeout (or individual item timeout) will override this value if it is greater.
 If not specified, the value defaults to global timeout value defined in Zabbix agent 2
 configuration file.
 
