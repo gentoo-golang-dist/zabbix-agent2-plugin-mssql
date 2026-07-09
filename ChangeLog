@@ -1,7 +1,5 @@
 Changes for 8.0.0beta2
 
-New features:
-
 Bug fixes:
 ...G...... [ZBX-27430] fixed memory leak on failed connection (esneiders)
 
