@@ -383,6 +383,11 @@ New features:
 [ZBXNEXT-9281] added configurable item timeout support (dgoloscapov)
 
 --------------------------------------------------------------------------------
+Changes for 7.0.29
+
+7.0.29rc1 was released as 7.0.29 without any changes
+
+--------------------------------------------------------------------------------
 Changes for 7.0.29rc1
 
 7.0.28 was released as 7.0.29rc1 without any changes
